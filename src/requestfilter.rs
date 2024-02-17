@@ -3,7 +3,7 @@ use serde::Serialize;
 #[derive(Debug, Clone, Serialize)]
 pub struct RequestFilter {
     // FIXME: consider Option.
-    pub search: String,
+    pub search: Option<String>,
     pub order_by: Option<String>,
     pub order: String,
     pub offset: usize,
@@ -46,7 +46,7 @@ pub struct RequestFilter {
 impl Default for RequestFilter {
     fn default() -> RequestFilter {
         RequestFilter {
-            search: String::from("%%"),
+            search: None,
             order_by: None,
             order: String::from("asc"),
             offset: 0,
