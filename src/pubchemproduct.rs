@@ -8,52 +8,52 @@ use serde_json::Value;
 #[derive(Debug, Default, Serialize)]
 pub struct PubchemProduct {
     #[serde(skip_serializing_if = "Option::is_none")]
-    name: Option<String>,
+    pub name: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    iupac_name: Option<String>,
+    pub iupac_name: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    inchi: Option<String>,
+    pub inchi: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    inchi_key: Option<String>,
+    pub inchi_key: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    canonical_smiles: Option<String>,
+    pub canonical_smiles: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    molecular_formula: Option<String>,
+    pub molecular_formula: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    cas: Option<String>,
+    pub cas: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    ec: Option<String>,
+    pub ec: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    molecular_weight: Option<String>,
+    pub molecular_weight: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    molecular_weight_unit: Option<String>,
+    pub molecular_weight_unit: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    boiling_point: Option<String>,
+    pub boiling_point: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    synonyms: Option<Vec<String>>,
+    pub synonyms: Option<Vec<String>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    symbols: Option<Vec<String>>,
+    pub symbols: Option<Vec<String>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    signal: Option<Vec<String>>,
+    pub signal: Option<Vec<String>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    hs: Option<Vec<String>>,
+    pub hs: Option<Vec<String>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    ps: Option<Vec<String>>,
+    pub ps: Option<Vec<String>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub twodpicture: Option<String>, // base64 encoded png
