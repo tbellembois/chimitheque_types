@@ -1,11 +1,11 @@
 use jsonpath_rust::JsonPathQuery;
 use log::debug;
 use regex::Regex;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 // A simplified pubchem product representation.
-#[derive(Debug, Default, Serialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct PubchemProduct {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
