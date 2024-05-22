@@ -81,11 +81,8 @@ impl PubchemProduct {
         let name = json_content.clone().path("$.Record.RecordTitle").unwrap();
 
         debug!("name: {:#?}", name);
-        let name_value = name.as_array().map(|v| match v.get(0) {
-            Some(value) => match value.as_str() {
-                Some(s) => Some(s.to_string()),
-                None => None,
-            },
+        let name_value = name.as_array().map(|v| match v.first() {
+            Some(value) => value.as_str().map(|s| s.to_string()),
             None => None,
         });
         product.name = name_value.unwrap_or(None);
@@ -96,11 +93,8 @@ impl PubchemProduct {
         .unwrap();
 
         debug!("iupac_name: {:#?}", iupac_name);
-        let iupac_name_value = iupac_name.as_array().map(|v| match v.get(0) {
-            Some(value) => match value.as_str() {
-                Some(s) => Some(s.to_string()),
-                None => None,
-            },
+        let iupac_name_value = iupac_name.as_array().map(|v| match v.first() {
+            Some(value) => value.as_str().map(|s| s.to_string()),
             None => None,
         });
         product.iupac_name = iupac_name_value.unwrap_or(None);
@@ -114,11 +108,8 @@ impl PubchemProduct {
             .unwrap();
 
         debug!("inchi: {:#?}", inchi);
-        let inchi_value = inchi.as_array().map(|v| match v.get(0) {
-            Some(value) => match value.as_str() {
-                Some(s) => Some(s.to_string()),
-                None => None,
-            },
+        let inchi_value = inchi.as_array().map(|v| match v.first() {
+            Some(value) => value.as_str().map(|s| s.to_string()),
             None => None,
         });
         product.inchi = inchi_value.unwrap_or(None);
@@ -132,11 +123,8 @@ impl PubchemProduct {
         .unwrap();
 
         debug!("inchi_key: {:#?}", inchi_key);
-        let inchi_key_value = inchi_key.as_array().map(|v| match v.get(0) {
-            Some(value) => match value.as_str() {
-                Some(s) => Some(s.to_string()),
-                None => None,
-            },
+        let inchi_key_value = inchi_key.as_array().map(|v| match v.first() {
+            Some(value) => value.as_str().map(|s| s.to_string()),
             None => None,
         });
         product.inchi_key = inchi_key_value.unwrap_or(None);
@@ -150,11 +138,8 @@ impl PubchemProduct {
         .unwrap();
 
         debug!("canonical_smiles: {:#?}", canonical_smiles);
-        let canonical_smiles_value = canonical_smiles.as_array().map(|v| match v.get(0) {
-            Some(value) => match value.as_str() {
-                Some(s) => Some(s.to_string()),
-                None => None,
-            },
+        let canonical_smiles_value = canonical_smiles.as_array().map(|v| match v.first() {
+            Some(value) => value.as_str().map(|s| s.to_string()),
             None => None,
         });
         product.canonical_smiles = canonical_smiles_value.unwrap_or(None);
@@ -168,11 +153,8 @@ impl PubchemProduct {
         .unwrap();
 
         debug!("molecular_formula: {:#?}", molecular_formula);
-        let molecular_formula_value = molecular_formula.as_array().map(|v| match v.get(0) {
-            Some(value) => match value.as_str() {
-                Some(s) => Some(s.to_string()),
-                None => None,
-            },
+        let molecular_formula_value = molecular_formula.as_array().map(|v| match v.first() {
+            Some(value) => value.as_str().map(|s| s.to_string()),
             None => None,
         });
         product.molecular_formula = molecular_formula_value.unwrap_or(None);
@@ -184,11 +166,8 @@ impl PubchemProduct {
             .unwrap();
 
         debug!("cas: {:#?}", cas);
-        let cas_value = cas.as_array().map(|v| match v.get(0) {
-            Some(value) => match value.as_str() {
-                Some(s) => Some(s.to_string()),
-                None => None,
-            },
+        let cas_value = cas.as_array().map(|v| match v.first() {
+            Some(value) => value.as_str().map(|s| s.to_string()),
             None => None,
         });
         product.cas = cas_value.unwrap_or(None);
@@ -200,11 +179,8 @@ impl PubchemProduct {
         .unwrap();
 
         debug!("ec: {:#?}", ec);
-        let ec_value = ec.as_array().map(|v| match v.get(0) {
-            Some(value) => match value.as_str() {
-                Some(s) => Some(s.to_string()),
-                None => None,
-            },
+        let ec_value = ec.as_array().map(|v| match v.first() {
+            Some(value) => value.as_str().map(|s| s.to_string()),
             None => None,
         });
         product.ec = ec_value.unwrap_or(None);
@@ -239,11 +215,8 @@ impl PubchemProduct {
             .unwrap();
 
         debug!("molecular_weight: {:#?}", molecular_weight);
-        let molecular_weight_value = molecular_weight.as_array().map(|v| match v.get(0) {
-            Some(value) => match value.as_str() {
-                Some(s) => Some(s.to_string()),
-                None => None,
-            },
+        let molecular_weight_value = molecular_weight.as_array().map(|v| match v.first() {
+            Some(value) => value.as_str().map(|s| s.to_string()),
             None => None,
         });
         product.molecular_weight = molecular_weight_value.unwrap_or(None);
@@ -256,11 +229,8 @@ impl PubchemProduct {
 
         debug!("molecular_weight_unit: {:#?}", molecular_weight_unit);
         let molecular_weight_unit_value =
-            molecular_weight_unit.as_array().map(|v| match v.get(0) {
-                Some(value) => match value.as_str() {
-                    Some(s) => Some(s.to_string()),
-                    None => None,
-                },
+            molecular_weight_unit.as_array().map(|v| match v.first() {
+                Some(value) => value.as_str().map(|s| s.to_string()),
                 None => None,
             });
         product.molecular_weight_unit = molecular_weight_unit_value.unwrap_or(None);
@@ -272,11 +242,8 @@ impl PubchemProduct {
             .unwrap();
 
         debug!("boiling_point: {:#?}", boiling_point);
-        let boiling_point_value = boiling_point.as_array().map(|v| match v.get(0) {
-            Some(value) => match value.as_str() {
-                Some(s) => Some(s.to_string()),
-                None => None,
-            },
+        let boiling_point_value = boiling_point.as_array().map(|v| match v.first() {
+            Some(value) => value.as_str().map(|s| s.to_string()),
             None => None,
         });
         product.boiling_point = boiling_point_value.unwrap_or(None);
