@@ -2,7 +2,6 @@ use serde::Serialize;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct RequestFilter {
-    // FIXME: consider Option.
     pub search: Option<String>,
     pub order_by: Option<String>,
     pub order: String,
