@@ -1,7 +1,7 @@
 use crate::entity::Entity;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Storelocation {
     pub storelocation_id: u64,
     pub storelocation_name: String,

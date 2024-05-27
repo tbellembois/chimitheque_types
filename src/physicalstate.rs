@@ -1,7 +1,7 @@
 use chimitheque_traits::searchable::Searchable;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Default)]
+#[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Physicalstate {
     pub match_exact_search: bool,
     pub physicalstate_id: u64,

@@ -1,7 +1,7 @@
 use chimitheque_traits::searchable::Searchable;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Default)]
+#[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Cenumber {
     pub match_exact_search: bool,
     pub cenumber_id: u64,

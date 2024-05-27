@@ -1,7 +1,7 @@
 use crate::supplier::Supplier;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Supplierref {
     pub match_exact_search: bool,
     pub supplierref_id: u64,
