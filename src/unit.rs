@@ -1,7 +1,7 @@
 use crate::unittype::UnitType;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Unit {
     pub unit_id: u64,
     pub unit_label: String,

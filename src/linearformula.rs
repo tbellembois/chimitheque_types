@@ -1,7 +1,7 @@
 use chimitheque_traits::searchable::Searchable;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Linearformula {
     pub match_exact_search: bool,
     pub linearformula_id: u64,

@@ -1,7 +1,7 @@
 use chimitheque_traits::searchable::Searchable;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Name {
     pub match_exact_search: bool,
     pub name_id: u64,
