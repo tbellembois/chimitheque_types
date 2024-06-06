@@ -43,7 +43,7 @@ pub struct Product {
     pub unit_temperature: Option<Unit>,
     pub unit_molecular_weight: Option<Unit>,
 
-    pub class_of_compound: Option<Vec<Classofcompound>>,
+    pub classes_of_compound: Option<Vec<Classofcompound>>,
     pub synonyms: Option<Vec<Name>>,
     pub symbols: Option<Vec<Symbol>>,
     pub hazard_statements: Option<Vec<Hazardstatement>>,
