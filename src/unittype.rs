@@ -4,8 +4,9 @@ use std::{
     str::FromStr,
 };
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub enum UnitType {
+    #[default]
     Quantity,
     Concentration,
     Temperature,

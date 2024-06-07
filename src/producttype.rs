@@ -1,8 +1,12 @@
 use serde::{Deserialize, Serialize};
-use std::fmt::{Display, Formatter};
+use std::{
+    default,
+    fmt::{Display, Formatter},
+};
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub enum ProductType {
+    #[default]
     Chemical,
     Biological,
     Consumable,
