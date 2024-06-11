@@ -1,3 +1,5 @@
+use std::fmt;
+
 use log::debug;
 use regex::Regex;
 use serde::Serialize;
@@ -45,17 +47,171 @@ pub struct RequestFilter {
     pub unit_type: Option<String>,
 }
 
+impl fmt::Display for RequestFilter {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut parameters: Vec<String> = vec![];
+
+        if let Some(search) = &self.search {
+            parameters.push(format!("search={search}"))
+        }
+        if let Some(order_by) = &self.order_by {
+            parameters.push(format!("order_by={order_by}"))
+        }
+        parameters.push(format!("order={}", self.order));
+        if let Some(offset) = &self.offset {
+            parameters.push(format!("offset={offset}"))
+        }
+        if let Some(limit) = &self.limit {
+            parameters.push(format!("limit={limit}"))
+        }
+        if self.bookmark {
+            parameters.push("bookmark=true".to_string());
+        }
+        if self.borrowing {
+            parameters.push("borrowing=true".to_string());
+        }
+        if let Some(cas_number) = &self.cas_number {
+            parameters.push(format!("cas_number={cas_number}"))
+        }
+        if self.cas_number_cmr {
+            parameters.push("cas_number_cmr=true".to_string());
+        }
+        if let Some(category) = &self.category {
+            parameters.push(format!("category={category}"))
+        }
+        if let Some(custom_name_part_of) = &self.custom_name_part_of {
+            parameters.push(format!("custom_name_part_of={custom_name_part_of}"))
+        }
+        if let Some(empirical_formula) = &self.empirical_formula {
+            parameters.push(format!("empirical_formula={empirical_formula}"))
+        }
+        if let Some(entity) = &self.entity {
+            parameters.push(format!("entity={entity}"))
+        }
+        if let Some(hazard_statements) = &self.hazard_statements {
+            parameters.push(format!(
+                "hazard_statements={}",
+                hazard_statements
+                    .iter()
+                    .map(|h| h.to_string())
+                    .collect::<Vec<String>>()
+                    .join(","),
+            ));
+        }
+        if self.history {
+            parameters.push("history=true".to_string());
+        }
+        if let Some(storages) = &self.storages {
+            parameters.push(format!(
+                "storages={}",
+                storages
+                    .iter()
+                    .map(|h| h.to_string())
+                    .collect::<Vec<String>>()
+                    .join(","),
+            ));
+        }
+        if let Some(name) = &self.name {
+            parameters.push(format!("name={name}"))
+        }
+        parameters.push(format!("permission={}", self.permission));
+        if let Some(precautionary_statements) = &self.precautionary_statements {
+            parameters.push(format!(
+                "precautionary_statements={}",
+                precautionary_statements
+                    .iter()
+                    .map(|h| h.to_string())
+                    .collect::<Vec<String>>()
+                    .join(","),
+            ));
+        }
+        if let Some(producer) = &self.producer {
+            parameters.push(format!("producer={producer}"))
+        }
+        if let Some(producer_ref) = &self.producer_ref {
+            parameters.push(format!("producer_ref={producer_ref}"))
+        }
+        if let Some(product) = &self.product {
+            parameters.push(format!("product={product}"))
+        }
+        if let Some(product_specificity) = &self.product_specificity {
+            parameters.push(format!("product_specificity={product_specificity}"))
+        }
+        if self.show_bio {
+            parameters.push("show_bio=true".to_string());
+        }
+        if self.show_chem {
+            parameters.push("show_chem=true".to_string());
+        }
+        if self.show_consu {
+            parameters.push("show_consu=true".to_string());
+        }
+        if let Some(signal_word) = &self.signal_word {
+            parameters.push(format!("signal_word={signal_word}"))
+        }
+        if let Some(storage) = &self.storage {
+            parameters.push(format!("storage={storage}"))
+        }
+        if self.storage_archive {
+            parameters.push("storage_archive=true".to_string());
+        }
+        if let Some(storage_barecode) = &self.storage_barecode {
+            parameters.push(format!("storage_barecode={storage_barecode}"))
+        }
+        if let Some(storage_batch_number) = &self.storage_batch_number {
+            parameters.push(format!("storage_batch_number={storage_batch_number}"))
+        }
+        if self.storage_to_destroy {
+            parameters.push("storage_to_destroy=true".to_string());
+        }
+        if let Some(store_location) = &self.store_location {
+            parameters.push(format!("store_location={store_location}"))
+        }
+        if self.store_location_can_store {
+            parameters.push("store_location_can_store=true".to_string());
+        }
+        if let Some(supplier) = &self.supplier {
+            parameters.push(format!("supplier={supplier}"))
+        }
+        if let Some(symbols) = &self.symbols {
+            parameters.push(format!(
+                "symbols={}",
+                symbols
+                    .iter()
+                    .map(|h| h.to_string())
+                    .collect::<Vec<String>>()
+                    .join(","),
+            ));
+        }
+        if let Some(tags) = &self.tags {
+            parameters.push(format!(
+                "tags={}",
+                tags.iter()
+                    .map(|h| h.to_string())
+                    .collect::<Vec<String>>()
+                    .join(","),
+            ));
+        }
+        if let Some(unit_type) = &self.unit_type {
+            parameters.push(format!("unit_type={unit_type}"))
+        }
+
+        let mut result: String = parameters.join("&");
+        write!(f, "?{result}")
+    }
+}
+
 impl TryFrom<&str> for RequestFilter {
     type Error = String;
 
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        debug!("value:{value}");
+    fn try_from(request: &str) -> Result<Self, Self::Error> {
+        debug!("request:{request}");
 
         // Result populated after by the request parameters.
         let mut request_filter: RequestFilter = Default::default();
 
         // Parse request URL.
-        let url = match Url::parse(value) {
+        let url = match Url::parse(request) {
             Ok(url) => url,
             Err(e) => return Err(format!("can not parse url: {}", e)),
         };
@@ -357,6 +513,95 @@ mod tests {
 
     fn init_logger() {
         let _ = env_logger::builder().is_test(true).try_init();
+    }
+
+    #[test]
+    fn test_to_string() {
+        init_logger();
+
+        let filter = RequestFilter {
+            search: Some("%foo%".to_string()),
+            order_by: Some("foo".to_string()),
+            order: "foo".to_string(),
+            offset: Some(10),
+            limit: Some(10),
+            bookmark: true,
+            borrowing: true,
+            cas_number: Some(10),
+            cas_number_cmr: true,
+            category: Some(10),
+            custom_name_part_of: Some("foo".to_string()),
+            empirical_formula: Some(10),
+            entity: Some(10),
+            hazard_statements: Some(vec![1, 2, 3]),
+            history: true,
+            storages: Some(vec![1, 2, 3]),
+            name: Some(10),
+            permission: "foo".to_string(),
+            precautionary_statements: Some(vec![1, 2, 3]),
+            producer: Some(10),
+            producer_ref: Some(10),
+            product: Some(10),
+            product_specificity: Some("foo".to_string()),
+            show_bio: true,
+            show_chem: true,
+            show_consu: true,
+            signal_word: Some(10),
+            storage: Some(10),
+            storage_archive: true,
+            storage_barecode: Some("foo".to_string()),
+            storage_batch_number: Some("foo".to_string()),
+            storage_to_destroy: true,
+            store_location: Some(10),
+            store_location_can_store: true,
+            supplier: Some(10),
+            symbols: Some(vec![1, 2, 3]),
+            tags: Some(vec![1, 2, 3]),
+            unit_type: Some("foo".to_string()),
+        };
+
+        assert_eq!(
+            filter.to_string(),
+            "?search=%foo%\
+        &order_by=foo\
+        &order=foo\
+        &offset=10\
+        &limit=10\
+        &bookmark=true\
+        &borrowing=true\
+        &cas_number=10\
+        &cas_number_cmr=true\
+        &category=10\
+        &custom_name_part_of=foo\
+        &empirical_formula=10\
+        &entity=10\
+        &hazard_statements=1,2,3\
+        &history=true\
+        &storages=1,2,3\
+        &name=10\
+        &permission=foo\
+        &precautionary_statements=1,2,3\
+        &producer=10\
+        &producer_ref=10\
+        &product=10\
+        &product_specificity=foo\
+        &show_bio=true\
+        &show_chem=true\
+        &show_consu=true\
+        &signal_word=10\
+        &storage=10\
+        &storage_archive=true\
+        &storage_barecode=foo\
+        &storage_batch_number=foo\
+        &storage_to_destroy=true\
+        &store_location=10\
+        &store_location_can_store=true\
+        &supplier=10\
+        &symbols=1,2,3\
+        &tags=1,2,3\
+        &unit_type=foo"
+                .to_string()
+        )
     }
 
     #[test]
