@@ -1,8 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::{
-    default,
-    fmt::{Display, Formatter},
-};
+use std::fmt::{Display, Formatter};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub enum ProductType {
