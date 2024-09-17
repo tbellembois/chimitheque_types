@@ -196,7 +196,7 @@ impl fmt::Display for RequestFilter {
             parameters.push(format!("unit_type={unit_type}"))
         }
 
-        let mut result: String = parameters.join("&");
+        let result: String = parameters.join("&");
         write!(f, "?{result}")
     }
 }
