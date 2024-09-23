@@ -13,6 +13,7 @@ pub mod precautionarystatement;
 pub mod producer;
 pub mod producerref;
 pub mod product;
+pub mod productsynonyms;
 pub mod producttype;
 pub mod pubchemproduct;
 pub mod requestfilter;
