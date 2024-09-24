@@ -6,4 +6,5 @@ pub struct Hazardstatement {
     pub hazardstatement_id: u64,
     pub hazardstatement_label: String,
     pub hazardstatement_reference: String,
+    pub hazardstatement_cmr: Option<String>,
 }
