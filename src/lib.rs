@@ -14,6 +14,7 @@ pub mod producer;
 pub mod producerref;
 pub mod product;
 pub mod productclassofcompound;
+pub mod productsymbols;
 pub mod productsynonyms;
 pub mod producttype;
 pub mod pubchemproduct;
