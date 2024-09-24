@@ -19,6 +19,7 @@ pub mod productprecautionarystatements;
 pub mod productsupplierrefs;
 pub mod productsymbols;
 pub mod productsynonyms;
+pub mod producttags;
 pub mod producttype;
 pub mod pubchemproduct;
 pub mod requestfilter;
