@@ -16,6 +16,7 @@ pub mod product;
 pub mod productclassofcompound;
 pub mod producthazardstatements;
 pub mod productprecautionarystatements;
+pub mod productsupplierrefs;
 pub mod productsymbols;
 pub mod productsynonyms;
 pub mod producttype;
