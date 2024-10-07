@@ -1,9 +1,9 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
-pub struct Precautionarystatement {
+pub struct PrecautionaryStatement {
     pub match_exact_search: bool,
-    pub precautionarystatement_id: u64,
-    pub precautionarystatement_label: String,
-    pub precautionarystatement_reference: String,
+    pub precautionary_statement_id: u64,
+    pub precautionary_statement_label: String,
+    pub precautionary_statement_reference: String,
 }

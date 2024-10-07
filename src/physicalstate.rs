@@ -2,15 +2,15 @@ use chimitheque_traits::searchable::Searchable;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
-pub struct Physicalstate {
+pub struct PhysicalState {
     pub match_exact_search: bool,
-    pub physicalstate_id: u64,
-    pub physicalstate_label: String,
+    pub physical_state_id: u64,
+    pub physical_state_label: String,
 }
 
-impl Searchable for Physicalstate {
+impl Searchable for PhysicalState {
     fn new(&self) -> Self {
-        Physicalstate {
+        PhysicalState {
             ..Default::default()
         }
     }
@@ -24,30 +24,30 @@ impl Searchable for Physicalstate {
     }
 
     fn get_table_name(&self) -> String {
-        String::from("physicalstate")
+        String::from("physical_state")
     }
 
     fn get_id_field_name(&self) -> String {
-        String::from("physicalstate_id")
+        String::from("physical_state_id")
     }
 
     fn set_id_field(&mut self, id: u64) {
-        self.physicalstate_id = id;
+        self.physical_state_id = id;
     }
 
     fn get_text_field_name(&self) -> String {
-        String::from("physicalstate_label")
+        String::from("physical_state_label")
     }
 
     fn set_text_field(&mut self, text: &str) {
-        self.physicalstate_label = text.to_string();
+        self.physical_state_label = text.to_string();
     }
 
     fn get_id(&self) -> u64 {
-        self.physicalstate_id
+        self.physical_state_id
     }
 
     fn get_text(&self) -> String {
-        self.physicalstate_label.clone()
+        self.physical_state_label.clone()
     }
 }

@@ -13,7 +13,7 @@ pub mod precautionarystatement;
 pub mod producer;
 pub mod producerref;
 pub mod product;
-pub mod productclassofcompound;
+pub mod productclassesofcompounds;
 pub mod producthazardstatements;
 pub mod productprecautionarystatements;
 pub mod productsupplierrefs;

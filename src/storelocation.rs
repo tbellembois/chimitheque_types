@@ -2,13 +2,13 @@ use crate::entity::Entity;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Storelocation {
-    pub storelocation_id: u64,
-    pub storelocation_name: String,
-    pub storelocation_canstore: bool,
-    pub storelocation_color: Option<String>,
-    pub storelocation_fullpath: Option<String>,
+pub struct StoreLocation {
+    pub store_location_id: u64,
+    pub store_location_name: String,
+    pub store_location_can_store: bool,
+    pub store_location_color: Option<String>,
+    pub store_location_full_path: Option<String>,
 
     pub entity: Option<Entity>,
-    pub storelocation: Option<Box<Storelocation>>,
+    pub store_location: Option<Box<StoreLocation>>,
 }

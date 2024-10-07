@@ -15,7 +15,7 @@ pub struct RequestFilter {
     pub bookmark: bool,
     pub borrowing: bool,
     pub cas_number: Option<u64>,
-    pub cas_number_cmr: bool,
+    pub is_cmr: bool,
     pub category: Option<u64>,
     pub custom_name_part_of: Option<String>,
     pub empirical_formula: Option<u64>,
@@ -73,8 +73,8 @@ impl fmt::Display for RequestFilter {
         if let Some(cas_number) = &self.cas_number {
             parameters.push(format!("cas_number={cas_number}"))
         }
-        if self.cas_number_cmr {
-            parameters.push("cas_number_cmr=true".to_string());
+        if self.is_cmr {
+            parameters.push("is_cmr=true".to_string());
         }
         if let Some(category) = &self.category {
             parameters.push(format!("category={category}"))
@@ -261,11 +261,9 @@ impl TryFrom<&str> for RequestFilter {
                     Ok(v) => request_filter.cas_number = Some(v),
                     Err(e) => return Err(format!("error with cas_number query parameter: {e}")),
                 },
-                std::borrow::Cow::Borrowed("cas_number_cmr") => match value.parse::<bool>() {
-                    Ok(v) => request_filter.cas_number_cmr = v,
-                    Err(e) => {
-                        return Err(format!("error with cas_number_cmr query parameter: {e}"))
-                    }
+                std::borrow::Cow::Borrowed("is_cmr") => match value.parse::<bool>() {
+                    Ok(v) => request_filter.is_cmr = v,
+                    Err(e) => return Err(format!("error with is_cmr query parameter: {e}")),
                 },
                 std::borrow::Cow::Borrowed("category") => match value.parse::<u64>() {
                     Ok(v) => request_filter.category = Some(v),
@@ -472,7 +470,7 @@ impl Default for RequestFilter {
             bookmark: false,
             borrowing: false,
             cas_number: None,
-            cas_number_cmr: false,
+            is_cmr: false,
             category: None,
             custom_name_part_of: None,
             empirical_formula: None,
@@ -528,7 +526,7 @@ mod tests {
             bookmark: true,
             borrowing: true,
             cas_number: Some(10),
-            cas_number_cmr: true,
+            is_cmr: true,
             category: Some(10),
             custom_name_part_of: Some("foo".to_string()),
             empirical_formula: Some(10),
@@ -570,7 +568,7 @@ mod tests {
         &bookmark=true\
         &borrowing=true\
         &cas_number=10\
-        &cas_number_cmr=true\
+        &is_cmr=true\
         &category=10\
         &custom_name_part_of=foo\
         &empirical_formula=10\
@@ -618,7 +616,7 @@ mod tests {
         &bookmark=true\
         &borrowing=true\
         &cas_number=10\
-        &cas_number_cmr=true\
+        &is_cmr=true\
         &category=10\
         &custom_name_part_of=foo\
         &empirical_formula=10\
@@ -658,7 +656,7 @@ mod tests {
         assert!(filter.clone().unwrap().bookmark);
         assert!(filter.clone().unwrap().borrowing);
         assert_eq!(filter.clone().unwrap().cas_number, Some(10));
-        assert!(filter.clone().unwrap().cas_number_cmr);
+        assert!(filter.clone().unwrap().is_cmr);
         assert_eq!(filter.clone().unwrap().category, Some(10));
         assert_eq!(
             filter.clone().unwrap().custom_name_part_of,
@@ -727,7 +725,7 @@ mod tests {
         let param_bool = vec![
             "bookmark",
             "borrowing",
-            "cas_number_cmr",
+            "is_cmr",
             "history",
             "show_bio",
             "show_chem",

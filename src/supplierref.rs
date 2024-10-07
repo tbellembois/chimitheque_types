@@ -2,10 +2,10 @@ use crate::supplier::Supplier;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
-pub struct Supplierref {
+pub struct SupplierRef {
     pub match_exact_search: bool,
-    pub supplierref_id: u64,
-    pub supplierref_label: String,
+    pub supplier_ref_id: u64,
+    pub supplier_ref_label: String,
 
     pub supplier: Supplier,
 }

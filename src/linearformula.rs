@@ -2,15 +2,15 @@ use chimitheque_traits::searchable::Searchable;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
-pub struct Linearformula {
+pub struct LinearFormula {
     pub match_exact_search: bool,
-    pub linearformula_id: u64,
-    pub linearformula_label: String,
+    pub linear_formula_id: u64,
+    pub linear_formula_label: String,
 }
 
-impl Searchable for Linearformula {
+impl Searchable for LinearFormula {
     fn new(&self) -> Self {
-        Linearformula {
+        LinearFormula {
             ..Default::default()
         }
     }
@@ -24,30 +24,30 @@ impl Searchable for Linearformula {
     }
 
     fn get_table_name(&self) -> String {
-        String::from("linearformula")
+        String::from("linear_formula")
     }
 
     fn get_id_field_name(&self) -> String {
-        String::from("linearformula_id")
+        String::from("linear_formula_id")
     }
 
     fn set_id_field(&mut self, id: u64) {
-        self.linearformula_id = id;
+        self.linear_formula_id = id;
     }
 
     fn get_text_field_name(&self) -> String {
-        String::from("linearformula_label")
+        String::from("linear_formula_label")
     }
 
     fn set_text_field(&mut self, text: &str) {
-        self.linearformula_label = text.to_string();
+        self.linear_formula_label = text.to_string();
     }
 
     fn get_id(&self) -> u64 {
-        self.linearformula_id
+        self.linear_formula_id
     }
 
     fn get_text(&self) -> String {
-        self.linearformula_label.clone()
+        self.linear_formula_label.clone()
     }
 }

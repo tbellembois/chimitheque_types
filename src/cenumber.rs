@@ -2,15 +2,15 @@ use chimitheque_traits::searchable::Searchable;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
-pub struct Cenumber {
+pub struct CeNumber {
     pub match_exact_search: bool,
-    pub cenumber_id: u64,
-    pub cenumber_label: String,
+    pub ce_number_id: u64,
+    pub ce_number_label: String,
 }
 
-impl Searchable for Cenumber {
+impl Searchable for CeNumber {
     fn new(&self) -> Self {
-        Cenumber {
+        CeNumber {
             ..Default::default()
         }
     }
@@ -24,30 +24,30 @@ impl Searchable for Cenumber {
     }
 
     fn get_table_name(&self) -> String {
-        String::from("cenumber")
+        String::from("ce_number")
     }
 
     fn get_id_field_name(&self) -> String {
-        String::from("cenumber_id")
+        String::from("ce_number_id")
     }
 
     fn set_id_field(&mut self, id: u64) {
-        self.cenumber_id = id;
+        self.ce_number_id = id;
     }
 
     fn get_text_field_name(&self) -> String {
-        String::from("cenumber_label")
+        String::from("ce_number_label")
     }
 
     fn set_text_field(&mut self, text: &str) {
-        self.cenumber_label = text.to_string();
+        self.ce_number_label = text.to_string();
     }
 
     fn get_id(&self) -> u64 {
-        self.cenumber_id
+        self.ce_number_id
     }
 
     fn get_text(&self) -> String {
-        self.cenumber_label.clone()
+        self.ce_number_label.clone()
     }
 }
