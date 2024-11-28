@@ -50,4 +50,15 @@ pub struct Product {
     pub precautionary_statements: Option<Vec<PrecautionaryStatement>>,
     pub supplier_refs: Option<Vec<SupplierRef>>,
     pub tags: Option<Vec<Tag>>,
+
+    // archived storage count in the logged user entity(ies)
+    pub product_asc: Option<u64>,
+    // storage count in the logged user entity(ies)
+    pub product_sc: Option<u64>,
+    // total storage count
+    pub product_tsc: Option<u64>,
+    // hazard statement CMR concatenation
+    pub product_hs_cmr: Option<String>,
+    // store location code
+    pub product_sl: Option<String>,
 }
