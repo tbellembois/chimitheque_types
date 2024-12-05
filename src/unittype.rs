@@ -4,6 +4,8 @@ use std::{
     str::FromStr,
 };
 
+use crate::error::ParseError;
+
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub enum UnitType {
     #[default]
@@ -24,19 +26,19 @@ impl Display for UnitType {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
-pub struct ParseUnitTypeError;
-
-impl Display for ParseUnitTypeError {
-    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        write!(f, "wrong unit type")
-    }
-}
-
-impl std::error::Error for ParseUnitTypeError {}
+// #[derive(Debug, PartialEq, Eq)]
+// pub struct ParseUnitTypeError;
+//
+// impl Display for ParseUnitTypeError {
+//     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+//         write!(f, "wrong unit type")
+//     }
+// }
+//
+// impl std::error::Error for ParseUnitTypeError {}
 
 impl FromStr for UnitType {
-    type Err = ParseUnitTypeError;
+    type Err = ParseError;
 
     fn from_str(input: &str) -> Result<UnitType, Self::Err> {
         match input {
@@ -44,7 +46,7 @@ impl FromStr for UnitType {
             "concentration" => Ok(UnitType::Concentration),
             "temperature" => Ok(UnitType::Temperature),
             "molecular_weight" => Ok(UnitType::MolecularWeight),
-            _ => Err(ParseUnitTypeError),
+            _ => Err(ParseError::ParseUnitTypeError),
         }
     }
 }
