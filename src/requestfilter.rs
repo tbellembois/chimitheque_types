@@ -8,6 +8,7 @@ use url::Url;
 #[derive(Debug, Clone, Serialize)]
 pub struct RequestFilter {
     pub search: Option<String>,
+    pub id: Option<u64>,
     pub order_by: Option<String>,
     pub order: String,
     pub offset: Option<u64>,
@@ -53,6 +54,9 @@ impl fmt::Display for RequestFilter {
 
         if let Some(search) = &self.search {
             parameters.push(format!("search={search}"))
+        }
+        if let Some(id) = &self.id {
+            parameters.push(format!("id={id}"))
         }
         if let Some(order_by) = &self.order_by {
             parameters.push(format!("order_by={order_by}"))
@@ -237,6 +241,10 @@ impl TryFrom<&str> for RequestFilter {
                 std::borrow::Cow::Borrowed("search") => {
                     request_filter.search = Some(value.to_string())
                 }
+                std::borrow::Cow::Borrowed("id") => match value.parse::<u64>() {
+                    Ok(v) => request_filter.id = Some(v),
+                    Err(e) => return Err(format!("error with id query parameter: {e}")),
+                },
                 std::borrow::Cow::Borrowed("order_by") => {
                     request_filter.order_by = Some(value.to_string())
                 }
@@ -463,6 +471,7 @@ impl Default for RequestFilter {
     fn default() -> RequestFilter {
         RequestFilter {
             search: None,
+            id: None,
             order_by: None,
             order: String::from("asc"),
             offset: None,
@@ -519,6 +528,7 @@ mod tests {
 
         let filter = RequestFilter {
             search: Some("%foo%".to_string()),
+            id: Some(5),
             order_by: Some("foo".to_string()),
             order: "foo".to_string(),
             offset: Some(10),
@@ -561,6 +571,7 @@ mod tests {
         assert_eq!(
             filter.to_string(),
             "?search=%foo%\
+        &id=5\
         &order_by=foo\
         &order=foo\
         &offset=10\
