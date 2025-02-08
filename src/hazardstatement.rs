@@ -11,7 +11,7 @@ pub struct HazardStatement {
 }
 
 impl Searchable for HazardStatement {
-    fn new(&self) -> Self {
+    fn create(&self) -> Self {
         HazardStatement {
             ..Default::default()
         }

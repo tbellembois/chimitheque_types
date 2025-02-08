@@ -9,7 +9,7 @@ pub struct PhysicalState {
 }
 
 impl Searchable for PhysicalState {
-    fn new(&self) -> Self {
+    fn create(&self) -> Self {
         PhysicalState {
             ..Default::default()
         }

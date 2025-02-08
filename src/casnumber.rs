@@ -9,7 +9,7 @@ pub struct CasNumber {
 }
 
 impl Searchable for CasNumber {
-    fn new(&self) -> Self {
+    fn create(&self) -> Self {
         CasNumber {
             ..Default::default()
         }

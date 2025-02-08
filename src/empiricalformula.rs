@@ -9,7 +9,7 @@ pub struct EmpiricalFormula {
 }
 
 impl Searchable for EmpiricalFormula {
-    fn new(&self) -> Self {
+    fn create(&self) -> Self {
         EmpiricalFormula {
             ..Default::default()
         }

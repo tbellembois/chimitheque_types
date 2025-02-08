@@ -10,7 +10,7 @@ pub struct PrecautionaryStatement {
 }
 
 impl Searchable for PrecautionaryStatement {
-    fn new(&self) -> Self {
+    fn create(&self) -> Self {
         PrecautionaryStatement {
             ..Default::default()
         }

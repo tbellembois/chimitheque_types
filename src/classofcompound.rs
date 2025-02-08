@@ -9,7 +9,7 @@ pub struct ClassOfCompound {
 }
 
 impl Searchable for ClassOfCompound {
-    fn new(&self) -> Self {
+    fn create(&self) -> Self {
         ClassOfCompound {
             ..Default::default()
         }

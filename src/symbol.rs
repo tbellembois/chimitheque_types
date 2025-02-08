@@ -9,7 +9,7 @@ pub struct Symbol {
 }
 
 impl Searchable for Symbol {
-    fn new(&self) -> Self {
+    fn create(&self) -> Self {
         Symbol {
             ..Default::default()
         }

@@ -9,7 +9,7 @@ pub struct Category {
 }
 
 impl Searchable for Category {
-    fn new(&self) -> Self {
+    fn create(&self) -> Self {
         Category {
             ..Default::default()
         }

@@ -9,7 +9,7 @@ pub struct CeNumber {
 }
 
 impl Searchable for CeNumber {
-    fn new(&self) -> Self {
+    fn create(&self) -> Self {
         CeNumber {
             ..Default::default()
         }

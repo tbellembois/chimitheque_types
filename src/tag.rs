@@ -9,7 +9,7 @@ pub struct Tag {
 }
 
 impl Searchable for Tag {
-    fn new(&self) -> Self {
+    fn create(&self) -> Self {
         Tag {
             ..Default::default()
         }

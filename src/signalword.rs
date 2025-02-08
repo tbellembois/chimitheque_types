@@ -9,7 +9,7 @@ pub struct SignalWord {
 }
 
 impl Searchable for SignalWord {
-    fn new(&self) -> Self {
+    fn create(&self) -> Self {
         SignalWord {
             ..Default::default()
         }

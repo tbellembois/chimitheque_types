@@ -9,7 +9,7 @@ pub struct LinearFormula {
 }
 
 impl Searchable for LinearFormula {
-    fn new(&self) -> Self {
+    fn create(&self) -> Self {
         LinearFormula {
             ..Default::default()
         }
