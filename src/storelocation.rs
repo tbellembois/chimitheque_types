@@ -12,7 +12,7 @@ pub struct StoreLocation {
     pub store_location_full_path: Option<String>,
 
     // Computed fields on select, not in DB.
-    pub store_location_nb_storage: Option<u64>,
+    pub store_location_nb_storages: Option<u64>,
     pub store_location_nb_children: Option<u64>,
 
     pub entity: Option<Entity>,
@@ -27,7 +27,7 @@ impl Default for StoreLocation {
             store_location_can_store: false,
             store_location_color: None,
             store_location_full_path: None,
-            store_location_nb_storage: None,
+            store_location_nb_storages: None,
             store_location_nb_children: None,
             entity: None,
             store_location: None,

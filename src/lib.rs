@@ -4,6 +4,7 @@ pub mod cenumber;
 pub mod classofcompound;
 pub mod empiricalformula;
 pub mod entity;
+pub mod entitypeople;
 pub mod error;
 pub mod hazardstatement;
 pub mod linearformula;
