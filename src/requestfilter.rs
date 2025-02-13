@@ -21,6 +21,7 @@ pub struct RequestFilter {
     pub custom_name_part_of: Option<String>,
     pub empirical_formula: Option<u64>,
     pub entity: Option<u64>,
+    pub entity_name: Option<String>,
     pub hazard_statements: Option<Vec<u64>>,
     pub history: bool,
     pub storages: Option<Vec<u64>>,
@@ -91,6 +92,9 @@ impl fmt::Display for RequestFilter {
         }
         if let Some(entity) = &self.entity {
             parameters.push(format!("entity={entity}"))
+        }
+        if let Some(entity_name) = &self.entity_name {
+            parameters.push(format!("entity_name={entity_name}"))
         }
         if let Some(hazard_statements) = &self.hazard_statements {
             parameters.push(format!(
@@ -290,6 +294,9 @@ impl TryFrom<&str> for RequestFilter {
                     Ok(v) => request_filter.entity = Some(v),
                     Err(e) => return Err(format!("error with entity query parameter: {e}")),
                 },
+                std::borrow::Cow::Borrowed("entity_name") => {
+                    request_filter.entity_name = Some(value.to_string())
+                }
                 std::borrow::Cow::Borrowed("hazard_statements") => {
                     if !ids_match.is_match(&value) {
                         return Err("invalid hazard_statements ids format".to_string());
@@ -484,6 +491,7 @@ impl Default for RequestFilter {
             custom_name_part_of: None,
             empirical_formula: None,
             entity: None,
+            entity_name: None,
             hazard_statements: None,
             history: false,
             storages: None,
@@ -541,6 +549,7 @@ mod tests {
             custom_name_part_of: Some("foo".to_string()),
             empirical_formula: Some(10),
             entity: Some(10),
+            entity_name: Some("foo".to_string()),
             hazard_statements: Some(vec![1, 2, 3]),
             history: true,
             storages: Some(vec![1, 2, 3]),

@@ -6,6 +6,7 @@ use crate::person::Person;
 pub struct Entity {
     pub entity_id: u64,
     pub entity_name: String,
+    pub entity_description: Option<String>,
 
     // Computed fields on select, not in DB.
     pub managers: Option<Vec<Person>>,
