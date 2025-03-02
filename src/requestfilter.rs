@@ -26,6 +26,7 @@ pub struct RequestFilter {
     pub history: bool,
     pub storages: Option<Vec<u64>>,
     pub name: Option<u64>,
+    pub person: Option<u64>,
     pub permission: String,
     pub precautionary_statements: Option<Vec<u64>>,
     pub producer: Option<u64>,
@@ -141,6 +142,9 @@ impl fmt::Display for RequestFilter {
         }
         if let Some(product) = &self.product {
             parameters.push(format!("product={product}"))
+        }
+        if let Some(person) = &self.person {
+            parameters.push(format!("person={person}"))
         }
         if let Some(product_specificity) = &self.product_specificity {
             parameters.push(format!("product_specificity={product_specificity}"))
@@ -368,6 +372,10 @@ impl TryFrom<&str> for RequestFilter {
                     Ok(v) => request_filter.product = Some(v),
                     Err(e) => return Err(format!("error with product query parameter: {e}")),
                 },
+                std::borrow::Cow::Borrowed("person") => match value.parse::<u64>() {
+                    Ok(v) => request_filter.person = Some(v),
+                    Err(e) => return Err(format!("error with person query parameter: {e}")),
+                },
                 std::borrow::Cow::Borrowed("product_specificity") => {
                     request_filter.product_specificity = Some(value.to_string())
                 }
@@ -500,6 +508,7 @@ impl Default for RequestFilter {
             precautionary_statements: None,
             producer: None,
             producer_ref: None,
+            person: None,
             product: None,
             product_specificity: None,
             show_bio: false,
@@ -559,6 +568,7 @@ mod tests {
             producer: Some(10),
             producer_ref: Some(10),
             product: Some(10),
+            person: Some(10),
             product_specificity: Some("foo".to_string()),
             show_bio: true,
             show_chem: true,

@@ -4,6 +4,8 @@ use std::fmt::{Display, Formatter};
 pub enum ParseError {
     ParseUnitTypeError,
     ParseProductTypeError,
+    ParsePermissionNameError,
+    ParsePermissionItemError,
 }
 
 impl Display for ParseError {
@@ -11,6 +13,8 @@ impl Display for ParseError {
         match &self {
             ParseError::ParseUnitTypeError => write!(f, "wrong unit type"),
             ParseError::ParseProductTypeError => write!(f, "wrong product type"),
+            ParseError::ParsePermissionNameError => write!(f, "wrong permission name"),
+            ParseError::ParsePermissionItemError => write!(f, "wrong permission item"),
         }
     }
 }
