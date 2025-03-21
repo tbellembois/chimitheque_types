@@ -48,18 +48,18 @@ impl FromStr for PermissionName {
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub enum PermissionItem {
-    #[serde(rename(serialize = "all"))]
+    #[serde(rename = "all")]
     All,
-    #[serde(rename(serialize = "entities"))]
+    #[serde(rename = "entities")]
     Entities,
-    #[serde(rename(serialize = "people"))]
+    #[serde(rename = "people")]
     People,
     #[default]
-    #[serde(rename(serialize = "products"))]
+    #[serde(rename = "products")]
     Products,
-    #[serde(rename(serialize = "rproducts"))]
+    #[serde(rename = "rproducts")]
     RestrictedProducts,
-    #[serde(rename(serialize = "storages"))]
+    #[serde(rename = "storages")]
     Storages,
 }
 
