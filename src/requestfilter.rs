@@ -16,6 +16,7 @@ pub struct RequestFilter {
     pub bookmark: bool,
     pub borrowing: bool,
     pub cas_number: Option<u64>,
+    pub cas_number_string: Option<String>,
     pub is_cmr: bool,
     pub category: Option<u64>,
     pub custom_name_part_of: Option<String>,
@@ -78,6 +79,9 @@ impl fmt::Display for RequestFilter {
         }
         if let Some(cas_number) = &self.cas_number {
             parameters.push(format!("cas_number={cas_number}"))
+        }
+        if let Some(cas_number_string) = &self.cas_number_string {
+            parameters.push(format!("cas_number_string={cas_number_string}"))
         }
         if self.is_cmr {
             parameters.push("is_cmr=true".to_string());
@@ -277,6 +281,9 @@ impl TryFrom<&str> for RequestFilter {
                     Ok(v) => request_filter.cas_number = Some(v),
                     Err(e) => return Err(format!("error with cas_number query parameter: {e}")),
                 },
+                std::borrow::Cow::Borrowed("cas_number_string") => {
+                    request_filter.cas_number_string = Some(value.to_string())
+                }
                 std::borrow::Cow::Borrowed("is_cmr") => match value.parse::<bool>() {
                     Ok(v) => request_filter.is_cmr = v,
                     Err(e) => return Err(format!("error with is_cmr query parameter: {e}")),
@@ -494,6 +501,7 @@ impl Default for RequestFilter {
             bookmark: false,
             borrowing: false,
             cas_number: None,
+            cas_number_string: None,
             is_cmr: false,
             category: None,
             custom_name_part_of: None,
@@ -553,6 +561,7 @@ mod tests {
             bookmark: true,
             borrowing: true,
             cas_number: Some(10),
+            cas_number_string: Some("1234".to_string()),
             is_cmr: true,
             category: Some(10),
             custom_name_part_of: Some("foo".to_string()),
@@ -598,6 +607,7 @@ mod tests {
         &bookmark=true\
         &borrowing=true\
         &cas_number=10\
+        &cas_number_string=1234\
         &is_cmr=true\
         &category=10\
         &custom_name_part_of=foo\
