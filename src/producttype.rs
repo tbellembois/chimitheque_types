@@ -9,8 +9,11 @@ use crate::error::ParseError;
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub enum ProductType {
     #[default]
+    #[serde(rename = "chem")]
     Chem,
+    #[serde(rename = "bio")]
     Bio,
+    #[serde(rename = "cons")]
     Cons,
 }
 
