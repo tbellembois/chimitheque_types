@@ -52,8 +52,6 @@ pub enum PermissionItem {
     All,
     #[serde(rename = "entities")]
     Entities,
-    #[serde(rename = "people")]
-    People,
     #[default]
     #[serde(rename = "products")]
     Products,
@@ -68,7 +66,6 @@ impl Display for PermissionItem {
         match self {
             PermissionItem::All => write!(f, "all"),
             PermissionItem::Entities => write!(f, "entities"),
-            PermissionItem::People => write!(f, "people"),
             PermissionItem::Products => write!(f, "products"),
             PermissionItem::RestrictedProducts => write!(f, "rproducts"),
             PermissionItem::Storages => write!(f, "storages"),
@@ -83,7 +80,6 @@ impl FromStr for PermissionItem {
         match input {
             "all" => Ok(PermissionItem::All),
             "entities" => Ok(PermissionItem::Entities),
-            "people" => Ok(PermissionItem::People),
             "products" => Ok(PermissionItem::Products),
             "rproducts" => Ok(PermissionItem::RestrictedProducts),
             "storages" => Ok(PermissionItem::Storages),
