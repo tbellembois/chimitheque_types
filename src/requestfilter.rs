@@ -244,6 +244,22 @@ impl TryFrom<&str> for RequestFilter {
             Err(e) => return Err(format!("error creating ids_capture regex: {e}")),
         };
 
+        // Regex to capture a group of digits at the end of the URL.
+        let end_of_url_id_capture = match Regex::new(r"/(?<id>\d+)$") {
+            Ok(id_re) => id_re,
+            Err(e) => return Err(format!("error creating end_of_url_id_capture regex: {e}")),
+        };
+
+        // Trying to capture an id at the end of the URL.
+        // Can be overwritten by the ?id= URL parameter (see below).
+        if end_of_url_id_capture.is_match(url.as_str()) {
+            if let Some(cap) = end_of_url_id_capture.captures(url.as_str()) {
+                // We can unwrap safely here because of validation (is_match) below.
+                let id_str = cap.name("id").unwrap().as_str();
+                request_filter.id = Some(id_str.parse::<u64>().unwrap());
+            }
+        }
+
         // Get the query parameters.
         for query_pair in url.query_pairs() {
             debug!("query_pair:{:?}", query_pair);
@@ -613,6 +629,7 @@ mod tests {
         &custom_name_part_of=foo\
         &empirical_formula=10\
         &entity=10\
+        &entity_name=foo\
         &hazard_statements=1,2,3\
         &history=true\
         &storages=1,2,3\
@@ -622,6 +639,7 @@ mod tests {
         &producer=10\
         &producer_ref=10\
         &product=10\
+        &person=10\
         &product_specificity=foo\
         &show_bio=true\
         &show_chem=true\
@@ -813,5 +831,11 @@ mod tests {
         assert!(filter.is_ok());
         let filter = RequestFilter::try_from("http://localhost/?search=acide%20chlor");
         assert!(filter.is_ok());
+
+        // ID at the end of the URL.
+        let filter = RequestFilter::try_from("http://localhost/1234");
+        assert_eq!(filter.unwrap().id, Some(1234));
+        let filter = RequestFilter::try_from("http://localhost/1234?id=4321");
+        assert_eq!(filter.unwrap().id, Some(4321));
     }
 }
