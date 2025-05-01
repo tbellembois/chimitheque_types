@@ -837,5 +837,7 @@ mod tests {
         assert_eq!(filter.unwrap().id, Some(1234));
         let filter = RequestFilter::try_from("http://localhost/1234?id=4321");
         assert_eq!(filter.unwrap().id, Some(4321));
+        let filter = RequestFilter::try_from("http://localhost/id=4321");
+        assert_eq!(filter.unwrap().id, None);
     }
 }
