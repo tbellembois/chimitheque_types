@@ -51,6 +51,8 @@ pub struct Product {
     pub supplier_refs: Option<Vec<SupplierRef>>,
     pub tags: Option<Vec<Tag>>,
 
+    // product has bookmark for the logged user
+    pub product_has_bookmark: bool,
     // archived storage count in the logged user entity(ies)
     pub product_asc: Option<u64>,
     // storage count in the logged user entity(ies)
