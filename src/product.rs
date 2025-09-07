@@ -23,7 +23,7 @@ pub struct Product {
     pub product_threed_formula: Option<String>,
     pub product_disposal_comment: Option<String>,
     pub product_remark: Option<String>,
-    pub product_molecula_weight: Option<f64>,
+    pub product_molecular_weight: Option<f64>,
     pub product_temperature: Option<f64>,
     pub product_sheet: Option<String>,
     pub product_number_per_carton: Option<i64>,

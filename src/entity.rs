@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::person::Person;
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Entity {
     pub entity_id: u64,
     pub entity_name: String,
