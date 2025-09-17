@@ -1,6 +1,6 @@
 use crate::{
     casnumber::CasNumber, category::Category, cenumber::CeNumber, classofcompound::ClassOfCompound,
-    empiricalformula::EmpiricalFormula, hazardstatement::HazardStatement,
+    empiricalformula::EmpiricalFormula, entity::Entity, hazardstatement::HazardStatement,
     linearformula::LinearFormula, name::Name, person::Person, physicalstate::PhysicalState,
     precautionarystatement::PrecautionaryStatement, producerref::ProducerRef,
     producttype::ProductType, signalword::SignalWord, supplierref::SupplierRef, symbol::Symbol,
@@ -63,4 +63,6 @@ pub struct Product {
     pub product_hs_cmr: Option<String>,
     // store location code
     pub product_sl: Option<String>,
+    // product availability in the entities
+    pub product_availability: Option<Vec<Entity>>,
 }
