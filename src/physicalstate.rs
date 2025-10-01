@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct PhysicalState {
     pub match_exact_search: bool,
-    pub physical_state_id: u64,
+    pub physical_state_id: Option<u64>,
     pub physical_state_label: String,
 }
 
@@ -32,7 +32,7 @@ impl Searchable for PhysicalState {
     }
 
     fn set_id_field(&mut self, id: u64) {
-        self.physical_state_id = id;
+        self.physical_state_id = Some(id);
     }
 
     fn get_text_field_name(&self) -> String {
@@ -43,7 +43,7 @@ impl Searchable for PhysicalState {
         self.physical_state_label = text.to_string();
     }
 
-    fn get_id(&self) -> u64 {
+    fn get_id(&self) -> Option<u64> {
         self.physical_state_id
     }
 

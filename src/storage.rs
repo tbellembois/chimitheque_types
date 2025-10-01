@@ -8,7 +8,7 @@ use crate::{
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Storage {
-    pub storage_id: u64,
+    pub storage_id: Option<u64>,
     pub storage_creation_date: DateTime<Utc>,
     pub storage_modification_date: DateTime<Utc>,
     pub storage_entry_date: Option<DateTime<Utc>>,

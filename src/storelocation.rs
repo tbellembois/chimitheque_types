@@ -1,7 +1,7 @@
 use crate::entity::Entity;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct StoreLocation {
     pub store_location_id: Option<u64>,
     pub store_location_name: String,
@@ -17,20 +17,4 @@ pub struct StoreLocation {
 
     pub entity: Option<Entity>,
     pub store_location: Option<Box<StoreLocation>>,
-}
-
-impl Default for StoreLocation {
-    fn default() -> Self {
-        StoreLocation {
-            store_location_id: None,
-            store_location_name: "".to_string(),
-            store_location_can_store: false,
-            store_location_color: None,
-            store_location_full_path: None,
-            store_location_nb_storages: None,
-            store_location_nb_children: None,
-            entity: None,
-            store_location: None,
-        }
-    }
 }

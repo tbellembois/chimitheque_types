@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct ClassOfCompound {
     pub match_exact_search: bool,
-    pub class_of_compound_id: u64,
+    pub class_of_compound_id: Option<u64>,
     pub class_of_compound_label: String,
 }
 
@@ -32,7 +32,7 @@ impl Searchable for ClassOfCompound {
     }
 
     fn set_id_field(&mut self, id: u64) {
-        self.class_of_compound_id = id;
+        self.class_of_compound_id = Some(id);
     }
 
     fn get_text_field_name(&self) -> String {
@@ -43,7 +43,7 @@ impl Searchable for ClassOfCompound {
         self.class_of_compound_label = text.to_string();
     }
 
-    fn get_id(&self) -> u64 {
+    fn get_id(&self) -> Option<u64> {
         self.class_of_compound_id
     }
 

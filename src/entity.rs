@@ -4,7 +4,7 @@ use crate::person::Person;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Entity {
-    pub entity_id: u64,
+    pub entity_id: Option<u64>,
     pub entity_name: String,
     pub entity_description: Option<String>,
 

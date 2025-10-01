@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct EmpiricalFormula {
     pub match_exact_search: bool,
-    pub empirical_formula_id: u64,
+    pub empirical_formula_id: Option<u64>,
     pub empirical_formula_label: String,
 }
 
@@ -32,7 +32,7 @@ impl Searchable for EmpiricalFormula {
     }
 
     fn set_id_field(&mut self, id: u64) {
-        self.empirical_formula_id = id;
+        self.empirical_formula_id = Some(id);
     }
 
     fn get_text_field_name(&self) -> String {
@@ -43,7 +43,7 @@ impl Searchable for EmpiricalFormula {
         self.empirical_formula_label = text.to_string();
     }
 
-    fn get_id(&self) -> u64 {
+    fn get_id(&self) -> Option<u64> {
         self.empirical_formula_id
     }
 

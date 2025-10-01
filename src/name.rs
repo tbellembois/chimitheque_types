@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Name {
     pub match_exact_search: bool,
-    pub name_id: u64,
+    pub name_id: Option<u64>,
     pub name_label: String,
 }
 
@@ -32,7 +32,7 @@ impl Searchable for Name {
     }
 
     fn set_id_field(&mut self, id: u64) {
-        self.name_id = id;
+        self.name_id = Some(id);
     }
 
     fn get_text_field_name(&self) -> String {
@@ -43,7 +43,7 @@ impl Searchable for Name {
         self.name_label = text.to_string();
     }
 
-    fn get_id(&self) -> u64 {
+    fn get_id(&self) -> Option<u64> {
         self.name_id
     }
 

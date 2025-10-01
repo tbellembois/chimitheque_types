@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct HazardStatement {
     pub match_exact_search: bool,
-    pub hazard_statement_id: u64,
+    pub hazard_statement_id: Option<u64>,
     pub hazard_statement_label: String,
     pub hazard_statement_reference: String,
     pub hazard_statement_cmr: Option<String>,
@@ -34,7 +34,7 @@ impl Searchable for HazardStatement {
     }
 
     fn set_id_field(&mut self, id: u64) {
-        self.hazard_statement_id = id;
+        self.hazard_statement_id = Some(id);
     }
 
     fn get_text_field_name(&self) -> String {
@@ -45,7 +45,7 @@ impl Searchable for HazardStatement {
         self.hazard_statement_reference = text.to_string();
     }
 
-    fn get_id(&self) -> u64 {
+    fn get_id(&self) -> Option<u64> {
         self.hazard_statement_id
     }
 
