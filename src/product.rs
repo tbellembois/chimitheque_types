@@ -17,7 +17,9 @@ pub struct Product {
     pub product_canonical_smiles: Option<String>,
     pub product_specificity: Option<String>,
     pub product_msds: Option<String>,
+    #[serde(default)]
     pub product_restricted: bool,
+    #[serde(default)]
     pub product_radioactive: bool,
     pub product_twod_formula: Option<String>,
     pub product_threed_formula: Option<String>,
@@ -29,6 +31,7 @@ pub struct Product {
     pub product_number_per_carton: Option<i64>,
     pub product_number_per_bag: Option<i64>,
 
+    #[serde(default)]
     pub person: Person,
     pub name: Name,
 
@@ -52,6 +55,7 @@ pub struct Product {
     pub tags: Option<Vec<Tag>>,
 
     // product has bookmark for the logged user
+    #[serde(default)]
     pub product_has_bookmark: bool,
     // archived storage count in the logged user entity(ies)
     pub product_asc: Option<u64>,

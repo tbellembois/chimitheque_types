@@ -2,8 +2,8 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    borrowing::Borrowing, entity::Entity, person::Person, product::Product,
-    storelocation::StoreLocation, supplier::Supplier, unit::Unit,
+    borrowing::Borrowing, person::Person, product::Product, storelocation::StoreLocation,
+    supplier::Supplier, unit::Unit,
 };
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
@@ -20,16 +20,18 @@ pub struct Storage {
     pub storage_batch_number: Option<String>,
     pub storage_quantity: Option<f64>,
     pub storage_barecode: Option<String>,
-    pub storage_qrcode: Vec<u8>,
+    pub storage_qrcode: Option<Vec<u8>>,
+    #[serde(default)]
     pub storage_to_destroy: bool,
+    #[serde(default)]
     pub storage_archive: bool,
     pub storage_concentration: Option<f64>,
     pub storage_number_of_bag: Option<u64>,
     pub storage_number_of_carton: Option<u64>,
 
+    #[serde(default)]
     pub person: Person,
     pub product: Product,
-    pub entity: Entity,
     pub store_location: StoreLocation,
     pub supplier: Option<Supplier>,
     pub unit_quantity: Option<Unit>,
@@ -39,9 +41,11 @@ pub struct Storage {
     pub borrowing: Option<Borrowing>,
 
     pub storage_number_of_unit: Option<u64>,
-    pub storage_nb_items: Option<u32>,
-    pub storage_identical_barecode: bool,
+    // pub storage_nb_items: Option<u64>,
+    // #[serde(default)]
+    // pub storage_identical_barecode: bool,
 
     // storage history count
+    #[serde(default)]
     pub storage_hc: u64,
 }
