@@ -6,6 +6,7 @@ pub struct Unit {
     pub unit_id: Option<u64>,
     pub unit_label: String,
     pub unit_multiplier: f64,
+    #[serde(default)]
     pub unit_type: UnitType,
 
     pub unit: Option<Box<Unit>>,

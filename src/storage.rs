@@ -40,10 +40,7 @@ pub struct Storage {
     pub storage: Option<Box<Storage>>,
     pub borrowing: Option<Borrowing>,
 
-    pub storage_number_of_unit: Option<u64>,
-    // pub storage_nb_items: Option<u64>,
-    // #[serde(default)]
-    // pub storage_identical_barecode: bool,
+    // pub storage_number_of_unit: Option<u64>,
 
     // storage history count
     #[serde(default)]

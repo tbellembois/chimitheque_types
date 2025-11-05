@@ -12,4 +12,6 @@ pub struct Person {
     pub entities: Option<Vec<Entity>>,
     pub managed_entities: Option<Vec<Entity>>,
     pub permissions: Option<Vec<Permission>>,
+    #[serde(default)]
+    pub is_admin: bool,
 }

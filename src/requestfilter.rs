@@ -28,17 +28,18 @@ pub struct RequestFilter {
     pub storages: Option<Vec<u64>>,
     pub name: Option<u64>,
     pub person: Option<u64>,
+    pub person_email: Option<String>,
     pub permission: String,
     pub precautionary_statements: Option<Vec<u64>>,
     pub producer: Option<u64>,
     pub producer_ref: Option<u64>,
-    pub product: Option<u64>,
+    pub product: Option<u64>, // a product id while selecting storages, not a product id while selecting products - use id instead
     pub product_specificity: Option<String>,
     pub show_bio: bool,
     pub show_chem: bool,
     pub show_consu: bool,
     pub signal_word: Option<u64>,
-    pub storage: Option<u64>,
+    pub storage: Option<u64>, // a storage id while selecting products (ie the product that has for storage this "storage" id), not a storage id while selecting storages - use id instead
     pub storage_archive: bool,
     pub storage_barecode: Option<String>,
     pub storage_batch_number: Option<String>,
@@ -149,6 +150,9 @@ impl fmt::Display for RequestFilter {
         }
         if let Some(person) = &self.person {
             parameters.push(format!("person={person}"))
+        }
+        if let Some(person_email) = &self.person_email {
+            parameters.push(format!("person_email={person_email}"))
         }
         if let Some(product_specificity) = &self.product_specificity {
             parameters.push(format!("product_specificity={product_specificity}"))
@@ -399,6 +403,9 @@ impl TryFrom<&str> for RequestFilter {
                     Ok(v) => request_filter.person = Some(v),
                     Err(e) => return Err(format!("error with person query parameter: {e}")),
                 },
+                std::borrow::Cow::Borrowed("person_email") => {
+                    request_filter.person_email = Some(value.to_string())
+                }
                 std::borrow::Cow::Borrowed("product_specificity") => {
                     request_filter.product_specificity = Some(value.to_string())
                 }
@@ -533,6 +540,7 @@ impl Default for RequestFilter {
             producer: None,
             producer_ref: None,
             person: None,
+            person_email: None,
             product: None,
             product_specificity: None,
             show_bio: false,
@@ -594,6 +602,7 @@ mod tests {
             producer_ref: Some(10),
             product: Some(10),
             person: Some(10),
+            person_email: Some("foo@example.com".to_string()),
             product_specificity: Some("foo".to_string()),
             show_bio: true,
             show_chem: true,
@@ -640,6 +649,7 @@ mod tests {
         &producer_ref=10\
         &product=10\
         &person=10\
+        &person_email=foo@example.com\
         &product_specificity=foo\
         &show_bio=true\
         &show_chem=true\
