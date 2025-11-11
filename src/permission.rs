@@ -8,6 +8,7 @@ use std::{
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub enum PermissionName {
     #[default]
+    #[serde(rename(serialize = "n"))]
     None,
     #[serde(rename(serialize = "r"))]
     Read,
