@@ -16,3 +16,4 @@ url = "2.5.0"
 
 chimitheque_traits = { path = "../chimitheque_traits" }
 chrono = { version = "0.4.41", features = ["serde"] }
+email_address = "0.2.9"

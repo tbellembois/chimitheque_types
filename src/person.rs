@@ -1,3 +1,6 @@
+use std::error::Error;
+
+use email_address::{EmailAddress, Options};
 use serde::{Deserialize, Serialize};
 
 use crate::entity::Entity;
@@ -14,4 +17,19 @@ pub struct Person {
     pub permissions: Option<Vec<Permission>>,
     #[serde(default)]
     pub is_admin: bool,
+}
+
+impl Person {
+    pub fn valid_email(&self) -> Result<bool, Box<dyn Error>> {
+        let mayerr_parse = EmailAddress::parse_with_options(
+            &self.person_email,
+            Options {
+                ..Default::default()
+            },
+        );
+        match mayerr_parse {
+            Ok(_) => Ok(true),
+            Err(err) => Err(Box::new(err)),
+        }
+    }
 }

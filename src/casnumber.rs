@@ -8,6 +8,21 @@ pub struct CasNumber {
     pub cas_number_label: String,
 }
 
+// impl Person {
+//     pub fn valid_email(&self) -> Result<bool, Box<dyn Error>> {
+//         let mayerr_parse = EmailAddress::parse_with_options(
+//             &self.person_email,
+//             Options {
+//                 ..Default::default()
+//             },
+//         );
+//         match mayerr_parse {
+//             Ok(_) => Ok(true),
+//             Err(err) => Err(Box::new(err)),
+//         }
+//     }
+// }
+
 impl Searchable for CasNumber {
     fn create(&self) -> Self {
         CasNumber {
