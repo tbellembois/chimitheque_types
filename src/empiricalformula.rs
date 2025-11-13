@@ -1,4 +1,7 @@
+use std::error::Error;
+
 use chimitheque_traits::searchable::Searchable;
+use chimitheque_utils::formula::sort_empirical_formula;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
@@ -8,6 +11,14 @@ pub struct EmpiricalFormula {
     pub empirical_formula_label: String,
 }
 
+impl EmpiricalFormula {
+    pub fn is_valid(&self) -> Result<bool, Box<dyn Error>> {
+        match sort_empirical_formula(&self.empirical_formula_label) {
+            Ok(_) => Ok(true),
+            Err(e) => Err(e),
+        }
+    }
+}
 impl Searchable for EmpiricalFormula {
     fn create(&self) -> Self {
         EmpiricalFormula {

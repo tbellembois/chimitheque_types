@@ -20,7 +20,7 @@ pub struct Person {
 }
 
 impl Person {
-    pub fn valid_email(&self) -> Result<bool, Box<dyn Error>> {
+    pub fn is_valid(&self) -> Result<bool, Box<dyn Error>> {
         let mayerr_parse = EmailAddress::parse_with_options(
             &self.person_email,
             Options {

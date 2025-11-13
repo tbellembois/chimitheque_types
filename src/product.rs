@@ -1,3 +1,5 @@
+use std::error::Error;
+
 use crate::{
     casnumber::CasNumber, category::Category, cenumber::CeNumber, classofcompound::ClassOfCompound,
     empiricalformula::EmpiricalFormula, entity::Entity, hazardstatement::HazardStatement,
@@ -69,4 +71,28 @@ pub struct Product {
     pub product_sl: Option<String>,
     // product availability in the entities
     pub product_availability: Option<Vec<Entity>>,
+}
+
+impl Product {
+    pub fn is_valid(&self) -> Result<bool, Box<dyn Error>> {
+        if let Some(cas_number) = &self.cas_number {
+            if cas_number.cas_number_id.is_none() {
+                cas_number.is_valid()?;
+            }
+        }
+
+        if let Some(ce_number) = &self.ce_number {
+            if ce_number.ce_number_id.is_none() {
+                ce_number.is_valid()?;
+            }
+        }
+
+        if let Some(empirical_formula) = &self.empirical_formula {
+            if empirical_formula.empirical_formula_id.is_none() {
+                empirical_formula.is_valid()?;
+            }
+        }
+
+        Ok(true)
+    }
 }

@@ -1,4 +1,7 @@
+use std::error::Error;
+
 use chimitheque_traits::searchable::Searchable;
+use chimitheque_utils::cenumber::is_ce_number;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
@@ -6,6 +9,12 @@ pub struct CeNumber {
     pub match_exact_search: bool,
     pub ce_number_id: Option<u64>,
     pub ce_number_label: String,
+}
+
+impl CeNumber {
+    pub fn is_valid(&self) -> Result<bool, Box<dyn Error>> {
+        is_ce_number(&self.ce_number_label)
+    }
 }
 
 impl Searchable for CeNumber {
