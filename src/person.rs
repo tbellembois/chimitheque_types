@@ -19,6 +19,12 @@ pub struct Person {
     pub is_admin: bool,
 }
 
+impl PartialEq for Person {
+    fn eq(&self, other: &Self) -> bool {
+        self.person_id == other.person_id && self.person_email == other.person_email
+    }
+}
+
 impl Person {
     pub fn is_valid(&self) -> Result<bool, Box<dyn Error>> {
         let mayerr_parse = EmailAddress::parse_with_options(
