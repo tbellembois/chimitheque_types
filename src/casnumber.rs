@@ -1,5 +1,3 @@
-use std::error::Error;
-
 use chimitheque_traits::searchable::Searchable;
 use chimitheque_utils::casnumber::is_cas_number;
 use serde::{Deserialize, Serialize};
@@ -12,7 +10,7 @@ pub struct CasNumber {
 }
 
 impl CasNumber {
-    pub fn is_valid(&self) -> Result<bool, Box<dyn Error>> {
+    pub fn is_valid(&self) -> Result<bool, Box<dyn std::error::Error + Send + Sync>> {
         is_cas_number(&self.cas_number_label)
     }
 }

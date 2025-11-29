@@ -26,7 +26,7 @@ impl PartialEq for Person {
 }
 
 impl Person {
-    pub fn is_valid(&self) -> Result<bool, Box<dyn Error>> {
+    pub fn is_valid(&self) -> Result<bool, Box<dyn Error + Send + Sync>> {
         let mayerr_parse = EmailAddress::parse_with_options(
             &self.person_email,
             Options {

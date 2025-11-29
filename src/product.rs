@@ -74,7 +74,7 @@ pub struct Product {
 }
 
 impl Product {
-    pub fn is_valid(&self) -> Result<bool, Box<dyn Error>> {
+    pub fn is_valid(&self) -> Result<bool, Box<dyn Error + Send + Sync>> {
         if let Some(cas_number) = &self.cas_number {
             if cas_number.cas_number_id.is_none() {
                 cas_number.is_valid()?;

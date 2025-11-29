@@ -12,7 +12,7 @@ pub struct EmpiricalFormula {
 }
 
 impl EmpiricalFormula {
-    pub fn is_valid(&self) -> Result<bool, Box<dyn Error>> {
+    pub fn is_valid(&self) -> Result<bool, Box<dyn Error + Send + Sync>> {
         match sort_empirical_formula(&self.empirical_formula_label) {
             Ok(_) => Ok(true),
             Err(e) => Err(e),
