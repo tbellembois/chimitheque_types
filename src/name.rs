@@ -1,4 +1,5 @@
 use chimitheque_traits::searchable::Searchable;
+use chimitheque_utils::string::{clean, Transform};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
@@ -6,6 +7,15 @@ pub struct Name {
     pub match_exact_search: bool,
     pub name_id: Option<u64>,
     pub name_label: String,
+}
+
+impl Name {
+    pub fn sanitize_and_validate(
+        &mut self,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        self.name_label = clean(&self.name_label, Transform::Uppercase);
+        Ok(())
+    }
 }
 
 impl Searchable for Name {

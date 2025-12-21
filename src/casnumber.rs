@@ -1,5 +1,8 @@
 use chimitheque_traits::searchable::Searchable;
-use chimitheque_utils::casnumber::is_cas_number;
+use chimitheque_utils::{
+    casnumber::is_cas_number,
+    string::{clean, Transform},
+};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
@@ -10,7 +13,10 @@ pub struct CasNumber {
 }
 
 impl CasNumber {
-    pub fn is_valid(&self) -> Result<bool, Box<dyn std::error::Error + Send + Sync>> {
+    pub fn sanitize_and_validate(
+        &mut self,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        self.cas_number_label = clean(&self.cas_number_label, Transform::None);
         is_cas_number(&self.cas_number_label)
     }
 }

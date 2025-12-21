@@ -1,4 +1,5 @@
 use chimitheque_traits::searchable::Searchable;
+use chimitheque_utils::string::{clean, Transform};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
@@ -7,6 +8,15 @@ pub struct Producer {
     pub match_exact_search: bool,
     pub producer_id: Option<u64>,
     pub producer_label: String,
+}
+
+impl Producer {
+    pub fn sanitize_and_validate(
+        &mut self,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        self.producer_label = clean(&self.producer_label, Transform::None);
+        Ok(())
+    }
 }
 
 impl Searchable for Producer {

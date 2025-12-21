@@ -1,8 +1,9 @@
-use std::fmt;
-
+use axum::extract::FromRequestParts;
+use http::{request::Parts, StatusCode};
 use log::debug;
 use regex::Regex;
 use serde::Serialize;
+use std::fmt;
 use url::Url;
 
 #[derive(Debug, Clone, Serialize)]
@@ -558,6 +559,25 @@ impl Default for RequestFilter {
             symbols: None,
             tags: None,
             unit_type: None,
+        }
+    }
+}
+
+impl<S> FromRequestParts<S> for RequestFilter
+where
+    S: Send + Sync,
+{
+    type Rejection = (StatusCode, &'static str);
+
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+        let full_url = parts.uri.clone().to_string();
+        let full_url_str = full_url.as_str();
+
+        let mayerr_request_filter = full_url_str.try_into();
+
+        match mayerr_request_filter {
+            Ok(request_filter) => Ok(request_filter),
+            Err(_err) => Err((StatusCode::BAD_REQUEST, "error parsing request filter")),
         }
     }
 }

@@ -1,5 +1,4 @@
-use std::error::Error;
-
+use chimitheque_utils::string::{clean, Transform};
 use email_address::{EmailAddress, Options};
 use serde::{Deserialize, Serialize};
 
@@ -26,16 +25,20 @@ impl PartialEq for Person {
 }
 
 impl Person {
-    pub fn is_valid(&self) -> Result<bool, Box<dyn Error + Send + Sync>> {
-        let mayerr_parse = EmailAddress::parse_with_options(
+    pub fn sanitize_and_validate(
+        &mut self,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        self.person_email = clean(&self.person_email, Transform::Lowercase);
+
+        if let Err(err) = EmailAddress::parse_with_options(
             &self.person_email,
             Options {
                 ..Default::default()
             },
-        );
-        match mayerr_parse {
-            Ok(_) => Ok(true),
-            Err(err) => Err(Box::new(err)),
+        ) {
+            Err(Box::new(err))
+        } else {
+            Ok(())
         }
     }
 }

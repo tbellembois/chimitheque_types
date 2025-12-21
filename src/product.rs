@@ -74,25 +74,35 @@ pub struct Product {
 }
 
 impl Product {
-    pub fn is_valid(&self) -> Result<bool, Box<dyn Error + Send + Sync>> {
-        if let Some(cas_number) = &self.cas_number {
-            if cas_number.cas_number_id.is_none() {
-                cas_number.is_valid()?;
-            }
+    pub fn sanitize_and_validate(
+        &mut self,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        if self.cas_number.is_some() && self.cas_number.as_mut().unwrap().cas_number_id.is_none() {
+            self.cas_number.as_mut().unwrap().sanitize_and_validate()?;
         }
 
-        if let Some(ce_number) = &self.ce_number {
-            if ce_number.ce_number_id.is_none() {
-                ce_number.is_valid()?;
-            }
+        if self.ce_number.is_some() && self.ce_number.as_mut().unwrap().ce_number_id.is_none() {
+            self.ce_number.as_mut().unwrap().sanitize_and_validate()?;
         }
 
-        if let Some(empirical_formula) = &self.empirical_formula {
-            if empirical_formula.empirical_formula_id.is_none() {
-                empirical_formula.is_valid()?;
-            }
+        if self.empirical_formula.is_some()
+            && self
+                .empirical_formula
+                .as_mut()
+                .unwrap()
+                .empirical_formula_id
+                .is_none()
+        {
+            self.empirical_formula
+                .as_mut()
+                .unwrap()
+                .sanitize_and_validate()?;
         }
 
-        Ok(true)
+        if self.name.name_id.is_none() {
+            self.name.sanitize_and_validate()?;
+        }
+
+        Ok(())
     }
 }

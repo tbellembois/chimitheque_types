@@ -1,5 +1,8 @@
 use chimitheque_traits::searchable::Searchable;
-use chimitheque_utils::cenumber::is_ce_number;
+use chimitheque_utils::{
+    cenumber::is_ce_number,
+    string::{clean, Transform},
+};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
@@ -10,7 +13,10 @@ pub struct CeNumber {
 }
 
 impl CeNumber {
-    pub fn is_valid(&self) -> Result<bool, Box<dyn std::error::Error + Send + Sync>> {
+    pub fn sanitize_and_validate(
+        &mut self,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        self.ce_number_label = clean(&self.ce_number_label, Transform::None);
         is_ce_number(&self.ce_number_label)
     }
 }

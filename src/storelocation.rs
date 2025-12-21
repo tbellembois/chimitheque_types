@@ -1,4 +1,5 @@
 use crate::entity::Entity;
+use chimitheque_utils::string::{clean, Transform};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
@@ -17,4 +18,13 @@ pub struct StoreLocation {
 
     pub entity: Option<Entity>,
     pub store_location: Option<Box<StoreLocation>>,
+}
+
+impl StoreLocation {
+    pub fn sanitize_and_validate(
+        &mut self,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        self.store_location_name = clean(&self.store_location_name, Transform::None);
+        Ok(())
+    }
 }
