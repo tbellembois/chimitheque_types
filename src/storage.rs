@@ -46,3 +46,11 @@ pub struct Storage {
     #[serde(default)]
     pub storage_hc: u64,
 }
+
+impl Storage {
+    pub fn sanitize_and_validate(
+        &mut self,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        Ok(())
+    }
+}

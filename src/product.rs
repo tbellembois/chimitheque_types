@@ -1,5 +1,3 @@
-use std::error::Error;
-
 use crate::{
     casnumber::CasNumber, category::Category, cenumber::CeNumber, classofcompound::ClassOfCompound,
     empiricalformula::EmpiricalFormula, entity::Entity, hazardstatement::HazardStatement,
