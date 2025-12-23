@@ -1,23 +1,25 @@
-use axum::extract::FromRequestParts;
-use http::{request::Parts, StatusCode};
 use log::debug;
 use regex::Regex;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::fmt;
 use url::Url;
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RequestFilter {
     pub search: Option<String>,
     pub id: Option<u64>,
     pub order_by: Option<String>,
+    #[serde(default)]
     pub order: String,
     pub offset: Option<u64>,
     pub limit: Option<u64>,
+    #[serde(default)]
     pub bookmark: bool,
+    #[serde(default)]
     pub borrowing: bool,
     pub cas_number: Option<u64>,
     pub cas_number_string: Option<String>,
+    #[serde(default)]
     pub is_cmr: bool,
     pub category: Option<u64>,
     pub custom_name_part_of: Option<String>,
@@ -25,27 +27,35 @@ pub struct RequestFilter {
     pub entity: Option<u64>,
     pub entity_name: Option<String>,
     pub hazard_statements: Option<Vec<u64>>,
+    #[serde(default)]
     pub history: bool,
     pub storages: Option<Vec<u64>>,
     pub name: Option<u64>,
     pub person: Option<u64>,
     pub person_email: Option<String>,
+    #[serde(default)]
     pub permission: String,
     pub precautionary_statements: Option<Vec<u64>>,
     pub producer: Option<u64>,
     pub producer_ref: Option<u64>,
     pub product: Option<u64>, // a product id while selecting storages, not a product id while selecting products - use id instead
     pub product_specificity: Option<String>,
+    #[serde(default)]
     pub show_bio: bool,
+    #[serde(default)]
     pub show_chem: bool,
+    #[serde(default)]
     pub show_consu: bool,
     pub signal_word: Option<u64>,
     pub storage: Option<u64>, // a storage id while selecting products (ie the product that has for storage this "storage" id), not a storage id while selecting storages - use id instead
+    #[serde(default)]
     pub storage_archive: bool,
     pub storage_barecode: Option<String>,
     pub storage_batch_number: Option<String>,
+    #[serde(default)]
     pub storage_to_destroy: bool,
     pub store_location: Option<u64>,
+    #[serde(default)]
     pub store_location_can_store: bool,
     pub supplier: Option<u64>,
     pub symbols: Option<Vec<u64>>,
@@ -559,25 +569,6 @@ impl Default for RequestFilter {
             symbols: None,
             tags: None,
             unit_type: None,
-        }
-    }
-}
-
-impl<S> FromRequestParts<S> for RequestFilter
-where
-    S: Send + Sync,
-{
-    type Rejection = (StatusCode, &'static str);
-
-    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
-        let full_url = parts.uri.clone().to_string();
-        let full_url_str = full_url.as_str();
-
-        let mayerr_request_filter = full_url_str.try_into();
-
-        match mayerr_request_filter {
-            Ok(request_filter) => Ok(request_filter),
-            Err(_err) => Err((StatusCode::BAD_REQUEST, "error parsing request filter")),
         }
     }
 }
