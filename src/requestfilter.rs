@@ -1,3 +1,5 @@
+use axum::extract::FromRequestParts;
+use http::{request::Parts, StatusCode};
 use log::debug;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
@@ -573,6 +575,33 @@ impl Default for RequestFilter {
     }
 }
 
+impl<S> FromRequestParts<S> for RequestFilter
+where
+    S: Send + Sync,
+{
+    type Rejection = (StatusCode, String);
+
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+        // Build full absolute URL string so RequestFilter::try_from works
+        // axum Parts.uri may not contain scheme/host, so we fake it
+        let uri = parts.uri.clone();
+        let path_and_query = uri.path_and_query().map(|pq| pq.as_str()).unwrap_or("");
+        let fake_base = "http://localhost"; // arbitrary base
+
+        let full_url = format!("{fake_base}{path_and_query}");
+
+        match RequestFilter::try_from(full_url.as_str()) {
+            Ok(filter) => Ok(filter),
+            Err(err) => {
+                // Respond with 400 + error message
+                let body = format!("invalid query/filter: {}", err);
+                let response = (StatusCode::BAD_REQUEST, body);
+                Err(response)
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -860,5 +889,7 @@ mod tests {
         assert_eq!(filter.unwrap().id, Some(4321));
         let filter = RequestFilter::try_from("http://localhost/id=4321");
         assert_eq!(filter.unwrap().id, None);
+        let filter = RequestFilter::try_from("https://192.168.1.18:8443/back/entities/10");
+        assert_eq!(filter.unwrap().id, Some(10));
     }
 }
