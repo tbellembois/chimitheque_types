@@ -560,7 +560,7 @@ impl Default for RequestFilter {
             show_consu: false,
             signal_word: None,
             storage: None,
-            storage_archive: Some(false),
+            storage_archive: None,
             storage_barecode: None,
             storage_batch_number: None,
             storage_to_destroy: false,
@@ -696,6 +696,99 @@ mod tests {
         &signal_word=10\
         &storage=10\
         &storage_archive=true\
+        &storage_barecode=foo\
+        &storage_batch_number=foo\
+        &storage_to_destroy=true\
+        &store_location=10\
+        &store_location_can_store=true\
+        &supplier=10\
+        &symbols=1,2,3\
+        &tags=1,2,3\
+        &unit_type=foo"
+                .to_string()
+        );
+
+        let filter = RequestFilter {
+            search: Some("%foo%".to_string()),
+            id: Some(5),
+            order_by: Some("foo".to_string()),
+            order: "foo".to_string(),
+            offset: Some(10),
+            limit: Some(10),
+            bookmark: true,
+            borrowing: true,
+            cas_number: Some(10),
+            cas_number_string: Some("1234".to_string()),
+            is_cmr: true,
+            category: Some(10),
+            custom_name_part_of: Some("foo".to_string()),
+            empirical_formula: Some(10),
+            entity: Some(10),
+            entity_name: Some("foo".to_string()),
+            hazard_statements: Some(vec![1, 2, 3]),
+            history: true,
+            storages: Some(vec![1, 2, 3]),
+            name: Some(10),
+            permission: "foo".to_string(),
+            precautionary_statements: Some(vec![1, 2, 3]),
+            producer: Some(10),
+            producer_ref: Some(10),
+            product: Some(10),
+            person: Some(10),
+            person_email: Some("foo@example.com".to_string()),
+            product_specificity: Some("foo".to_string()),
+            show_bio: true,
+            show_chem: true,
+            show_consu: true,
+            signal_word: Some(10),
+            storage: Some(10),
+            storage_barecode: Some("foo".to_string()),
+            storage_batch_number: Some("foo".to_string()),
+            storage_to_destroy: true,
+            store_location: Some(10),
+            store_location_can_store: true,
+            supplier: Some(10),
+            symbols: Some(vec![1, 2, 3]),
+            tags: Some(vec![1, 2, 3]),
+            unit_type: Some("foo".to_string()),
+            ..Default::default()
+        };
+
+        assert_eq!(
+            filter.to_string(),
+            "?search=%foo%\
+        &id=5\
+        &order_by=foo\
+        &order=foo\
+        &offset=10\
+        &limit=10\
+        &bookmark=true\
+        &borrowing=true\
+        &cas_number=10\
+        &cas_number_string=1234\
+        &is_cmr=true\
+        &category=10\
+        &custom_name_part_of=foo\
+        &empirical_formula=10\
+        &entity=10\
+        &entity_name=foo\
+        &hazard_statements=1,2,3\
+        &history=true\
+        &storages=1,2,3\
+        &name=10\
+        &permission=foo\
+        &precautionary_statements=1,2,3\
+        &producer=10\
+        &producer_ref=10\
+        &product=10\
+        &person=10\
+        &person_email=foo@example.com\
+        &product_specificity=foo\
+        &show_bio=true\
+        &show_chem=true\
+        &show_consu=true\
+        &signal_word=10\
+        &storage=10\
         &storage_barecode=foo\
         &storage_batch_number=foo\
         &storage_to_destroy=true\
