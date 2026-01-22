@@ -50,8 +50,7 @@ pub struct RequestFilter {
     pub show_consu: bool,
     pub signal_word: Option<u64>,
     pub storage: Option<u64>, // a storage id while selecting products (ie the product that has for storage this "storage" id), not a storage id while selecting storages - use id instead
-    #[serde(default)]
-    pub storage_archive: bool,
+    pub storage_archive: Option<bool>,
     pub storage_barecode: Option<String>,
     pub storage_batch_number: Option<String>,
     #[serde(default)]
@@ -185,8 +184,8 @@ impl fmt::Display for RequestFilter {
         if let Some(storage) = &self.storage {
             parameters.push(format!("storage={storage}"))
         }
-        if self.storage_archive {
-            parameters.push("storage_archive=true".to_string());
+        if let Some(storage_archive) = self.storage_archive {
+            parameters.push(format!("storage_archive={storage_archive}"));
         }
         if let Some(storage_barecode) = &self.storage_barecode {
             parameters.push(format!("storage_barecode={storage_barecode}"))
@@ -443,7 +442,7 @@ impl TryFrom<&str> for RequestFilter {
                     Err(e) => return Err(format!("error with storage query parameter: {e}")),
                 },
                 std::borrow::Cow::Borrowed("storage_archive") => match value.parse::<bool>() {
-                    Ok(v) => request_filter.storage_archive = v,
+                    Ok(v) => request_filter.storage_archive = Some(v),
                     Err(e) => {
                         return Err(format!("error with storage_archive query parameter: {e}"))
                     }
@@ -561,7 +560,7 @@ impl Default for RequestFilter {
             show_consu: false,
             signal_word: None,
             storage: None,
-            storage_archive: false,
+            storage_archive: Some(false),
             storage_barecode: None,
             storage_batch_number: None,
             storage_to_destroy: false,
@@ -649,7 +648,7 @@ mod tests {
             show_consu: true,
             signal_word: Some(10),
             storage: Some(10),
-            storage_archive: true,
+            storage_archive: Some(true),
             storage_barecode: Some("foo".to_string()),
             storage_batch_number: Some("foo".to_string()),
             storage_to_destroy: true,
@@ -796,7 +795,7 @@ mod tests {
         assert!(filter.clone().unwrap().show_consu);
         assert_eq!(filter.clone().unwrap().signal_word, Some(10));
         assert_eq!(filter.clone().unwrap().storage, Some(10));
-        assert!(filter.clone().unwrap().storage_archive);
+        assert!(filter.clone().unwrap().storage_archive.is_some_and(|x| x));
         assert_eq!(
             filter.clone().unwrap().storage_barecode,
             Some(String::from("foo"))
