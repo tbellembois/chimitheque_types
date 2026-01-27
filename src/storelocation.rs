@@ -1,3 +1,5 @@
+use std::fmt;
+
 use crate::entity::Entity;
 use chimitheque_utils::string::{clean, Transform};
 use serde::{Deserialize, Serialize};
@@ -18,6 +20,16 @@ pub struct StoreLocation {
 
     pub entity: Option<Entity>,
     pub store_location: Option<Box<StoreLocation>>,
+}
+
+impl fmt::Display for StoreLocation {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "StoreLocation {{ store_location_id: {:?}, store_location_name: {} }}",
+            self.store_location_id, self.store_location_name
+        )
+    }
 }
 
 impl StoreLocation {

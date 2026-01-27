@@ -1,3 +1,5 @@
+use std::fmt;
+
 use chimitheque_utils::string::{clean, Transform};
 use serde::{Deserialize, Serialize};
 
@@ -18,17 +20,24 @@ pub struct Entity {
     pub entity_nb_people: Option<u64>,
 }
 
+impl fmt::Display for Entity {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "Entity {{ entity_id: {:?}, entity_name: {}, entity_description: {:?} }}",
+            self.entity_id, self.entity_name, self.entity_description
+        )
+    }
+}
+
 impl Entity {
     pub fn sanitize_and_validate(
         &mut self,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         self.entity_name = clean(&self.entity_name, Transform::None);
 
-        if self.entity_description.is_some() {
-            self.entity_description = Some(clean(
-                self.entity_description.as_mut().unwrap(),
-                Transform::None,
-            ));
+        if let Some(entity_description) = self.entity_description.clone() {
+            self.entity_description = Some(clean(entity_description.as_str(), Transform::None));
         }
         Ok(())
     }

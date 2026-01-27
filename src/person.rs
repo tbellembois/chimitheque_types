@@ -1,3 +1,5 @@
+use std::fmt;
+
 use chimitheque_utils::string::{clean, Transform};
 use email_address::{EmailAddress, Options};
 use serde::{Deserialize, Serialize};
@@ -21,6 +23,16 @@ pub struct Person {
 impl PartialEq for Person {
     fn eq(&self, other: &Self) -> bool {
         self.person_id == other.person_id && self.person_email == other.person_email
+    }
+}
+
+impl fmt::Display for Person {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "Person {{ person_id: {:?}, person_email: {} }}",
+            self.person_id, self.person_email
+        )
     }
 }
 

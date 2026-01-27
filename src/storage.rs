@@ -1,3 +1,5 @@
+use std::fmt;
+
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
@@ -45,6 +47,12 @@ pub struct Storage {
     // storage history count
     #[serde(default)]
     pub storage_hc: u64,
+}
+
+impl fmt::Display for Storage {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Storage {{ storage_id: {:?}, storage_creation_date: {}, storage_batch_number: {:?}, storage_quantity: {:?}, storage_barecode: {:?}, storage_number_of_bag: {:?}, storage_number_of_carton: {:?}, product: {}, store_location: {}, unit_quantity: {:?} }}", self.storage_id, self.storage_creation_date,  self.storage_batch_number, self.storage_quantity, self.storage_barecode,  self.storage_number_of_bag, self.storage_number_of_carton, self.product, self.store_location, self.unit_quantity)
+    }
 }
 
 impl Storage {

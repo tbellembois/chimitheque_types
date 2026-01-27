@@ -1,3 +1,5 @@
+use std::fmt;
+
 use crate::{
     casnumber::CasNumber, category::Category, cenumber::CeNumber, classofcompound::ClassOfCompound,
     empiricalformula::EmpiricalFormula, entity::Entity, hazardstatement::HazardStatement,
@@ -71,30 +73,43 @@ pub struct Product {
     pub product_availability: Option<Vec<Entity>>,
 }
 
+impl fmt::Display for Product {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "Product {{ product_id: {:?}, name: {}, cas_number: {} }}",
+            self.product_id,
+            self.name.name_label,
+            self.cas_number
+                .as_ref()
+                .map_or("None".to_string(), |cas| cas.cas_number_label.to_string())
+        )
+    }
+}
+
 impl Product {
     pub fn sanitize_and_validate(
         &mut self,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        if self.cas_number.is_some() && self.cas_number.as_mut().unwrap().cas_number_id.is_none() {
-            self.cas_number.as_mut().unwrap().sanitize_and_validate()?;
+        if let Some(cas_number) = self.cas_number.as_ref() {
+            if cas_number.cas_number_id.is_none() {
+                self.cas_number.as_mut().unwrap().sanitize_and_validate()?;
+            }
         }
 
-        if self.ce_number.is_some() && self.ce_number.as_mut().unwrap().ce_number_id.is_none() {
-            self.ce_number.as_mut().unwrap().sanitize_and_validate()?;
+        if let Some(ce_number) = self.ce_number.as_ref() {
+            if ce_number.ce_number_id.is_none() {
+                self.ce_number.as_mut().unwrap().sanitize_and_validate()?;
+            }
         }
 
-        if self.empirical_formula.is_some()
-            && self
-                .empirical_formula
-                .as_mut()
-                .unwrap()
-                .empirical_formula_id
-                .is_none()
-        {
-            self.empirical_formula
-                .as_mut()
-                .unwrap()
-                .sanitize_and_validate()?;
+        if let Some(empirical_formula) = self.empirical_formula.as_ref() {
+            if empirical_formula.empirical_formula_id.is_none() {
+                self.empirical_formula
+                    .as_mut()
+                    .unwrap()
+                    .sanitize_and_validate()?;
+            }
         }
 
         if self.name.name_id.is_none() {
