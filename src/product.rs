@@ -82,7 +82,7 @@ impl fmt::Display for Product {
             self.name.name_label,
             self.cas_number
                 .as_ref()
-                .map_or("None".to_string(), |cas| cas.cas_number_label.to_string())
+                .map_or("None".to_string(), |cas| cas.cas_number_label.clone())
         )
     }
 }
@@ -91,25 +91,25 @@ impl Product {
     pub fn sanitize_and_validate(
         &mut self,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        if let Some(cas_number) = self.cas_number.as_ref() {
-            if cas_number.cas_number_id.is_none() {
-                self.cas_number.as_mut().unwrap().sanitize_and_validate()?;
-            }
+        if let Some(cas_number) = self.cas_number.as_ref()
+            && cas_number.cas_number_id.is_none()
+        {
+            self.cas_number.as_mut().unwrap().sanitize_and_validate()?;
         }
 
-        if let Some(ce_number) = self.ce_number.as_ref() {
-            if ce_number.ce_number_id.is_none() {
-                self.ce_number.as_mut().unwrap().sanitize_and_validate()?;
-            }
+        if let Some(ce_number) = self.ce_number.as_ref()
+            && ce_number.ce_number_id.is_none()
+        {
+            self.ce_number.as_mut().unwrap().sanitize_and_validate()?;
         }
 
-        if let Some(empirical_formula) = self.empirical_formula.as_ref() {
-            if empirical_formula.empirical_formula_id.is_none() {
-                self.empirical_formula
-                    .as_mut()
-                    .unwrap()
-                    .sanitize_and_validate()?;
-            }
+        if let Some(empirical_formula) = self.empirical_formula.as_ref()
+            && empirical_formula.empirical_formula_id.is_none()
+        {
+            self.empirical_formula
+                .as_mut()
+                .unwrap()
+                .sanitize_and_validate()?;
         }
 
         if self.name.name_id.is_none() {

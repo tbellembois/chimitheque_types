@@ -1,5 +1,5 @@
 use axum::extract::FromRequestParts;
-use http::{request::Parts, StatusCode};
+use http::{StatusCode, request::Parts};
 use log::debug;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
@@ -69,20 +69,20 @@ impl fmt::Display for RequestFilter {
         let mut parameters: Vec<String> = vec![];
 
         if let Some(search) = &self.search {
-            parameters.push(format!("search={search}"))
+            parameters.push(format!("search={search}"));
         }
         if let Some(id) = &self.id {
-            parameters.push(format!("id={id}"))
+            parameters.push(format!("id={id}"));
         }
         if let Some(order_by) = &self.order_by {
-            parameters.push(format!("order_by={order_by}"))
+            parameters.push(format!("order_by={order_by}"));
         }
         parameters.push(format!("order={}", self.order));
         if let Some(offset) = &self.offset {
-            parameters.push(format!("offset={offset}"))
+            parameters.push(format!("offset={offset}"));
         }
         if let Some(limit) = &self.limit {
-            parameters.push(format!("limit={limit}"))
+            parameters.push(format!("limit={limit}"));
         }
         if self.bookmark {
             parameters.push("bookmark=true".to_string());
@@ -91,35 +91,35 @@ impl fmt::Display for RequestFilter {
             parameters.push("borrowing=true".to_string());
         }
         if let Some(cas_number) = &self.cas_number {
-            parameters.push(format!("cas_number={cas_number}"))
+            parameters.push(format!("cas_number={cas_number}"));
         }
         if let Some(cas_number_string) = &self.cas_number_string {
-            parameters.push(format!("cas_number_string={cas_number_string}"))
+            parameters.push(format!("cas_number_string={cas_number_string}"));
         }
         if self.is_cmr {
             parameters.push("is_cmr=true".to_string());
         }
         if let Some(category) = &self.category {
-            parameters.push(format!("category={category}"))
+            parameters.push(format!("category={category}"));
         }
         if let Some(custom_name_part_of) = &self.custom_name_part_of {
-            parameters.push(format!("custom_name_part_of={custom_name_part_of}"))
+            parameters.push(format!("custom_name_part_of={custom_name_part_of}"));
         }
         if let Some(empirical_formula) = &self.empirical_formula {
-            parameters.push(format!("empirical_formula={empirical_formula}"))
+            parameters.push(format!("empirical_formula={empirical_formula}"));
         }
         if let Some(entity) = &self.entity {
-            parameters.push(format!("entity={entity}"))
+            parameters.push(format!("entity={entity}"));
         }
         if let Some(entity_name) = &self.entity_name {
-            parameters.push(format!("entity_name={entity_name}"))
+            parameters.push(format!("entity_name={entity_name}"));
         }
         if let Some(hazard_statements) = &self.hazard_statements {
             parameters.push(format!(
                 "hazard_statements={}",
                 hazard_statements
                     .iter()
-                    .map(|h| h.to_string())
+                    .map(std::string::ToString::to_string)
                     .collect::<Vec<String>>()
                     .join(","),
             ));
@@ -132,13 +132,13 @@ impl fmt::Display for RequestFilter {
                 "storages={}",
                 storages
                     .iter()
-                    .map(|h| h.to_string())
+                    .map(std::string::ToString::to_string)
                     .collect::<Vec<String>>()
                     .join(","),
             ));
         }
         if let Some(name) = &self.name {
-            parameters.push(format!("name={name}"))
+            parameters.push(format!("name={name}"));
         }
         parameters.push(format!("permission={}", self.permission));
         if let Some(precautionary_statements) = &self.precautionary_statements {
@@ -146,28 +146,28 @@ impl fmt::Display for RequestFilter {
                 "precautionary_statements={}",
                 precautionary_statements
                     .iter()
-                    .map(|h| h.to_string())
+                    .map(std::string::ToString::to_string)
                     .collect::<Vec<String>>()
                     .join(","),
             ));
         }
         if let Some(producer) = &self.producer {
-            parameters.push(format!("producer={producer}"))
+            parameters.push(format!("producer={producer}"));
         }
         if let Some(producer_ref) = &self.producer_ref {
-            parameters.push(format!("producer_ref={producer_ref}"))
+            parameters.push(format!("producer_ref={producer_ref}"));
         }
         if let Some(product) = &self.product {
-            parameters.push(format!("product={product}"))
+            parameters.push(format!("product={product}"));
         }
         if let Some(person) = &self.person {
-            parameters.push(format!("person={person}"))
+            parameters.push(format!("person={person}"));
         }
         if let Some(person_email) = &self.person_email {
-            parameters.push(format!("person_email={person_email}"))
+            parameters.push(format!("person_email={person_email}"));
         }
         if let Some(product_specificity) = &self.product_specificity {
-            parameters.push(format!("product_specificity={product_specificity}"))
+            parameters.push(format!("product_specificity={product_specificity}"));
         }
         if self.show_bio {
             parameters.push("show_bio=true".to_string());
@@ -179,38 +179,38 @@ impl fmt::Display for RequestFilter {
             parameters.push("show_consu=true".to_string());
         }
         if let Some(signal_word) = &self.signal_word {
-            parameters.push(format!("signal_word={signal_word}"))
+            parameters.push(format!("signal_word={signal_word}"));
         }
         if let Some(storage) = &self.storage {
-            parameters.push(format!("storage={storage}"))
+            parameters.push(format!("storage={storage}"));
         }
         if let Some(storage_archive) = self.storage_archive {
             parameters.push(format!("storage_archive={storage_archive}"));
         }
         if let Some(storage_barecode) = &self.storage_barecode {
-            parameters.push(format!("storage_barecode={storage_barecode}"))
+            parameters.push(format!("storage_barecode={storage_barecode}"));
         }
         if let Some(storage_batch_number) = &self.storage_batch_number {
-            parameters.push(format!("storage_batch_number={storage_batch_number}"))
+            parameters.push(format!("storage_batch_number={storage_batch_number}"));
         }
         if self.storage_to_destroy {
             parameters.push("storage_to_destroy=true".to_string());
         }
         if let Some(store_location) = &self.store_location {
-            parameters.push(format!("store_location={store_location}"))
+            parameters.push(format!("store_location={store_location}"));
         }
         if self.store_location_can_store {
             parameters.push("store_location_can_store=true".to_string());
         }
         if let Some(supplier) = &self.supplier {
-            parameters.push(format!("supplier={supplier}"))
+            parameters.push(format!("supplier={supplier}"));
         }
         if let Some(symbols) = &self.symbols {
             parameters.push(format!(
                 "symbols={}",
                 symbols
                     .iter()
-                    .map(|h| h.to_string())
+                    .map(std::string::ToString::to_string)
                     .collect::<Vec<String>>()
                     .join(","),
             ));
@@ -219,13 +219,13 @@ impl fmt::Display for RequestFilter {
             parameters.push(format!(
                 "tags={}",
                 tags.iter()
-                    .map(|h| h.to_string())
+                    .map(std::string::ToString::to_string)
                     .collect::<Vec<String>>()
                     .join(","),
             ));
         }
         if let Some(unit_type) = &self.unit_type {
-            parameters.push(format!("unit_type={unit_type}"))
+            parameters.push(format!("unit_type={unit_type}"));
         }
 
         let result: String = parameters.join("&");
@@ -240,12 +240,12 @@ impl TryFrom<&str> for RequestFilter {
         debug!("request:{request}");
 
         // Result populated after by the request parameters.
-        let mut request_filter: RequestFilter = Default::default();
+        let mut request_filter: RequestFilter = RequestFilter::default();
 
         // Parse request URL.
         let url = match Url::parse(request) {
             Ok(url) => url,
-            Err(e) => return Err(format!("can not parse url: {}", e)),
+            Err(e) => return Err(format!("can not parse url: {e}")),
         };
 
         // Regex to validate multi valued ids.
@@ -268,12 +268,12 @@ impl TryFrom<&str> for RequestFilter {
 
         // Trying to capture an id at the end of the URL.
         // Can be overwritten by the ?id= URL parameter (see below).
-        if end_of_url_id_capture.is_match(url.as_str()) {
-            if let Some(cap) = end_of_url_id_capture.captures(url.as_str()) {
-                // We can unwrap safely here because of validation (is_match) below.
-                let id_str = cap.name("id").unwrap().as_str();
-                request_filter.id = Some(id_str.parse::<u64>().unwrap());
-            }
+        if end_of_url_id_capture.is_match(url.as_str())
+            && let Some(cap) = end_of_url_id_capture.captures(url.as_str())
+        {
+            // We can unwrap safely here because of validation (is_match) below.
+            let id_str = cap.name("id").unwrap().as_str();
+            request_filter.id = Some(id_str.parse::<u64>().unwrap());
         }
 
         // Get the query parameters.
@@ -283,14 +283,14 @@ impl TryFrom<&str> for RequestFilter {
             let (key, value) = query_pair;
             match key {
                 std::borrow::Cow::Borrowed("search") => {
-                    request_filter.search = Some(value.to_string())
+                    request_filter.search = Some(value.to_string());
                 }
                 std::borrow::Cow::Borrowed("id") => match value.parse::<u64>() {
                     Ok(v) => request_filter.id = Some(v),
                     Err(e) => return Err(format!("error with id query parameter: {e}")),
                 },
                 std::borrow::Cow::Borrowed("order_by") => {
-                    request_filter.order_by = Some(value.to_string())
+                    request_filter.order_by = Some(value.to_string());
                 }
                 std::borrow::Cow::Borrowed("order") => request_filter.order = value.to_string(),
                 std::borrow::Cow::Borrowed("offset") => match value.parse::<u64>() {
@@ -314,7 +314,7 @@ impl TryFrom<&str> for RequestFilter {
                     Err(e) => return Err(format!("error with cas_number query parameter: {e}")),
                 },
                 std::borrow::Cow::Borrowed("cas_number_string") => {
-                    request_filter.cas_number_string = Some(value.to_string())
+                    request_filter.cas_number_string = Some(value.to_string());
                 }
                 std::borrow::Cow::Borrowed("is_cmr") => match value.parse::<bool>() {
                     Ok(v) => request_filter.is_cmr = v,
@@ -325,12 +325,12 @@ impl TryFrom<&str> for RequestFilter {
                     Err(e) => return Err(format!("error with category query parameter: {e}")),
                 },
                 std::borrow::Cow::Borrowed("custom_name_part_of") => {
-                    request_filter.custom_name_part_of = Some(value.to_string())
+                    request_filter.custom_name_part_of = Some(value.to_string());
                 }
                 std::borrow::Cow::Borrowed("empirical_formula") => match value.parse::<u64>() {
                     Ok(v) => request_filter.empirical_formula = Some(v),
                     Err(e) => {
-                        return Err(format!("error with empirical_formula query parameter: {e}"))
+                        return Err(format!("error with empirical_formula query parameter: {e}"));
                     }
                 },
                 std::borrow::Cow::Borrowed("entity") => match value.parse::<u64>() {
@@ -338,7 +338,7 @@ impl TryFrom<&str> for RequestFilter {
                     Err(e) => return Err(format!("error with entity query parameter: {e}")),
                 },
                 std::borrow::Cow::Borrowed("entity_name") => {
-                    request_filter.entity_name = Some(value.to_string())
+                    request_filter.entity_name = Some(value.to_string());
                 }
                 std::borrow::Cow::Borrowed("hazard_statements") => {
                     if !ids_match.is_match(&value) {
@@ -381,7 +381,7 @@ impl TryFrom<&str> for RequestFilter {
                     Err(e) => return Err(format!("error with name query parameter: {e}")),
                 },
                 std::borrow::Cow::Borrowed("permission") => {
-                    request_filter.permission = value.to_string()
+                    request_filter.permission = value.to_string();
                 }
                 std::borrow::Cow::Borrowed("precautionary_statements") => {
                     if !ids_match.is_match(&value) {
@@ -416,10 +416,10 @@ impl TryFrom<&str> for RequestFilter {
                     Err(e) => return Err(format!("error with person query parameter: {e}")),
                 },
                 std::borrow::Cow::Borrowed("person_email") => {
-                    request_filter.person_email = Some(value.to_string())
+                    request_filter.person_email = Some(value.to_string());
                 }
                 std::borrow::Cow::Borrowed("product_specificity") => {
-                    request_filter.product_specificity = Some(value.to_string())
+                    request_filter.product_specificity = Some(value.to_string());
                 }
                 std::borrow::Cow::Borrowed("show_bio") => match value.parse::<bool>() {
                     Ok(v) => request_filter.show_bio = v,
@@ -444,27 +444,27 @@ impl TryFrom<&str> for RequestFilter {
                 std::borrow::Cow::Borrowed("storage_archive") => match value.parse::<bool>() {
                     Ok(v) => request_filter.storage_archive = Some(v),
                     Err(e) => {
-                        return Err(format!("error with storage_archive query parameter: {e}"))
+                        return Err(format!("error with storage_archive query parameter: {e}"));
                     }
                 },
                 std::borrow::Cow::Borrowed("storage_barecode") => {
-                    request_filter.storage_barecode = Some(value.to_string())
+                    request_filter.storage_barecode = Some(value.to_string());
                 }
                 std::borrow::Cow::Borrowed("storage_batch_number") => {
-                    request_filter.storage_batch_number = Some(value.to_string())
+                    request_filter.storage_batch_number = Some(value.to_string());
                 }
                 std::borrow::Cow::Borrowed("storage_to_destroy") => match value.parse::<bool>() {
                     Ok(v) => request_filter.storage_to_destroy = v,
                     Err(e) => {
                         return Err(format!(
                             "error with storage_to_destroy query parameter: {e}"
-                        ))
+                        ));
                     }
                 },
                 std::borrow::Cow::Borrowed("store_location") => match value.parse::<u64>() {
                     Ok(v) => request_filter.store_location = Some(v),
                     Err(e) => {
-                        return Err(format!("error with store_location query parameter: {e}"))
+                        return Err(format!("error with store_location query parameter: {e}"));
                     }
                 },
                 std::borrow::Cow::Borrowed("store_location_can_store") => {
@@ -473,7 +473,7 @@ impl TryFrom<&str> for RequestFilter {
                         Err(e) => {
                             return Err(format!(
                                 "error with store_location_can_store query parameter: {e}"
-                            ))
+                            ));
                         }
                     }
                 }
@@ -493,7 +493,7 @@ impl TryFrom<&str> for RequestFilter {
                         let id_str = cap.name("id").unwrap().as_str();
                         let id = id_str.parse::<u64>().unwrap();
 
-                        symbol_ids.push(id)
+                        symbol_ids.push(id);
                     }
                     request_filter.symbols = Some(symbol_ids);
                 }
@@ -514,7 +514,7 @@ impl TryFrom<&str> for RequestFilter {
                     request_filter.tags = Some(tag_ids);
                 }
                 std::borrow::Cow::Borrowed("unit_type") => {
-                    request_filter.unit_type = Some(value.to_string())
+                    request_filter.unit_type = Some(value.to_string());
                 }
                 _ => (),
             }
@@ -584,7 +584,9 @@ where
         // Build full absolute URL string so RequestFilter::try_from works
         // axum Parts.uri may not contain scheme/host, so we fake it
         let uri = parts.uri.clone();
-        let path_and_query = uri.path_and_query().map(|pq| pq.as_str()).unwrap_or("");
+        let path_and_query = uri
+            .path_and_query()
+            .map_or("", http::uri::PathAndQuery::as_str);
         let fake_base = "http://localhost"; // arbitrary base
 
         let full_url = format!("{fake_base}{path_and_query}");
@@ -593,7 +595,7 @@ where
             Ok(filter) => Ok(filter),
             Err(err) => {
                 // Respond with 400 + error message
-                let body = format!("invalid query/filter: {}", err);
+                let body = format!("invalid query/filter: {err}");
                 let response = (StatusCode::BAD_REQUEST, body);
                 Err(response)
             }
@@ -799,7 +801,7 @@ mod tests {
         &tags=1,2,3\
         &unit_type=foo"
                 .to_string()
-        )
+        );
     }
 
     #[test]

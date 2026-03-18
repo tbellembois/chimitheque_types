@@ -60,7 +60,8 @@ pub struct PubchemProduct {
 }
 
 impl PubchemProduct {
-    pub fn from_pubchem(json_content: String) -> Option<PubchemProduct> {
+    #[must_use]
+    pub fn from_pubchem_json(json_content: &str) -> PubchemProduct {
         // Precautionary statement regex.
         let precautionary_statement_re = Regex::new(r"(?P<statement>P[0-9]{3}\+{0,1})+").unwrap();
         // Hazard statement regex.
@@ -75,14 +76,14 @@ impl PubchemProduct {
             ..Default::default()
         };
 
-        let json_content: Value = serde_json::from_str(&json_content).unwrap();
+        let json_content: Value = serde_json::from_str(json_content).unwrap();
 
         // Name.
         let name = json_content.clone().path("$.Record.RecordTitle").unwrap();
 
         debug!("name: {:#?}", name);
         let name_value = name.as_array().map(|v| match v.first() {
-            Some(value) => value.as_str().map(|s| s.to_string()),
+            Some(value) => value.as_str().map(std::string::ToString::to_string),
             None => None,
         });
         product.name = name_value.unwrap_or(None);
@@ -94,7 +95,7 @@ impl PubchemProduct {
 
         debug!("iupac_name: {:#?}", iupac_name);
         let iupac_name_value = iupac_name.as_array().map(|v| match v.first() {
-            Some(value) => value.as_str().map(|s| s.to_string()),
+            Some(value) => value.as_str().map(std::string::ToString::to_string),
             None => None,
         });
         product.iupac_name = iupac_name_value.unwrap_or(None);
@@ -109,7 +110,7 @@ impl PubchemProduct {
 
         debug!("inchi: {:#?}", inchi);
         let inchi_value = inchi.as_array().map(|v| match v.first() {
-            Some(value) => value.as_str().map(|s| s.to_string()),
+            Some(value) => value.as_str().map(std::string::ToString::to_string),
             None => None,
         });
         product.inchi = inchi_value.unwrap_or(None);
@@ -124,7 +125,7 @@ impl PubchemProduct {
 
         debug!("inchi_key: {:#?}", inchi_key);
         let inchi_key_value = inchi_key.as_array().map(|v| match v.first() {
-            Some(value) => value.as_str().map(|s| s.to_string()),
+            Some(value) => value.as_str().map(std::string::ToString::to_string),
             None => None,
         });
         product.inchi_key = inchi_key_value.unwrap_or(None);
@@ -139,7 +140,7 @@ impl PubchemProduct {
 
         debug!("canonical_smiles: {:#?}", canonical_smiles);
         let canonical_smiles_value = canonical_smiles.as_array().map(|v| match v.first() {
-            Some(value) => value.as_str().map(|s| s.to_string()),
+            Some(value) => value.as_str().map(std::string::ToString::to_string),
             None => None,
         });
         product.canonical_smiles = canonical_smiles_value.unwrap_or(None);
@@ -154,7 +155,7 @@ impl PubchemProduct {
 
         debug!("molecular_formula: {:#?}", molecular_formula);
         let molecular_formula_value = molecular_formula.as_array().map(|v| match v.first() {
-            Some(value) => value.as_str().map(|s| s.to_string()),
+            Some(value) => value.as_str().map(std::string::ToString::to_string),
             None => None,
         });
         product.molecular_formula = molecular_formula_value.unwrap_or(None);
@@ -167,7 +168,7 @@ impl PubchemProduct {
 
         debug!("cas: {:#?}", cas);
         let cas_value = cas.as_array().map(|v| match v.first() {
-            Some(value) => value.as_str().map(|s| s.to_string()),
+            Some(value) => value.as_str().map(std::string::ToString::to_string),
             None => None,
         });
         product.cas = cas_value.unwrap_or(None);
@@ -180,7 +181,7 @@ impl PubchemProduct {
 
         debug!("ec: {:#?}", ec);
         let ec_value = ec.as_array().map(|v| match v.first() {
-            Some(value) => value.as_str().map(|s| s.to_string()),
+            Some(value) => value.as_str().map(std::string::ToString::to_string),
             None => None,
         });
         product.ec = ec_value.unwrap_or(None);
@@ -203,9 +204,9 @@ impl PubchemProduct {
                 .collect()
         });
 
-        if product.synonyms.is_some() {
-            product.synonyms.as_mut().unwrap().sort();
-            product.synonyms.as_mut().unwrap().dedup();
+        if let Some(synonym_vec) = product.synonyms.as_mut() {
+            synonym_vec.sort();
+            synonym_vec.dedup();
         }
 
         // Molecular weight.
@@ -216,7 +217,7 @@ impl PubchemProduct {
 
         debug!("molecular_weight: {:#?}", molecular_weight);
         let molecular_weight_value = molecular_weight.as_array().map(|v| match v.first() {
-            Some(value) => value.as_str().map(|s| s.to_string()),
+            Some(value) => value.as_str().map(std::string::ToString::to_string),
             None => None,
         });
         product.molecular_weight = molecular_weight_value.unwrap_or(None);
@@ -230,7 +231,7 @@ impl PubchemProduct {
         debug!("molecular_weight_unit: {:#?}", molecular_weight_unit);
         let molecular_weight_unit_value =
             molecular_weight_unit.as_array().map(|v| match v.first() {
-                Some(value) => value.as_str().map(|s| s.to_string()),
+                Some(value) => value.as_str().map(std::string::ToString::to_string),
                 None => None,
             });
         product.molecular_weight_unit = molecular_weight_unit_value.unwrap_or(None);
@@ -243,7 +244,7 @@ impl PubchemProduct {
 
         debug!("boiling_point: {:#?}", boiling_point);
         let boiling_point_value = boiling_point.as_array().map(|v| match v.first() {
-            Some(value) => value.as_str().map(|s| s.to_string()),
+            Some(value) => value.as_str().map(std::string::ToString::to_string),
             None => None,
         });
         product.boiling_point = boiling_point_value.unwrap_or(None);
@@ -273,8 +274,10 @@ impl PubchemProduct {
                         .map(|statement| statement.as_str().to_string())
                 })
                 .collect();
-            product.symbols.as_mut().unwrap().sort();
-            product.symbols.as_mut().unwrap().dedup();
+            if let Some(symbol_vec) = product.symbols.as_mut() {
+                symbol_vec.sort();
+                symbol_vec.dedup();
+            }
         }
 
         // Signal.
@@ -293,9 +296,9 @@ impl PubchemProduct {
                 .collect()
         });
 
-        if product.signal.is_some() {
-            product.signal.as_mut().unwrap().sort();
-            product.signal.as_mut().unwrap().dedup();
+        if let Some(signal_vec) = product.signal.as_mut() {
+            signal_vec.sort();
+            signal_vec.dedup();
         }
 
         // Hazard statements.
@@ -306,7 +309,7 @@ impl PubchemProduct {
 
         debug!("hs: {:#?}", hs);
 
-        let maybe_hs_string_vec: Option<Vec<String>> = hs.as_array().map(|v| {
+        let maybe_hazardstatement_string_vec: Option<Vec<String>> = hs.as_array().map(|v| {
             v.iter()
                 .map(|s| match s.as_str() {
                     Some(s) => s.to_string(),
@@ -315,7 +318,7 @@ impl PubchemProduct {
                 .collect()
         });
 
-        if let Some(hs_string_vec) = maybe_hs_string_vec {
+        if let Some(hs_string_vec) = maybe_hazardstatement_string_vec {
             let hs_string = hs_string_vec.join(",");
             product.hs = hazard_statement_re
                 .captures_iter(&hs_string)
@@ -324,8 +327,10 @@ impl PubchemProduct {
                         .map(|statement| statement.as_str().to_string())
                 })
                 .collect();
-            product.hs.as_mut().unwrap().sort();
-            product.hs.as_mut().unwrap().dedup();
+            if let Some(hs_vec) = product.hs.as_mut() {
+                hs_vec.sort();
+                hs_vec.dedup();
+            }
         }
 
         // Precautionary statements.
@@ -336,7 +341,7 @@ impl PubchemProduct {
 
         debug!("ps: {:#?}", ps);
 
-        let maybe_ps_string_vec: Option<Vec<String>> = ps.as_array().map(|v| {
+        let maybe_precautionarystatement_string_vec: Option<Vec<String>> = ps.as_array().map(|v| {
             v.iter()
                 .map(|s| match s.as_str() {
                     Some(s) => s.to_string(),
@@ -345,7 +350,7 @@ impl PubchemProduct {
                 .collect()
         });
 
-        if let Some(ps_string_vec) = maybe_ps_string_vec {
+        if let Some(ps_string_vec) = maybe_precautionarystatement_string_vec {
             let ps_string = ps_string_vec.join(",");
             product.ps = precautionary_statement_re
                 .captures_iter(&ps_string)
@@ -354,41 +359,18 @@ impl PubchemProduct {
                         .map(|statement| statement.as_str().to_string())
                 })
                 .collect();
-            product.ps.as_mut().unwrap().sort();
-            product.ps.as_mut().unwrap().dedup();
+            if let Some(ps_vec) = product.ps.as_mut() {
+                ps_vec.sort();
+                ps_vec.dedup();
+            }
         }
 
         debug!("product: {:#?}", product);
 
-        Some(product)
+        product
     }
 }
 
 #[cfg(test)]
-mod tests {
-
-    use std::{
-        fs::{self},
-        path::Path,
-    };
-
-    use log::info;
-
-    use super::*;
-
-    fn init_logger() {
-        let _ = env_logger::builder().is_test(true).try_init();
-    }
-
-    #[test]
-    fn test_from_pubchem() {
-        init_logger();
-
-        let json_file_path = Path::new("src/testdata/pubchem_pug_view.json");
-        let json_string =
-            fs::read_to_string(json_file_path).expect("error while opening json file");
-
-        let product = PubchemProduct::from_pubchem(json_string);
-        info!("{:#?}", product);
-    }
-}
+#[path = "pubchemproduct_tests.rs"]
+mod pubchemproduct_tests;

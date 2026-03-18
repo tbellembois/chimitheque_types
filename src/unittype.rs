@@ -26,17 +26,6 @@ impl Display for UnitType {
     }
 }
 
-// #[derive(Debug, PartialEq, Eq)]
-// pub struct ParseUnitTypeError;
-//
-// impl Display for ParseUnitTypeError {
-//     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-//         write!(f, "wrong unit type")
-//     }
-// }
-//
-// impl std::error::Error for ParseUnitTypeError {}
-
 impl FromStr for UnitType {
     type Err = ParseError;
 
