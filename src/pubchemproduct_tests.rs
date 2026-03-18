@@ -19,6 +19,6 @@ mod tests {
         let json_string =
             fs::read_to_string(json_file_path).expect("error while opening json file");
 
-        let maybe_product = PubchemProduct::from_pubchem_json(json_string.as_str());
+        let _maybe_product = PubchemProduct::from_pubchem_json(json_string.as_str());
     }
 }
