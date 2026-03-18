@@ -34,6 +34,8 @@ url = "2.5.0"
 chimitheque_traits = { git = "https://github.com/tbellembois/chimitheque_traits.git", branch = "main" }
 chimitheque_utils = { git = "https://github.com/tbellembois/chimitheque_utils.git", branch = "main" }
 
-[patch.crates-io]
+[patch."https://github.com/tbellembois/chimitheque_traits.git"]
 chimitheque_traits = { path = "../chimitheque_traits" }
+
+[patch."https://github.com/tbellembois/chimitheque_utils.git"]
 chimitheque_utils = { path = "../chimitheque_utils" }
