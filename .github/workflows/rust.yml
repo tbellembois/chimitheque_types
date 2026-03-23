@@ -54,3 +54,9 @@ jobs:
         with:
           name: code-coverage-report
           path: lcov.info
+
+      - name: upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          disable_search: true
+          file: ./lcov.info
