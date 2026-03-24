@@ -51,3 +51,7 @@ impl Searchable for Category {
         self.category_label.clone()
     }
 }
+
+#[cfg(test)]
+#[path = "category_tests.rs"]
+mod category_tests;

@@ -1,7 +1,7 @@
 use chimitheque_traits::searchable::Searchable;
 use chimitheque_utils::{
     casnumber::is_cas_number,
-    string::{clean, Transform},
+    string::{Transform, clean},
 };
 use serde::{Deserialize, Serialize};
 
@@ -64,3 +64,7 @@ impl Searchable for CasNumber {
         self.cas_number_label.clone()
     }
 }
+
+#[cfg(test)]
+#[path = "casnumber_tests.rs"]
+mod casnumber_tests;

@@ -1,7 +1,7 @@
 use chimitheque_traits::searchable::Searchable;
 use chimitheque_utils::{
     formula::sort_empirical_formula,
-    string::{clean, Transform},
+    string::{Transform, clean},
 };
 use serde::{Deserialize, Serialize};
 
@@ -67,3 +67,7 @@ impl Searchable for EmpiricalFormula {
         self.empirical_formula_label.clone()
     }
 }
+
+#[cfg(test)]
+#[path = "empiricalformula_tests.rs"]
+mod empiricalformula_tests;

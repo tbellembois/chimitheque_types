@@ -51,3 +51,7 @@ impl Searchable for Tag {
         self.tag_label.clone()
     }
 }
+
+#[cfg(test)]
+#[path = "tag_tests.rs"]
+mod tag_tests;

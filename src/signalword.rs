@@ -51,3 +51,7 @@ impl Searchable for SignalWord {
         self.signal_word_label.clone()
     }
 }
+
+#[cfg(test)]
+#[path = "signalword_tests.rs"]
+mod signalword_tests;

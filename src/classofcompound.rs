@@ -51,3 +51,7 @@ impl Searchable for ClassOfCompound {
         self.class_of_compound_label.clone()
     }
 }
+
+#[cfg(test)]
+#[path = "classofcompound_tests.rs"]
+mod classofcompound_tests;

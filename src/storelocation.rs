@@ -1,7 +1,7 @@
 use std::fmt;
 
 use crate::entity::Entity;
-use chimitheque_utils::string::{clean, Transform};
+use chimitheque_utils::string::{Transform, clean};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
@@ -40,3 +40,7 @@ impl StoreLocation {
         Ok(())
     }
 }
+
+#[cfg(test)]
+#[path = "storelocation_tests.rs"]
+mod storelocation_tests;

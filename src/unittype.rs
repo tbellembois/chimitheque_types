@@ -39,3 +39,7 @@ impl FromStr for UnitType {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "unittype_tests.rs"]
+mod unittype_tests;

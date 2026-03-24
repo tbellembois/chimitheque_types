@@ -1,5 +1,5 @@
 use chimitheque_traits::searchable::Searchable;
-use chimitheque_utils::string::{clean, Transform};
+use chimitheque_utils::string::{Transform, clean};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
@@ -62,3 +62,7 @@ impl Searchable for Supplier {
         self.supplier_label.clone()
     }
 }
+
+#[cfg(test)]
+#[path = "supplier_tests.rs"]
+mod supplier_tests;

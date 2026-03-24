@@ -51,3 +51,7 @@ impl Searchable for Symbol {
         self.symbol_label.clone()
     }
 }
+
+#[cfg(test)]
+#[path = "symbol_tests.rs"]
+mod symbol_tests;

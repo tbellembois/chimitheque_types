@@ -36,7 +36,7 @@ pub struct RequestFilter {
     pub person: Option<u64>,
     pub person_email: Option<String>,
     #[serde(default)]
-    pub permission: String,
+    // pub permission: String,
     pub precautionary_statements: Option<Vec<u64>>,
     pub producer: Option<u64>,
     pub producer_ref: Option<u64>,
@@ -124,6 +124,16 @@ impl fmt::Display for RequestFilter {
                     .join(","),
             ));
         }
+        if let Some(precautionary_statements) = &self.precautionary_statements {
+            parameters.push(format!(
+                "precautionary_statements={}",
+                precautionary_statements
+                    .iter()
+                    .map(std::string::ToString::to_string)
+                    .collect::<Vec<String>>()
+                    .join(","),
+            ));
+        }
         if self.history {
             parameters.push("history=true".to_string());
         }
@@ -140,17 +150,17 @@ impl fmt::Display for RequestFilter {
         if let Some(name) = &self.name {
             parameters.push(format!("name={name}"));
         }
-        parameters.push(format!("permission={}", self.permission));
-        if let Some(precautionary_statements) = &self.precautionary_statements {
-            parameters.push(format!(
-                "precautionary_statements={}",
-                precautionary_statements
-                    .iter()
-                    .map(std::string::ToString::to_string)
-                    .collect::<Vec<String>>()
-                    .join(","),
-            ));
-        }
+        // parameters.push(format!("permission={}", self.permission));
+        // if let Some(precautionary_statements) = &self.precautionary_statements {
+        //     parameters.push(format!(
+        //         "precautionary_statements={}",
+        //         precautionary_statements
+        //             .iter()
+        //             .map(std::string::ToString::to_string)
+        //             .collect::<Vec<String>>()
+        //             .join(","),
+        //     ));
+        // }
         if let Some(producer) = &self.producer {
             parameters.push(format!("producer={producer}"));
         }
@@ -380,9 +390,9 @@ impl TryFrom<&str> for RequestFilter {
                     Ok(v) => request_filter.name = Some(v),
                     Err(e) => return Err(format!("error with name query parameter: {e}")),
                 },
-                std::borrow::Cow::Borrowed("permission") => {
-                    request_filter.permission = value.to_string();
-                }
+                // std::borrow::Cow::Borrowed("permission") => {
+                //     request_filter.permission = value.to_string();
+                // }
                 std::borrow::Cow::Borrowed("precautionary_statements") => {
                     if !ids_match.is_match(&value) {
                         return Err("invalid precautionary_statements ids format".to_string());
@@ -547,7 +557,7 @@ impl Default for RequestFilter {
             history: false,
             storages: None,
             name: None,
-            permission: String::from("r"),
+            // permission: String::from("r"),
             precautionary_statements: None,
             producer: None,
             producer_ref: None,
@@ -604,386 +614,5 @@ where
 }
 
 #[cfg(test)]
-mod tests {
-
-    use super::*;
-
-    fn init_logger() {
-        let _ = env_logger::builder().is_test(true).try_init();
-    }
-
-    #[test]
-    fn test_to_string() {
-        init_logger();
-
-        let filter = RequestFilter {
-            search: Some("%foo%".to_string()),
-            id: Some(5),
-            order_by: Some("foo".to_string()),
-            order: "foo".to_string(),
-            offset: Some(10),
-            limit: Some(10),
-            bookmark: true,
-            borrowing: true,
-            cas_number: Some(10),
-            cas_number_string: Some("1234".to_string()),
-            is_cmr: true,
-            category: Some(10),
-            custom_name_part_of: Some("foo".to_string()),
-            empirical_formula: Some(10),
-            entity: Some(10),
-            entity_name: Some("foo".to_string()),
-            hazard_statements: Some(vec![1, 2, 3]),
-            history: true,
-            storages: Some(vec![1, 2, 3]),
-            name: Some(10),
-            permission: "foo".to_string(),
-            precautionary_statements: Some(vec![1, 2, 3]),
-            producer: Some(10),
-            producer_ref: Some(10),
-            product: Some(10),
-            person: Some(10),
-            person_email: Some("foo@example.com".to_string()),
-            product_specificity: Some("foo".to_string()),
-            show_bio: true,
-            show_chem: true,
-            show_consu: true,
-            signal_word: Some(10),
-            storage: Some(10),
-            storage_archive: Some(true),
-            storage_barecode: Some("foo".to_string()),
-            storage_batch_number: Some("foo".to_string()),
-            storage_to_destroy: true,
-            store_location: Some(10),
-            store_location_can_store: true,
-            supplier: Some(10),
-            symbols: Some(vec![1, 2, 3]),
-            tags: Some(vec![1, 2, 3]),
-            unit_type: Some("foo".to_string()),
-        };
-
-        assert_eq!(
-            filter.to_string(),
-            "?search=%foo%\
-        &id=5\
-        &order_by=foo\
-        &order=foo\
-        &offset=10\
-        &limit=10\
-        &bookmark=true\
-        &borrowing=true\
-        &cas_number=10\
-        &cas_number_string=1234\
-        &is_cmr=true\
-        &category=10\
-        &custom_name_part_of=foo\
-        &empirical_formula=10\
-        &entity=10\
-        &entity_name=foo\
-        &hazard_statements=1,2,3\
-        &history=true\
-        &storages=1,2,3\
-        &name=10\
-        &permission=foo\
-        &precautionary_statements=1,2,3\
-        &producer=10\
-        &producer_ref=10\
-        &product=10\
-        &person=10\
-        &person_email=foo@example.com\
-        &product_specificity=foo\
-        &show_bio=true\
-        &show_chem=true\
-        &show_consu=true\
-        &signal_word=10\
-        &storage=10\
-        &storage_archive=true\
-        &storage_barecode=foo\
-        &storage_batch_number=foo\
-        &storage_to_destroy=true\
-        &store_location=10\
-        &store_location_can_store=true\
-        &supplier=10\
-        &symbols=1,2,3\
-        &tags=1,2,3\
-        &unit_type=foo"
-                .to_string()
-        );
-
-        let filter = RequestFilter {
-            search: Some("%foo%".to_string()),
-            id: Some(5),
-            order_by: Some("foo".to_string()),
-            order: "foo".to_string(),
-            offset: Some(10),
-            limit: Some(10),
-            bookmark: true,
-            borrowing: true,
-            cas_number: Some(10),
-            cas_number_string: Some("1234".to_string()),
-            is_cmr: true,
-            category: Some(10),
-            custom_name_part_of: Some("foo".to_string()),
-            empirical_formula: Some(10),
-            entity: Some(10),
-            entity_name: Some("foo".to_string()),
-            hazard_statements: Some(vec![1, 2, 3]),
-            history: true,
-            storages: Some(vec![1, 2, 3]),
-            name: Some(10),
-            permission: "foo".to_string(),
-            precautionary_statements: Some(vec![1, 2, 3]),
-            producer: Some(10),
-            producer_ref: Some(10),
-            product: Some(10),
-            person: Some(10),
-            person_email: Some("foo@example.com".to_string()),
-            product_specificity: Some("foo".to_string()),
-            show_bio: true,
-            show_chem: true,
-            show_consu: true,
-            signal_word: Some(10),
-            storage: Some(10),
-            storage_barecode: Some("foo".to_string()),
-            storage_batch_number: Some("foo".to_string()),
-            storage_to_destroy: true,
-            store_location: Some(10),
-            store_location_can_store: true,
-            supplier: Some(10),
-            symbols: Some(vec![1, 2, 3]),
-            tags: Some(vec![1, 2, 3]),
-            unit_type: Some("foo".to_string()),
-            ..Default::default()
-        };
-
-        assert_eq!(
-            filter.to_string(),
-            "?search=%foo%\
-        &id=5\
-        &order_by=foo\
-        &order=foo\
-        &offset=10\
-        &limit=10\
-        &bookmark=true\
-        &borrowing=true\
-        &cas_number=10\
-        &cas_number_string=1234\
-        &is_cmr=true\
-        &category=10\
-        &custom_name_part_of=foo\
-        &empirical_formula=10\
-        &entity=10\
-        &entity_name=foo\
-        &hazard_statements=1,2,3\
-        &history=true\
-        &storages=1,2,3\
-        &name=10\
-        &permission=foo\
-        &precautionary_statements=1,2,3\
-        &producer=10\
-        &producer_ref=10\
-        &product=10\
-        &person=10\
-        &person_email=foo@example.com\
-        &product_specificity=foo\
-        &show_bio=true\
-        &show_chem=true\
-        &show_consu=true\
-        &signal_word=10\
-        &storage=10\
-        &storage_barecode=foo\
-        &storage_batch_number=foo\
-        &storage_to_destroy=true\
-        &store_location=10\
-        &store_location_can_store=true\
-        &supplier=10\
-        &symbols=1,2,3\
-        &tags=1,2,3\
-        &unit_type=foo"
-                .to_string()
-        );
-    }
-
-    #[test]
-    fn test_try_from() {
-        init_logger();
-
-        // Valid values.
-        let filter = RequestFilter::try_from(
-            "http://localhost/?search=%foo%\
-        &order_by=foo\
-        &order=foo\
-        &offset=10\
-        &limit=10\
-        &bookmark=true\
-        &borrowing=true\
-        &cas_number=10\
-        &is_cmr=true\
-        &category=10\
-        &custom_name_part_of=foo\
-        &empirical_formula=10\
-        &entity=10\
-        &hazard_statements=1,2,3\
-        &history=true\
-        &storages=1,2,3\
-        &name=10\
-        &permission=foo\
-        &precautionary_statements=1,2,3\
-        &producer=10\
-        &producer_ref=10\
-        &product=10\
-        &product_specificity=foo\
-        &show_bio=true\
-        &show_chem=true\
-        &show_consu=true\
-        &signal_word=10\
-        &storage=10\
-        &storage_archive=true\
-        &storage_barecode=foo\
-        &storage_batch_number=foo\
-        &storage_to_destroy=true\
-        &store_location=10\
-        &store_location_can_store=true\
-        &supplier=10\
-        &symbols=1,2,3\
-        &tags=1,2,3\
-        &unit_type=foo",
-        );
-
-        assert_eq!(filter.clone().unwrap().search, Some(String::from("%foo%")));
-        assert_eq!(filter.clone().unwrap().order_by, Some(String::from("foo")));
-        assert_eq!(filter.clone().unwrap().order, "foo");
-        assert_eq!(filter.clone().unwrap().offset, Some(10));
-        assert_eq!(filter.clone().unwrap().limit, Some(10));
-        assert!(filter.clone().unwrap().bookmark);
-        assert!(filter.clone().unwrap().borrowing);
-        assert_eq!(filter.clone().unwrap().cas_number, Some(10));
-        assert!(filter.clone().unwrap().is_cmr);
-        assert_eq!(filter.clone().unwrap().category, Some(10));
-        assert_eq!(
-            filter.clone().unwrap().custom_name_part_of,
-            Some(String::from("foo"))
-        );
-        assert_eq!(filter.clone().unwrap().empirical_formula, Some(10));
-        assert_eq!(filter.clone().unwrap().entity, Some(10));
-        assert_eq!(
-            filter.clone().unwrap().hazard_statements,
-            Some(vec![1, 2, 3])
-        );
-        assert!(filter.clone().unwrap().history);
-        assert_eq!(filter.clone().unwrap().storages, Some(vec![1, 2, 3]));
-        assert_eq!(filter.clone().unwrap().name, Some(10));
-        assert_eq!(filter.clone().unwrap().permission, "foo");
-        assert_eq!(
-            filter.clone().unwrap().precautionary_statements,
-            Some(vec![1, 2, 3])
-        );
-        assert_eq!(filter.clone().unwrap().producer, Some(10));
-        assert_eq!(filter.clone().unwrap().producer_ref, Some(10));
-        assert_eq!(filter.clone().unwrap().product, Some(10));
-        assert_eq!(
-            filter.clone().unwrap().product_specificity,
-            Some(String::from("foo"))
-        );
-        assert!(filter.clone().unwrap().show_bio);
-        assert!(filter.clone().unwrap().show_chem);
-        assert!(filter.clone().unwrap().show_consu);
-        assert_eq!(filter.clone().unwrap().signal_word, Some(10));
-        assert_eq!(filter.clone().unwrap().storage, Some(10));
-        assert!(filter.clone().unwrap().storage_archive.is_some_and(|x| x));
-        assert_eq!(
-            filter.clone().unwrap().storage_barecode,
-            Some(String::from("foo"))
-        );
-        assert_eq!(
-            filter.clone().unwrap().storage_batch_number,
-            Some(String::from("foo"))
-        );
-        assert!(filter.clone().unwrap().storage_to_destroy);
-        assert_eq!(filter.clone().unwrap().store_location, Some(10));
-        assert!(filter.clone().unwrap().store_location_can_store);
-        assert_eq!(filter.clone().unwrap().supplier, Some(10));
-        assert_eq!(filter.clone().unwrap().symbols, Some(vec![1, 2, 3]));
-        assert_eq!(filter.clone().unwrap().tags, Some(vec![1, 2, 3]));
-        assert_eq!(filter.clone().unwrap().unit_type, Some(String::from("foo")));
-
-        // Invalid values.
-        let param_int = vec![
-            "offset",
-            "limit",
-            "cas_number",
-            "category",
-            "empirical_formula",
-            "entity",
-            "name",
-            "producer",
-            "producer_ref",
-            "product",
-            "signal_word",
-            "storage",
-            "store_location",
-            "supplier",
-        ];
-        let param_bool = vec![
-            "bookmark",
-            "borrowing",
-            "is_cmr",
-            "history",
-            "show_bio",
-            "show_chem",
-            "show_consu",
-            "storage_archive",
-            "storage_to_destroy",
-            "store_location_can_store",
-        ];
-        let param_vec_int = vec![
-            "hazard_statements",
-            "storages",
-            "precautionary_statements",
-            "symbols",
-            "tags",
-        ];
-
-        for param in param_int {
-            // test not digit
-            let filter = RequestFilter::try_from(format!("http://localhost/?{param}=ab").as_str());
-            assert!(filter.is_err());
-        }
-
-        for param in param_bool {
-            // test not bool
-            let filter = RequestFilter::try_from(format!("http://localhost/?{param}=ab").as_str());
-            assert!(filter.is_err());
-        }
-
-        for param in param_vec_int {
-            // test not digit
-            let filter = RequestFilter::try_from(format!("http://localhost/?{param}=A").as_str());
-            assert!(filter.is_err());
-
-            let filter =
-                RequestFilter::try_from(format!("http://localhost/?{param}=1,2,A").as_str());
-            assert!(filter.is_err());
-
-            // test wrong separator
-            let filter = RequestFilter::try_from(format!("http://localhost/?{param}=1;2").as_str());
-            assert!(filter.is_err());
-        }
-
-        // Search with URL encoded spaces.
-        let filter = RequestFilter::try_from("http://localhost/?search=acide+chlor");
-        assert!(filter.is_ok());
-        let filter = RequestFilter::try_from("http://localhost/?search=acide%20chlor");
-        assert!(filter.is_ok());
-
-        // ID at the end of the URL.
-        let filter = RequestFilter::try_from("http://localhost/1234");
-        assert_eq!(filter.unwrap().id, Some(1234));
-        let filter = RequestFilter::try_from("http://localhost/1234?id=4321");
-        assert_eq!(filter.unwrap().id, Some(4321));
-        let filter = RequestFilter::try_from("http://localhost/id=4321");
-        assert_eq!(filter.unwrap().id, None);
-        let filter = RequestFilter::try_from("https://192.168.1.18:8443/back/entities/10");
-        assert_eq!(filter.unwrap().id, Some(10));
-    }
-}
+#[path = "requestfilter_tests.rs"]
+mod requestfilter_tests;
