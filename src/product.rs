@@ -103,6 +103,12 @@ impl Product {
             self.ce_number.as_mut().unwrap().sanitize_and_validate()?;
         }
 
+        if let Some(category) = self.category.as_ref()
+            && category.category_id.is_none()
+        {
+            self.category.as_mut().unwrap().sanitize_and_validate()?;
+        }
+
         if let Some(empirical_formula) = self.empirical_formula.as_ref()
             && empirical_formula.empirical_formula_id.is_none()
         {
@@ -112,8 +118,25 @@ impl Product {
                 .sanitize_and_validate()?;
         }
 
+        if let Some(linear_formula) = self.linear_formula.as_ref()
+            && linear_formula.linear_formula_id.is_none()
+        {
+            self.linear_formula
+                .as_mut()
+                .unwrap()
+                .sanitize_and_validate()?;
+        }
+
         if self.name.name_id.is_none() {
             self.name.sanitize_and_validate()?;
+        }
+
+        if let Some(tags) = self.tags.as_mut() {
+            for tag in tags {
+                if tag.tag_id.is_none() {
+                    tag.sanitize_and_validate()?;
+                }
+            }
         }
 
         Ok(())

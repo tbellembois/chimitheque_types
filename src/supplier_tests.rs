@@ -65,8 +65,7 @@ mod tests {
             supplier_id: Some(1),
             supplier_label: String::default(),
         };
-        assert!(supplier.sanitize_and_validate().is_ok());
-        assert_eq!(supplier.supplier_label, "");
+        assert!(supplier.sanitize_and_validate().is_err());
     }
 
     #[test]

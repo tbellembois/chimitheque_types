@@ -35,7 +35,7 @@ impl FromStr for UnitType {
             "concentration" => Ok(UnitType::Concentration),
             "temperature" => Ok(UnitType::Temperature),
             "molecular_weight" => Ok(UnitType::MolecularWeight),
-            _ => Err(ParseError::ParseUnitTypeError),
+            _ => Err(ParseError::ParseUnitTypeError(input.to_string())),
         }
     }
 }

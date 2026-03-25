@@ -53,3 +53,7 @@ impl Searchable for HazardStatement {
         self.hazard_statement_reference.clone()
     }
 }
+
+#[cfg(test)]
+#[path = "hazardstatement_tests.rs"]
+mod hazardstatement_tests;

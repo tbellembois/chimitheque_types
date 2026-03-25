@@ -2,6 +2,8 @@ use chimitheque_traits::searchable::Searchable;
 use chimitheque_utils::string::{Transform, clean};
 use serde::{Deserialize, Serialize};
 
+use crate::error::ParseError;
+
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Supplier {
     #[serde(default)]
@@ -15,6 +17,9 @@ impl Supplier {
         &mut self,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         self.supplier_label = clean(&self.supplier_label, Transform::None);
+        if self.supplier_label.is_empty() {
+            return Err(Box::new(ParseError::EmptyInput));
+        }
         Ok(())
     }
 }

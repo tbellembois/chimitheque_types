@@ -5,6 +5,8 @@ use chimitheque_utils::{
 };
 use serde::{Deserialize, Serialize};
 
+use crate::error::ParseError;
+
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct CasNumber {
     pub match_exact_search: bool,
@@ -17,6 +19,9 @@ impl CasNumber {
         &mut self,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         self.cas_number_label = clean(&self.cas_number_label, Transform::None);
+        if self.cas_number_label.is_empty() {
+            return Err(Box::new(ParseError::EmptyInput));
+        }
         is_cas_number(&self.cas_number_label)
     }
 }

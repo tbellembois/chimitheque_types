@@ -1,6 +1,8 @@
 use chimitheque_traits::searchable::Searchable;
-use chimitheque_utils::string::{clean, Transform};
+use chimitheque_utils::string::{Transform, clean};
 use serde::{Deserialize, Serialize};
+
+use crate::error::ParseError;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Producer {
@@ -15,6 +17,9 @@ impl Producer {
         &mut self,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         self.producer_label = clean(&self.producer_label, Transform::None);
+        if self.producer_label.is_empty() {
+            return Err(Box::new(ParseError::EmptyInput));
+        }
         Ok(())
     }
 }
@@ -62,3 +67,7 @@ impl Searchable for Producer {
         self.producer_label.clone()
     }
 }
+
+#[cfg(test)]
+#[path = "producer_tests.rs"]
+mod producer_tests;

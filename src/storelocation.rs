@@ -37,6 +37,9 @@ impl StoreLocation {
         &mut self,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         self.store_location_name = clean(&self.store_location_name, Transform::None);
+        if self.store_location_name.is_empty() {
+            return Err(Box::new(crate::error::ParseError::EmptyInput));
+        }
         Ok(())
     }
 }

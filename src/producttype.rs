@@ -35,7 +35,7 @@ impl FromStr for ProductType {
             "chem" => Ok(ProductType::Chem),
             "cons" => Ok(ProductType::Cons),
             "bio" => Ok(ProductType::Bio),
-            _ => Err(ParseError::ParseProductTypeError),
+            _ => Err(ParseError::ParseProductTypeError(input.to_string())),
         }
     }
 }

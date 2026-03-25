@@ -42,7 +42,7 @@ impl FromStr for PermissionName {
             "w" => Ok(PermissionName::Write),
             "b" => Ok(PermissionName::Borrow),
             "all" => Ok(PermissionName::All),
-            _ => Err(ParseError::ParsePermissionNameError),
+            _ => Err(ParseError::ParsePermissionNameError(input.to_string())),
         }
     }
 }
@@ -84,7 +84,7 @@ impl FromStr for PermissionItem {
             "products" => Ok(PermissionItem::Products),
             "rproducts" => Ok(PermissionItem::RestrictedProducts),
             "storages" => Ok(PermissionItem::Storages),
-            _ => Err(ParseError::ParsePermissionItemError),
+            _ => Err(ParseError::ParsePermissionItemError(input.to_string())),
         }
     }
 }

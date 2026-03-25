@@ -52,3 +52,7 @@ impl Searchable for PrecautionaryStatement {
         self.precautionary_statement_reference.clone()
     }
 }
+
+#[cfg(test)]
+#[path = "precautionarystatement_tests.rs"]
+mod precautionarystatement_tests;

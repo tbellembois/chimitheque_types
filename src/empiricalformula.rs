@@ -1,9 +1,11 @@
 use chimitheque_traits::searchable::Searchable;
 use chimitheque_utils::{
-    formula::sort_empirical_formula,
+    formula::to_empirical_formula,
     string::{Transform, clean},
 };
 use serde::{Deserialize, Serialize};
+
+use crate::error::ParseError;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct EmpiricalFormula {
@@ -17,8 +19,10 @@ impl EmpiricalFormula {
         &mut self,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let sorted_and_cleaned_empirical_formula =
-            sort_empirical_formula(&clean(&self.empirical_formula_label, Transform::None))?;
-
+            to_empirical_formula(&clean(&self.empirical_formula_label, Transform::None))?;
+        if sorted_and_cleaned_empirical_formula.is_empty() {
+            return Err(Box::new(ParseError::EmptyInput));
+        }
         self.empirical_formula_label = sorted_and_cleaned_empirical_formula;
         Ok(())
     }

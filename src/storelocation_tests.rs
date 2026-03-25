@@ -56,8 +56,7 @@ mod tests {
             entity: None,
             store_location: None,
         };
-        assert!(store_location.sanitize_and_validate().is_ok());
-        assert_eq!(store_location.store_location_name, "");
+        assert!(store_location.sanitize_and_validate().is_err());
     }
 
     #[test]

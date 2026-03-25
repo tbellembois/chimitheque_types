@@ -1,6 +1,8 @@
 use chimitheque_traits::searchable::Searchable;
-use chimitheque_utils::string::{clean, Transform};
+use chimitheque_utils::string::{Transform, clean};
 use serde::{Deserialize, Serialize};
+
+use crate::error::ParseError;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Name {
@@ -14,6 +16,9 @@ impl Name {
         &mut self,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         self.name_label = clean(&self.name_label, Transform::Uppercase);
+        if self.name_label.is_empty() {
+            return Err(Box::new(ParseError::EmptyInput));
+        }
         Ok(())
     }
 }
