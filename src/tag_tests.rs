@@ -52,7 +52,7 @@ mod tests {
             tag_label: "  tag  tag  ".to_string(),
         };
         assert!(tag.sanitize_and_validate().is_ok());
-        assert_eq!(tag.tag_label, "A B");
+        assert_eq!(tag.tag_label, "tag tag");
 
         let mut tag = Tag {
             match_exact_search: false,
