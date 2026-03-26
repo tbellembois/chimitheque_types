@@ -35,4 +35,41 @@ mod tests {
         created_category.set_text_field("test2");
         assert_eq!(created_category.get_text(), "test2");
     }
+
+    #[test]
+    fn test_sanitize_and_validate_category() {
+        let mut category = Category {
+            match_exact_search: false,
+            category_id: Some(1),
+            category_label: "  Development  ".to_string(),
+        };
+        assert!(category.sanitize_and_validate().is_ok());
+        assert_eq!(category.category_label, "Development");
+
+        let mut category = Category {
+            match_exact_search: false,
+            category_id: Some(2),
+            category_label: "  Chemistry  ".to_string(),
+        };
+        assert!(category.sanitize_and_validate().is_ok());
+        assert_eq!(category.category_label, "Chemistry");
+
+        let mut category = Category {
+            match_exact_search: false,
+            category_id: Some(3),
+            category_label: "   A  B   ".to_string(),
+        };
+        assert!(category.sanitize_and_validate().is_ok());
+        assert_eq!(category.category_label, "A B");
+    }
+
+    #[test]
+    fn test_sanitize_and_validate_empty_category() {
+        let mut category = Category {
+            match_exact_search: false,
+            category_id: Some(6),
+            category_label: String::default(),
+        };
+        assert!(category.sanitize_and_validate().is_err());
+    }
 }

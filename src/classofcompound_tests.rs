@@ -47,4 +47,50 @@ mod tests {
         created_class_of_compound.set_text_field("test2");
         assert_eq!(created_class_of_compound.get_text(), "test2");
     }
+
+    #[test]
+    fn test_sanitize_and_validate_class_of_compound() {
+        let mut class_of_compound = ClassOfCompound {
+            match_exact_search: false,
+            class_of_compound_id: Some(1),
+            class_of_compound_label: "  Organic Compounds  ".to_string(),
+        };
+        assert!(class_of_compound.sanitize_and_validate().is_ok());
+        assert_eq!(
+            class_of_compound.class_of_compound_label,
+            "Organic Compounds"
+        );
+
+        let mut class_of_compound = ClassOfCompound {
+            match_exact_search: false,
+            class_of_compound_id: Some(2),
+            class_of_compound_label: "  Inorganic Compounds  ".to_string(),
+        };
+        assert!(class_of_compound.sanitize_and_validate().is_ok());
+        assert_eq!(
+            class_of_compound.class_of_compound_label,
+            "Inorganic Compounds"
+        );
+
+        let mut class_of_compound = ClassOfCompound {
+            match_exact_search: false,
+            class_of_compound_id: Some(3),
+            class_of_compound_label: "  Organic   Compounds  ".to_string(),
+        };
+        assert!(class_of_compound.sanitize_and_validate().is_ok());
+        assert_eq!(
+            class_of_compound.class_of_compound_label,
+            "Organic Compounds"
+        );
+    }
+
+    #[test]
+    fn test_sanitize_and_validate_empty_class_of_compound() {
+        let mut class_of_compound = ClassOfCompound {
+            match_exact_search: false,
+            class_of_compound_id: Some(6),
+            class_of_compound_label: String::default(),
+        };
+        assert!(class_of_compound.sanitize_and_validate().is_err());
+    }
 }
