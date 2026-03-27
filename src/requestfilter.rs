@@ -1,5 +1,3 @@
-use axum::extract::FromRequestParts;
-use http::{StatusCode, request::Parts};
 use log::debug;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
@@ -580,35 +578,6 @@ impl Default for RequestFilter {
             symbols: None,
             tags: None,
             unit_type: None,
-        }
-    }
-}
-
-impl<S> FromRequestParts<S> for RequestFilter
-where
-    S: Send + Sync,
-{
-    type Rejection = (StatusCode, String);
-
-    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
-        // Build full absolute URL string so RequestFilter::try_from works
-        // axum Parts.uri may not contain scheme/host, so we fake it
-        let uri = parts.uri.clone();
-        let path_and_query = uri
-            .path_and_query()
-            .map_or("", http::uri::PathAndQuery::as_str);
-        let fake_base = "http://localhost"; // arbitrary base
-
-        let full_url = format!("{fake_base}{path_and_query}");
-
-        match RequestFilter::try_from(full_url.as_str()) {
-            Ok(filter) => Ok(filter),
-            Err(err) => {
-                // Respond with 400 + error message
-                let body = format!("invalid query/filter: {err}");
-                let response = (StatusCode::BAD_REQUEST, body);
-                Err(response)
-            }
         }
     }
 }
