@@ -5,18 +5,18 @@ use std::{
     str::FromStr,
 };
 
-#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, Clone, Default)]
 pub enum PermissionName {
     #[default]
-    #[serde(rename(serialize = "n"))]
+    #[serde(rename = "n")]
     None,
-    #[serde(rename(serialize = "r"))]
+    #[serde(rename = "r")]
     Read,
-    #[serde(rename(serialize = "w"))]
+    #[serde(rename = "w")]
     Write,
-    #[serde(rename(serialize = "b"))]
+    #[serde(rename = "b")]
     Borrow,
-    #[serde(rename(serialize = "all"))]
+    #[serde(rename = "all")]
     All,
 }
 
@@ -27,7 +27,7 @@ impl Display for PermissionName {
             PermissionName::Read => write!(f, "r"),
             PermissionName::Write => write!(f, "w"),
             PermissionName::Borrow => write!(f, "b"),
-            PermissionName::All => write!(f, "a"),
+            PermissionName::All => write!(f, "all"),
         }
     }
 }
@@ -47,7 +47,7 @@ impl FromStr for PermissionName {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, Clone, Default)]
 pub enum PermissionItem {
     #[serde(rename = "all")]
     All,
@@ -89,10 +89,14 @@ impl FromStr for PermissionItem {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, Clone, Default)]
 pub struct Permission {
     pub person: Person,
     pub permission_name: PermissionName,
     pub permission_item: PermissionItem,
     pub permission_entity: i64,
 }
+
+#[cfg(test)]
+#[path = "permission_tests.rs"]
+mod permission_tests;

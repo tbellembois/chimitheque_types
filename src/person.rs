@@ -1,6 +1,6 @@
 use std::fmt;
 
-use chimitheque_utils::string::{clean, Transform};
+use chimitheque_utils::string::{Transform, clean};
 use email_address::{EmailAddress, Options};
 use serde::{Deserialize, Serialize};
 
@@ -54,3 +54,7 @@ impl Person {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "person_tests.rs"]
+mod person_tests;
