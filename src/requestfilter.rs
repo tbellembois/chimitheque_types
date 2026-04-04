@@ -286,7 +286,7 @@ impl TryFrom<&str> for RequestFilter {
 
         // Get the query parameters.
         for query_pair in url.query_pairs() {
-            debug!("query_pair:{:?}", query_pair);
+            debug!("query_pair:{query_pair:?}");
 
             let (key, value) = query_pair;
             match key {

@@ -81,7 +81,7 @@ impl PubchemProduct {
         // Name.
         let name = json_content.clone().path("$.Record.RecordTitle").unwrap();
 
-        debug!("name: {:#?}", name);
+        debug!("name: {name:#?}");
         let name_value = name.as_array().map(|v| match v.first() {
             Some(value) => value.as_str().map(std::string::ToString::to_string),
             None => None,
@@ -93,7 +93,7 @@ impl PubchemProduct {
         .path("$..Section[?(@.TOCHeading=='IUPAC Name')].Information[0].Value.StringWithMarkup[0].String")
         .unwrap();
 
-        debug!("iupac_name: {:#?}", iupac_name);
+        debug!("iupac_name: {iupac_name:#?}");
         let iupac_name_value = iupac_name.as_array().map(|v| match v.first() {
             Some(value) => value.as_str().map(std::string::ToString::to_string),
             None => None,
@@ -108,7 +108,7 @@ impl PubchemProduct {
             )
             .unwrap();
 
-        debug!("inchi: {:#?}", inchi);
+        debug!("inchi: {inchi:#?}");
         let inchi_value = inchi.as_array().map(|v| match v.first() {
             Some(value) => value.as_str().map(std::string::ToString::to_string),
             None => None,
@@ -123,7 +123,7 @@ impl PubchemProduct {
         )
         .unwrap();
 
-        debug!("inchi_key: {:#?}", inchi_key);
+        debug!("inchi_key: {inchi_key:#?}");
         let inchi_key_value = inchi_key.as_array().map(|v| match v.first() {
             Some(value) => value.as_str().map(std::string::ToString::to_string),
             None => None,
@@ -138,7 +138,7 @@ impl PubchemProduct {
         )
         .unwrap();
 
-        debug!("canonical_smiles: {:#?}", canonical_smiles);
+        debug!("canonical_smiles: {canonical_smiles:#?}");
         let canonical_smiles_value = canonical_smiles.as_array().map(|v| match v.first() {
             Some(value) => value.as_str().map(std::string::ToString::to_string),
             None => None,
@@ -153,7 +153,7 @@ impl PubchemProduct {
         )
         .unwrap();
 
-        debug!("molecular_formula: {:#?}", molecular_formula);
+        debug!("molecular_formula: {molecular_formula:#?}");
         let molecular_formula_value = molecular_formula.as_array().map(|v| match v.first() {
             Some(value) => value.as_str().map(std::string::ToString::to_string),
             None => None,
@@ -166,7 +166,7 @@ impl PubchemProduct {
             .path("$..Section[?(@.TOCHeading=='CAS')].Information[0].Value.StringWithMarkup[0].String")
             .unwrap();
 
-        debug!("cas: {:#?}", cas);
+        debug!("cas: {cas:#?}");
         let cas_value = cas.as_array().map(|v| match v.first() {
             Some(value) => value.as_str().map(std::string::ToString::to_string),
             None => None,
@@ -179,7 +179,7 @@ impl PubchemProduct {
         .path("$..Section[?(@.TOCHeading=='European Community (EC) Number')].Information[0].Value.StringWithMarkup[0].String")
         .unwrap();
 
-        debug!("ec: {:#?}", ec);
+        debug!("ec: {ec:#?}");
         let ec_value = ec.as_array().map(|v| match v.first() {
             Some(value) => value.as_str().map(std::string::ToString::to_string),
             None => None,
@@ -194,7 +194,7 @@ impl PubchemProduct {
             )
             .unwrap();
 
-        debug!("synonyms: {:#?}", synonyms);
+        debug!("synonyms: {synonyms:#?}");
         product.synonyms = synonyms.as_array().map(|v| {
             v.iter()
                 .map(|s| match s.as_str() {
@@ -215,7 +215,7 @@ impl PubchemProduct {
             .path("$..Section[?(@.TOCHeading=='Molecular Weight')].Information[0].Value.StringWithMarkup[0].String")
             .unwrap();
 
-        debug!("molecular_weight: {:#?}", molecular_weight);
+        debug!("molecular_weight: {molecular_weight:#?}");
         let molecular_weight_value = molecular_weight.as_array().map(|v| match v.first() {
             Some(value) => value.as_str().map(std::string::ToString::to_string),
             None => None,
@@ -228,7 +228,7 @@ impl PubchemProduct {
             .path("$..Section[?(@.TOCHeading=='Molecular Weight')].Information[0].Value.Unit")
             .unwrap();
 
-        debug!("molecular_weight_unit: {:#?}", molecular_weight_unit);
+        debug!("molecular_weight_unit: {molecular_weight_unit:#?}");
         let molecular_weight_unit_value =
             molecular_weight_unit.as_array().map(|v| match v.first() {
                 Some(value) => value.as_str().map(std::string::ToString::to_string),
@@ -242,7 +242,7 @@ impl PubchemProduct {
             .path("$..Section[?(@.TOCHeading=='Boiling Point')].Information[?(@.Description=='PEER REVIEWED')].Value.StringWithMarkup[0].String")
             .unwrap();
 
-        debug!("boiling_point: {:#?}", boiling_point);
+        debug!("boiling_point: {boiling_point:#?}");
         let boiling_point_value = boiling_point.as_array().map(|v| match v.first() {
             Some(value) => value.as_str().map(std::string::ToString::to_string),
             None => None,
@@ -255,7 +255,7 @@ impl PubchemProduct {
             .path("$..Information[?(@.Name=='Pictogram(s)')]..StringWithMarkup..Markup..URL")
             .unwrap();
 
-        debug!("symbols: {:#?}", symbols);
+        debug!("symbols: {symbols:#?}");
         let maybe_symbols_string_vec: Option<Vec<String>> = symbols.as_array().map(|v| {
             v.iter()
                 .map(|s| match s.as_str() {
@@ -286,7 +286,7 @@ impl PubchemProduct {
             .path("$..Information[?(@.Name=='Signal')]..StringWithMarkup..String")
             .unwrap();
 
-        debug!("signal: {:#?}", signal);
+        debug!("signal: {signal:#?}");
         product.signal = signal.as_array().map(|v| {
             v.iter()
                 .map(|s| match s.as_str() {
@@ -307,7 +307,7 @@ impl PubchemProduct {
             .path("$..Information[?(@.Name=='GHS Hazard Statements')]..StringWithMarkup..String")
             .unwrap();
 
-        debug!("hs: {:#?}", hs);
+        debug!("hs: {hs:#?}");
 
         let maybe_hazardstatement_string_vec: Option<Vec<String>> = hs.as_array().map(|v| {
             v.iter()
@@ -339,7 +339,7 @@ impl PubchemProduct {
             .path("$..Information[?(@.Name=='Precautionary Statement Codes')]..StringWithMarkup[0].String")
             .unwrap();
 
-        debug!("ps: {:#?}", ps);
+        debug!("ps: {ps:#?}");
 
         let maybe_precautionarystatement_string_vec: Option<Vec<String>> = ps.as_array().map(|v| {
             v.iter()
@@ -365,7 +365,7 @@ impl PubchemProduct {
             }
         }
 
-        debug!("product: {:#?}", product);
+        debug!("product: {product:#?}");
 
         product
     }
