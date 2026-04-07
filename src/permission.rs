@@ -5,7 +5,7 @@ use std::{
     str::FromStr,
 };
 
-#[derive(Debug, PartialEq, Serialize, Deserialize, Clone, Default)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, Copy, Clone, Default)]
 pub enum PermissionName {
     #[default]
     #[serde(rename = "n")]

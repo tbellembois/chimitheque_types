@@ -6,7 +6,7 @@ use std::{
 
 use crate::error::ParseError;
 
-#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[derive(Debug, Serialize, Deserialize, Copy, Clone, Default)]
 pub enum ProductType {
     #[default]
     #[serde(rename = "chem")]

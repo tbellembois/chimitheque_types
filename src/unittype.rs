@@ -6,7 +6,7 @@ use std::{
 
 use crate::error::ParseError;
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Default)]
+#[derive(Debug, Serialize, Deserialize, Copy, Clone, PartialEq, Eq, Default)]
 pub enum UnitType {
     #[default]
     Quantity,

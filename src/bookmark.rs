@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[derive(Debug, Serialize, Deserialize, Copy, Clone, Default)]
 pub struct Bookmark {
     pub bookmark_id: Option<u64>,
     pub person: u64,
