@@ -12,6 +12,7 @@ pub struct CasNumber {
     pub match_exact_search: bool,
     pub cas_number_id: Option<u64>,
     pub cas_number_label: String,
+    pub cas_number_cmr: Option<String>,
 }
 
 impl CasNumber {

@@ -15,6 +15,7 @@ mod tests {
             match_exact_search: true,
             cas_number_id: Some(1),
             cas_number_label: "test".to_string(),
+            cas_number_cmr: None,
         };
 
         let mut created_cas_number = cas_number.create();
@@ -42,6 +43,7 @@ mod tests {
             match_exact_search: false,
             cas_number_id: Some(1),
             cas_number_label: "  7732-18-5  ".to_string(),
+            cas_number_cmr: None,
         };
         assert!(cas_number.sanitize_and_validate().is_ok());
         assert_eq!(cas_number.cas_number_label, "7732-18-5");
@@ -50,6 +52,7 @@ mod tests {
             match_exact_search: false,
             cas_number_id: Some(2),
             cas_number_label: "  97-65-4  ".to_string(),
+            cas_number_cmr: None,
         };
         assert!(cas_number.sanitize_and_validate().is_ok());
         assert_eq!(cas_number.cas_number_label, "97-65-4");
@@ -58,6 +61,7 @@ mod tests {
             match_exact_search: false,
             cas_number_id: Some(3),
             cas_number_label: "7732-18-5".to_string(),
+            cas_number_cmr: None,
         };
         assert!(cas_number.sanitize_and_validate().is_ok());
         assert_eq!(cas_number.cas_number_label, "7732-18-5");
@@ -69,6 +73,7 @@ mod tests {
             match_exact_search: false,
             cas_number_id: Some(4),
             cas_number_label: "12345".to_string(),
+            cas_number_cmr: None,
         };
         assert!(cas_number.sanitize_and_validate().is_err());
 
@@ -76,6 +81,7 @@ mod tests {
             match_exact_search: false,
             cas_number_id: Some(5),
             cas_number_label: "abcdef".to_string(),
+            cas_number_cmr: None,
         };
         assert!(cas_number.sanitize_and_validate().is_err());
     }
@@ -86,6 +92,7 @@ mod tests {
             match_exact_search: false,
             cas_number_id: Some(6),
             cas_number_label: String::default(),
+            cas_number_cmr: None,
         };
         assert!(cas_number.sanitize_and_validate().is_err());
     }
