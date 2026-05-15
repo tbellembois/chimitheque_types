@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 // A simplified pubchem product representation.
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize, Clone)]
 pub struct PubchemProduct {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
