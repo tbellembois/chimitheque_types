@@ -1,15 +1,15 @@
 use serde::{Deserialize, Serialize};
 
 // Autocomplete
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct AutocompleteTerm {
-    compound: Vec<String>,
+    pub compound: Vec<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Autocomplete {
-    total: usize,
+    pub total: usize,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    dictionary_terms: Option<AutocompleteTerm>,
+    pub dictionary_terms: Option<AutocompleteTerm>,
 }
