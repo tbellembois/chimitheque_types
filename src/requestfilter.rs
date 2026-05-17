@@ -11,8 +11,8 @@ pub struct RequestFilter {
     pub order_by: Option<String>,
     #[serde(default)]
     pub order: String,
-    pub offset: Option<u64>,
-    pub limit: Option<u64>,
+    pub offset: Option<usize>,
+    pub limit: Option<usize>,
     #[serde(default)]
     pub bookmark: bool,
     #[serde(default)]
@@ -301,11 +301,11 @@ impl TryFrom<&str> for RequestFilter {
                     request_filter.order_by = Some(value.to_string());
                 }
                 std::borrow::Cow::Borrowed("order") => request_filter.order = value.to_string(),
-                std::borrow::Cow::Borrowed("offset") => match value.parse::<u64>() {
+                std::borrow::Cow::Borrowed("offset") => match value.parse::<usize>() {
                     Ok(v) => request_filter.offset = Some(v),
                     Err(e) => return Err(format!("error with offset query parameter: {e}")),
                 },
-                std::borrow::Cow::Borrowed("limit") => match value.parse::<u64>() {
+                std::borrow::Cow::Borrowed("limit") => match value.parse::<usize>() {
                     Ok(v) => request_filter.limit = Some(v),
                     Err(e) => return Err(format!("error with limit query parameter: {e}")),
                 },
