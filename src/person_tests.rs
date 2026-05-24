@@ -78,7 +78,7 @@ mod tests {
                     },
                     permission_name: PermissionName::All,
                     permission_item: PermissionItem::All,
-                    permission_entity: -1,
+                    permission_entity: None,
                 },
                 Permission {
                     person: Person {
@@ -88,7 +88,7 @@ mod tests {
                     },
                     permission_name: PermissionName::All,
                     permission_item: PermissionItem::All,
-                    permission_entity: 29,
+                    permission_entity: Some(29),
                 },
             ]),
             is_admin: true,
