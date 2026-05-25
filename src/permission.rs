@@ -97,27 +97,6 @@ pub struct Permission {
     pub permission_entity: Option<u64>,
 }
 
-// impl Permission {
-//     pub fn to_ehttp_request(&self) -> Request {
-//         let mut string_url = String::new();
-
-//         string_url.push_str(&self.permission_item.to_string());
-
-//         if let Some(permission_entity) = &self.permission_entity {
-//             string_url.push_str("/");
-//             string_url.push_str(&permission_entity.to_string());
-//         }
-
-//         Request {
-//             method: (),
-//             url: (),
-//             body: (),
-//             headers: (),
-//             timeout: (),
-//         }
-//     }
-// }
-
 #[cfg(test)]
 #[path = "permission_tests.rs"]
 mod permission_tests;
