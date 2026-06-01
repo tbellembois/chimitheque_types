@@ -47,6 +47,9 @@ impl FromStr for PermissionName {
     }
 }
 
+// StoreLocations is not used by the backend as the policy to CRUD store locations
+// are defined by policies on entities. See casbin policy definition.
+// It is used by the frontend to check permissions on store locations with fake http requests.
 #[derive(Debug, PartialEq, Serialize, Deserialize, Clone, Default)]
 pub enum PermissionItem {
     #[serde(rename = "all")]
@@ -60,6 +63,8 @@ pub enum PermissionItem {
     RestrictedProducts,
     #[serde(rename = "storages")]
     Storages,
+    #[serde(rename = "store_locations")]
+    StoreLocations,
 }
 
 impl Display for PermissionItem {
@@ -70,6 +75,7 @@ impl Display for PermissionItem {
             PermissionItem::Products => write!(f, "products"),
             PermissionItem::RestrictedProducts => write!(f, "rproducts"),
             PermissionItem::Storages => write!(f, "storages"),
+            PermissionItem::StoreLocations => write!(f, "store_locations"),
         }
     }
 }
@@ -84,6 +90,7 @@ impl FromStr for PermissionItem {
             "products" => Ok(PermissionItem::Products),
             "rproducts" => Ok(PermissionItem::RestrictedProducts),
             "storages" => Ok(PermissionItem::Storages),
+            "store_locations" => Ok(PermissionItem::StoreLocations),
             _ => Err(ParseError::ParsePermissionItemError(input.to_string())),
         }
     }
