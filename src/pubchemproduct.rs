@@ -1,8 +1,9 @@
 use jsonpath_rust::JsonPathQuery;
 use log::debug;
-use regex::Regex;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+
+use crate::define::{HAZARD_STATEMENT_RE, PRECAUTIONARY_STATEMENT_RE, SYMBOL_RE};
 
 // A simplified pubchem product representation.
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
@@ -62,15 +63,6 @@ pub struct PubchemProduct {
 impl PubchemProduct {
     #[must_use]
     pub fn from_pubchem_json(json_content: &str) -> PubchemProduct {
-        // Precautionary statement regex.
-        let precautionary_statement_re = Regex::new(r"(?P<statement>P[0-9]{3}\+{0,1})+").unwrap();
-        // Hazard statement regex.
-        let hazard_statement_re =
-            Regex::new(r"(?P<statement>(AU|EU){0,1}H[0-9]{3}F{0,1}f{0,1}D{0,1}d{0,1}\+{0,1})+")
-                .unwrap();
-        // Symbol regex.
-        let symbol_re = Regex::new(r"(?P<symbol>GHS0[1-9])").unwrap();
-
         // Final result.
         let mut product = PubchemProduct {
             ..Default::default()
@@ -267,7 +259,7 @@ impl PubchemProduct {
 
         if let Some(symbols_string_vec) = maybe_symbols_string_vec {
             let symbols_string = symbols_string_vec.join(",");
-            product.symbols = symbol_re
+            product.symbols = SYMBOL_RE
                 .captures_iter(&symbols_string)
                 .map(|p| {
                     p.name("symbol")
@@ -320,7 +312,7 @@ impl PubchemProduct {
 
         if let Some(hs_string_vec) = maybe_hazardstatement_string_vec {
             let hs_string = hs_string_vec.join(",");
-            product.hs = hazard_statement_re
+            product.hs = HAZARD_STATEMENT_RE
                 .captures_iter(&hs_string)
                 .map(|p| {
                     p.name("statement")
@@ -352,7 +344,7 @@ impl PubchemProduct {
 
         if let Some(ps_string_vec) = maybe_precautionarystatement_string_vec {
             let ps_string = ps_string_vec.join(",");
-            product.ps = precautionary_statement_re
+            product.ps = PRECAUTIONARY_STATEMENT_RE
                 .captures_iter(&ps_string)
                 .map(|p| {
                     p.name("statement")

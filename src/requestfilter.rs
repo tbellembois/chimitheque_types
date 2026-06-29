@@ -1,8 +1,9 @@
 use log::debug;
-use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use url::Url;
+
+use crate::define::{END_OF_URL_CAPTURE_RE, IDS_CAPTURE_RE, IDS_MATCH_RE};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RequestFilter {
@@ -256,28 +257,10 @@ impl TryFrom<&str> for RequestFilter {
             Err(e) => return Err(format!("can not parse url: {e}")),
         };
 
-        // Regex to validate multi valued ids.
-        let ids_match = match Regex::new(r"^((\d+),{0,1})+$") {
-            Ok(ids_re) => ids_re,
-            Err(e) => return Err(format!("error creating ids_match regex: {e}")),
-        };
-
-        // Regex to capture multi valued ids.
-        let ids_capture = match Regex::new(r"(?<id>\d+),{0,1}") {
-            Ok(ids_re) => ids_re,
-            Err(e) => return Err(format!("error creating ids_capture regex: {e}")),
-        };
-
-        // Regex to capture a group of digits at the end of the URL.
-        let end_of_url_id_capture = match Regex::new(r"/(?<id>\d+)$") {
-            Ok(id_re) => id_re,
-            Err(e) => return Err(format!("error creating end_of_url_id_capture regex: {e}")),
-        };
-
         // Trying to capture an id at the end of the URL.
         // Can be overwritten by the ?id= URL parameter (see below).
-        if end_of_url_id_capture.is_match(url.as_str())
-            && let Some(cap) = end_of_url_id_capture.captures(url.as_str())
+        if END_OF_URL_CAPTURE_RE.is_match(url.as_str())
+            && let Some(cap) = END_OF_URL_CAPTURE_RE.captures(url.as_str())
         {
             // We can unwrap safely here because of validation (is_match) below.
             let id_str = cap.name("id").unwrap().as_str();
@@ -349,11 +332,11 @@ impl TryFrom<&str> for RequestFilter {
                     request_filter.entity_name = Some(value.to_string());
                 }
                 std::borrow::Cow::Borrowed("hazard_statements") => {
-                    if !ids_match.is_match(&value) {
+                    if !IDS_MATCH_RE.is_match(&value) {
                         return Err("invalid hazard_statements ids format".to_string());
                     }
 
-                    let caps = ids_capture.captures_iter(&value);
+                    let caps = IDS_CAPTURE_RE.captures_iter(&value);
                     let mut hazard_statement_ids: Vec<u64> = Vec::new();
                     for cap in caps {
                         // We can unwrap safely here because of validation (is_match) below.
@@ -369,11 +352,11 @@ impl TryFrom<&str> for RequestFilter {
                     Err(e) => return Err(format!("error with history query parameter: {e}")),
                 },
                 std::borrow::Cow::Borrowed("storages") => {
-                    if !ids_match.is_match(&value) {
+                    if !IDS_MATCH_RE.is_match(&value) {
                         return Err("invalid storages ids format".to_string());
                     }
 
-                    let caps = ids_capture.captures_iter(&value);
+                    let caps = IDS_CAPTURE_RE.captures_iter(&value);
                     let mut storage_ids: Vec<u64> = Vec::new();
                     for cap in caps {
                         // We can unwrap safely here because of validation (is_match) below.
@@ -392,11 +375,11 @@ impl TryFrom<&str> for RequestFilter {
                 //     request_filter.permission = value.to_string();
                 // }
                 std::borrow::Cow::Borrowed("precautionary_statements") => {
-                    if !ids_match.is_match(&value) {
+                    if !IDS_MATCH_RE.is_match(&value) {
                         return Err("invalid precautionary_statements ids format".to_string());
                     }
 
-                    let caps = ids_capture.captures_iter(&value);
+                    let caps = IDS_CAPTURE_RE.captures_iter(&value);
                     let mut precautionary_statement_ids: Vec<u64> = Vec::new();
                     for cap in caps {
                         // We can unwrap safely here because of validation (is_match) below.
@@ -490,11 +473,11 @@ impl TryFrom<&str> for RequestFilter {
                     Err(e) => return Err(format!("error with supplier query parameter: {e}")),
                 },
                 std::borrow::Cow::Borrowed("symbols") => {
-                    if !ids_match.is_match(&value) {
+                    if !IDS_MATCH_RE.is_match(&value) {
                         return Err("invalid symbols ids format".to_string());
                     }
 
-                    let caps = ids_capture.captures_iter(&value);
+                    let caps = IDS_CAPTURE_RE.captures_iter(&value);
                     let mut symbol_ids: Vec<u64> = Vec::new();
                     for cap in caps {
                         // We can unwrap safely here because of validation (is_match) below.
@@ -506,11 +489,11 @@ impl TryFrom<&str> for RequestFilter {
                     request_filter.symbols = Some(symbol_ids);
                 }
                 std::borrow::Cow::Borrowed("tags") => {
-                    if !ids_match.is_match(&value) {
+                    if !IDS_MATCH_RE.is_match(&value) {
                         return Err("invalid tags ids format".to_string());
                     }
 
-                    let caps = ids_capture.captures_iter(&value);
+                    let caps = IDS_CAPTURE_RE.captures_iter(&value);
                     let mut tag_ids: Vec<u64> = Vec::new();
                     for cap in caps {
                         // We can unwrap safely here because of validation (is_match) below.
