@@ -55,3 +55,4 @@ pub mod symbol;
 pub mod tag;
 pub mod unit;
 pub mod unittype;
+pub mod versioninfo;
