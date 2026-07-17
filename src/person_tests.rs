@@ -40,7 +40,7 @@ mod tests {
                     },
                     "permission_name": "all",
                     "permission_item": "all",
-                    "permission_entity": -1
+                    "permission_entity": null
                 },
                 {
                     "person": {
