@@ -1,3 +1,6 @@
+//! Product module containing the Product struct and its implementations.
+//! Represents a chemical or related product with various attributes and metadata.
+
 use std::fmt;
 
 use crate::{
@@ -10,69 +13,108 @@ use crate::{
 };
 use serde::{Deserialize, Serialize};
 
+/// Main Product structure representing a chemical or related product
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Product {
+    /// Unique identifier for the product
     pub product_id: Option<u64>,
+    /// Type of product (chemical, consumable, biological)
     pub product_type: ProductType,
+    /// International Chemical Identifier
     pub product_inchi: Option<String>,
+    /// InChIKey identifier
     pub product_inchikey: Option<String>,
+    /// Canonical SMILES representation
     pub product_canonical_smiles: Option<String>,
+    /// Specificity information about the product
     pub product_specificity: Option<String>,
+    /// Material Safety Data Sheet reference
     pub product_msds: Option<String>,
+    /// Flag indicating if product is restricted
     #[serde(default)]
     pub product_restricted: bool,
+    /// Flag indicating if product is radioactive
     #[serde(default)]
     pub product_radioactive: bool,
+    /// 2D chemical formula representation
     pub product_twod_formula: Option<String>,
+    /// 3D chemical formula representation
     pub product_threed_formula: Option<String>,
+    /// Disposal instructions/comments
     pub product_disposal_comment: Option<String>,
+    /// Additional remarks about the product
     pub product_remark: Option<String>,
+    /// Molecular weight of the product
     pub product_molecular_weight: Option<f64>,
+    /// Temperature specification
     pub product_temperature: Option<f64>,
+    /// Product specification sheet reference
     pub product_sheet: Option<String>,
+    /// Number of products per carton
     pub product_number_per_carton: Option<i64>,
+    /// Number of products per bag
     pub product_number_per_bag: Option<i64>,
 
+    /// Associated person (owner/manager)
     #[serde(default)]
     pub person: Person,
+    /// Product name information
     pub name: Name,
 
+    /// Empirical formula of the product
     pub empirical_formula: Option<EmpiricalFormula>,
+    /// Linear formula representation
     pub linear_formula: Option<LinearFormula>,
+    /// Physical state of the product
     pub physical_state: Option<PhysicalState>,
+    /// Signal word for hazard communication
     pub signal_word: Option<SignalWord>,
+    /// CAS registry number
     pub cas_number: Option<CasNumber>,
+    /// CE number (European Community number)
     pub ce_number: Option<CeNumber>,
+    /// Reference to the producer
     pub producer_ref: Option<ProducerRef>,
+    /// Product category
     pub category: Option<Category>,
+    /// Unit for temperature measurement
     pub unit_temperature: Option<Unit>,
+    /// Unit for molecular weight measurement
     pub unit_molecular_weight: Option<Unit>,
 
+    /// Classes of compounds this product belongs to
     pub classes_of_compound: Option<Vec<ClassOfCompound>>,
+    /// Alternative names/synonyms for the product
     pub synonyms: Option<Vec<Name>>,
+    /// Hazard symbols associated with the product
     pub symbols: Option<Vec<Symbol>>,
+    /// Hazard statements describing risks
     pub hazard_statements: Option<Vec<HazardStatement>>,
+    /// Precautionary statements providing safety measures
     pub precautionary_statements: Option<Vec<PrecautionaryStatement>>,
+    /// References to suppliers
     pub supplier_refs: Option<Vec<SupplierRef>>,
+    /// Tags/categories for the product
     pub tags: Option<Vec<Tag>>,
 
-    // product has bookmark for the logged user
+    /// Flag indicating if the product is bookmarked by the logged-in user
     #[serde(default)]
     pub product_has_bookmark: bool,
-    // archived storage count in the logged user entity(ies)
+    /// Archived storage count in the logged-in user's entities
     pub product_asc: Option<u64>,
-    // storage count in the logged user entity(ies)
+    /// Storage count in the logged-in user's entities
     pub product_sc: Option<u64>,
-    // total storage count
+    /// Total storage count across all entities
     pub product_tsc: Option<u64>,
-    // hazard statement CMR concatenation
+    /// Concatenated CMR (Carcinogenic, Mutagenic, Reproductive toxic) hazard statements
     pub product_hs_cmr: Option<String>,
-    // store location code
+    /// Store location code
     pub product_sl: Option<String>,
-    // product availability in the entities
+    /// Availability of the product in different entities
     pub product_availability: Option<Vec<Entity>>,
 }
 
+/// Display implementation for Product to provide a human-readable representation
 impl fmt::Display for Product {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
@@ -87,7 +129,10 @@ impl fmt::Display for Product {
     }
 }
 
+/// Methods for Product validation and sanitization
 impl Product {
+    /// Validates and sanitizes all fields of the Product
+    /// Ensures all nested structures are properly validated
     pub fn sanitize_and_validate(
         &mut self,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {

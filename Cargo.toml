@@ -46,7 +46,7 @@ chimitheque_traits = { git = "https://github.com/tbellembois/chimitheque_traits.
 chimitheque_utils = { git = "https://github.com/tbellembois/chimitheque_utils.git", branch = "main" }
 
 [patch."https://github.com/tbellembois/chimitheque_traits.git"]
-chimitheque_traits = { path = "/home/thbellem/workspace/workspace_rust/chimitheque_traits" }
+chimitheque_traits = { path = "/home/tbellembois/workspace/workspace_rust/chimitheque_traits" }
 
 [patch."https://github.com/tbellembois/chimitheque_utils.git"]
-chimitheque_utils = { path = "/home/thbellem/workspace/workspace_rust/chimitheque_utils" }
+chimitheque_utils = { path = "/home/tbellembois/workspace/workspace_rust/chimitheque_utils" }
