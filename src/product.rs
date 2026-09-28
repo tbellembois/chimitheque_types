@@ -22,7 +22,7 @@ pub struct Product {
     pub product_type: ProductType,
     /// International Chemical Identifier
     pub product_inchi: Option<String>,
-    /// InChIKey identifier
+    /// `InChIKey` identifier
     pub product_inchikey: Option<String>,
     /// Canonical SMILES representation
     pub product_canonical_smiles: Option<String>,
