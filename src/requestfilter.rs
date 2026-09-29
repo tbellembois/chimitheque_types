@@ -35,7 +35,6 @@ pub struct RequestFilter {
     pub person: Option<u64>,
     pub person_email: Option<String>,
     #[serde(default)]
-    // pub permission: String,
     pub precautionary_statements: Option<Vec<u64>>,
     pub producer: Option<u64>,
     pub producer_ref: Option<u64>,
@@ -149,17 +148,6 @@ impl fmt::Display for RequestFilter {
         if let Some(name) = &self.name {
             parameters.push(format!("name={name}"));
         }
-        // parameters.push(format!("permission={}", self.permission));
-        // if let Some(precautionary_statements) = &self.precautionary_statements {
-        //     parameters.push(format!(
-        //         "precautionary_statements={}",
-        //         precautionary_statements
-        //             .iter()
-        //             .map(std::string::ToString::to_string)
-        //             .collect::<Vec<String>>()
-        //             .join(","),
-        //     ));
-        // }
         if let Some(producer) = &self.producer {
             parameters.push(format!("producer={producer}"));
         }

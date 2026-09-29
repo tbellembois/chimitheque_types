@@ -86,4 +86,52 @@ mod tests {
         };
         assert!(empirical_formula.sanitize_and_validate().is_err());
     }
+
+    #[test]
+    fn test_create_defaults() {
+        let empirical_formula = EmpiricalFormula::default();
+        let created = empirical_formula.create();
+        assert!(!created.match_exact_search);
+        assert_eq!(created.empirical_formula_id, None);
+        assert_eq!(created.empirical_formula_label, String::new());
+    }
+
+    #[test]
+    fn test_set_and_get_exact_search() {
+        let mut empirical_formula = EmpiricalFormula::default();
+        empirical_formula.set_exact_search(true);
+        assert!(empirical_formula.get_exact_search());
+        empirical_formula.set_exact_search(false);
+        assert!(!empirical_formula.get_exact_search());
+    }
+
+    #[test]
+    fn test_get_table_name() {
+        let empirical_formula = EmpiricalFormula::default();
+        assert_eq!(empirical_formula.get_table_name(), "empirical_formula");
+    }
+
+    #[test]
+    fn test_get_id_field_name() {
+        let empirical_formula = EmpiricalFormula::default();
+        assert_eq!(empirical_formula.get_id_field_name(), "empirical_formula_id");
+    }
+
+    #[test]
+    fn test_set_and_get_id() {
+        let mut empirical_formula = EmpiricalFormula::default();
+        empirical_formula.set_id_field(42);
+        assert_eq!(empirical_formula.get_id(), Some(42));
+        empirical_formula.set_id_field(0);
+        assert_eq!(empirical_formula.get_id(), Some(0));
+    }
+
+    #[test]
+    fn test_set_and_get_text() {
+        let mut empirical_formula = EmpiricalFormula::default();
+        empirical_formula.set_text_field("C6H12O6");
+        assert_eq!(empirical_formula.get_text(), "C6H12O6");
+        empirical_formula.set_text_field("");
+        assert_eq!(empirical_formula.get_text(), "");
+    }
 }

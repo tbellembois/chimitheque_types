@@ -37,6 +37,54 @@ mod tests {
     }
 
     #[test]
+    fn test_create_defaults() {
+        let producer = Producer::default();
+        let created = producer.create();
+        assert!(!created.match_exact_search);
+        assert_eq!(created.producer_id, None);
+        assert_eq!(created.producer_label, String::new());
+    }
+
+    #[test]
+    fn test_set_and_get_exact_search() {
+        let mut producer = Producer::default();
+        producer.set_exact_search(true);
+        assert!(producer.get_exact_search());
+        producer.set_exact_search(false);
+        assert!(!producer.get_exact_search());
+    }
+
+    #[test]
+    fn test_get_table_name() {
+        let producer = Producer::default();
+        assert_eq!(producer.get_table_name(), "producer");
+    }
+
+    #[test]
+    fn test_get_id_field_name() {
+        let producer = Producer::default();
+        assert_eq!(producer.get_id_field_name(), "producer_id");
+    }
+
+    #[test]
+    fn test_set_and_get_id() {
+        let mut producer = Producer::default();
+        producer.set_id_field(42);
+        assert_eq!(producer.get_id(), Some(42));
+        producer.set_id_field(0);
+        assert_eq!(producer.get_id(), Some(0));
+    }
+
+    #[test]
+    fn test_set_and_get_text() {
+        let mut producer = Producer::default();
+        producer.set_text_field("Acme Corp");
+        assert_eq!(producer.get_text(), "Acme Corp");
+        producer.set_text_field("");
+        assert_eq!(producer.get_text(), "");
+    }
+
+    #[test]
     fn test_sanitize_and_validate_leading_trailing_spaces() {
         let mut producer = Producer {
             match_exact_search: false,

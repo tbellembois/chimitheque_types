@@ -49,6 +49,54 @@ mod tests {
     }
 
     #[test]
+    fn test_create_defaults() {
+        let class_of_compound = ClassOfCompound::default();
+        let created = class_of_compound.create();
+        assert!(!created.match_exact_search);
+        assert_eq!(created.class_of_compound_id, None);
+        assert_eq!(created.class_of_compound_label, String::new());
+    }
+
+    #[test]
+    fn test_set_and_get_exact_search() {
+        let mut class_of_compound = ClassOfCompound::default();
+        class_of_compound.set_exact_search(true);
+        assert!(class_of_compound.get_exact_search());
+        class_of_compound.set_exact_search(false);
+        assert!(!class_of_compound.get_exact_search());
+    }
+
+    #[test]
+    fn test_get_table_name() {
+        let class_of_compound = ClassOfCompound::default();
+        assert_eq!(class_of_compound.get_table_name(), "class_of_compound");
+    }
+
+    #[test]
+    fn test_get_id_field_name() {
+        let class_of_compound = ClassOfCompound::default();
+        assert_eq!(class_of_compound.get_id_field_name(), "class_of_compound_id");
+    }
+
+    #[test]
+    fn test_set_and_get_id() {
+        let mut class_of_compound = ClassOfCompound::default();
+        class_of_compound.set_id_field(42);
+        assert_eq!(class_of_compound.get_id(), Some(42));
+        class_of_compound.set_id_field(0);
+        assert_eq!(class_of_compound.get_id(), Some(0));
+    }
+
+    #[test]
+    fn test_set_and_get_text() {
+        let mut class_of_compound = ClassOfCompound::default();
+        class_of_compound.set_text_field("Organic Compounds");
+        assert_eq!(class_of_compound.get_text(), "Organic Compounds");
+        class_of_compound.set_text_field("");
+        assert_eq!(class_of_compound.get_text(), "");
+    }
+
+    #[test]
     fn test_sanitize_and_validate_class_of_compound() {
         let mut class_of_compound = ClassOfCompound {
             match_exact_search: false,

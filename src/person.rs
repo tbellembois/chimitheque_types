@@ -7,16 +7,25 @@ use serde::{Deserialize, Serialize};
 use crate::entity::Entity;
 use crate::permission::Permission;
 
+/// Represents a person in the system with their unique identifier and email.
+/// Contains computed fields that are populated during selection but not stored in the database.
+
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Person {
+    /// Unique identifier for the person (None if not yet persisted)
     pub person_id: Option<u64>,
+    /// Email address of the person (will be sanitized and validated)
     pub person_email: String,
 
     // Computed fields on select, not in DB.
+    /// List of entities this person has access to
     pub entities: Option<Vec<Entity>>,
+    /// List of entities this person manages
     pub managed_entities: Option<Vec<Entity>>,
+    /// List of permissions this person has
     pub permissions: Option<Vec<Permission>>,
     #[serde(default)]
+    /// Flag indicating if this person is an administrator
     pub is_admin: bool,
 }
 
@@ -37,6 +46,12 @@ impl fmt::Display for Person {
 }
 
 impl Person {
+    /// Sanitizes and validates the person's email address.
+    /// Converts email to lowercase and validates it's a properly formatted email address.
+    ///
+    /// # Returns
+    /// - `Ok(())` if email is valid
+    /// - `Err(Box<dyn std::error::Error + Send + Sync>)` if email is invalid
     pub fn sanitize_and_validate(
         &mut self,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {

@@ -37,6 +37,45 @@ mod tests {
     }
 
     #[test]
+    fn test_set_and_get_exact_search() {
+        let mut supplier = Supplier::default();
+        supplier.set_exact_search(true);
+        assert!(supplier.get_exact_search());
+        supplier.set_exact_search(false);
+        assert!(!supplier.get_exact_search());
+    }
+
+    #[test]
+    fn test_get_table_name() {
+        let supplier = Supplier::default();
+        assert_eq!(supplier.get_table_name(), "supplier");
+    }
+
+    #[test]
+    fn test_get_id_field_name() {
+        let supplier = Supplier::default();
+        assert_eq!(supplier.get_id_field_name(), "supplier_id");
+    }
+
+    #[test]
+    fn test_set_and_get_id() {
+        let mut supplier = Supplier::default();
+        supplier.set_id_field(42);
+        assert_eq!(supplier.get_id(), Some(42));
+        supplier.set_id_field(0);
+        assert_eq!(supplier.get_id(), Some(0));
+    }
+
+    #[test]
+    fn test_set_and_get_text() {
+        let mut supplier = Supplier::default();
+        supplier.set_text_field("Acme Corp");
+        assert_eq!(supplier.get_text(), "Acme Corp");
+        supplier.set_text_field("");
+        assert_eq!(supplier.get_text(), "");
+    }
+
+    #[test]
     fn test_sanitize_and_validate_leading_trailing_spaces() {
         let mut supplier = Supplier {
             match_exact_search: false,

@@ -96,4 +96,58 @@ mod tests {
         };
         assert!(cas_number.sanitize_and_validate().is_err());
     }
+
+    #[test]
+    fn test_create() {
+        let cas_number = CasNumber {
+            match_exact_search: true,
+            cas_number_id: Some(1),
+            cas_number_label: "test".to_string(),
+            cas_number_cmr: Some("cmr".to_string()),
+        };
+        let created = cas_number.create();
+        assert!(!created.match_exact_search);
+        assert_eq!(created.cas_number_id, None);
+        assert_eq!(created.cas_number_label, String::new());
+        assert_eq!(created.cas_number_cmr, None);
+    }
+
+    #[test]
+    fn test_set_and_get_exact_search() {
+        let mut cas_number = CasNumber::default();
+        cas_number.set_exact_search(true);
+        assert!(cas_number.get_exact_search());
+        cas_number.set_exact_search(false);
+        assert!(!cas_number.get_exact_search());
+    }
+
+    #[test]
+    fn test_get_table_name() {
+        let cas_number = CasNumber::default();
+        assert_eq!(cas_number.get_table_name(), "cas_number");
+    }
+
+    #[test]
+    fn test_get_id_field_name() {
+        let cas_number = CasNumber::default();
+        assert_eq!(cas_number.get_id_field_name(), "cas_number_id");
+    }
+
+    #[test]
+    fn test_set_and_get_id() {
+        let mut cas_number = CasNumber::default();
+        cas_number.set_id_field(42);
+        assert_eq!(cas_number.get_id(), Some(42));
+        cas_number.set_id_field(0);
+        assert_eq!(cas_number.get_id(), Some(0));
+    }
+
+    #[test]
+    fn test_set_and_get_text() {
+        let mut cas_number = CasNumber::default();
+        cas_number.set_text_field("123-45-6789");
+        assert_eq!(cas_number.get_text(), "123-45-6789");
+        cas_number.set_text_field("");
+        assert_eq!(cas_number.get_text(), "");
+    }
 }

@@ -51,3 +51,7 @@ impl Searchable for PhysicalState {
         self.physical_state_label.clone()
     }
 }
+
+#[cfg(test)]
+#[path = "physicalstate_tests.rs"]
+mod physicalstate_tests;

@@ -72,4 +72,33 @@ mod tests {
         };
         assert!(tag.sanitize_and_validate().is_err());
     }
+
+    #[test]
+    fn test_set_id_field_to_none() {
+        let mut tag = Tag::default();
+        tag.set_id_field(42);
+        assert_eq!(tag.get_id(), Some(42));
+        tag.tag_id = None;
+        assert_eq!(tag.get_id(), None);
+    }
+
+    #[test]
+    fn test_set_text_field_empty() {
+        let mut tag = Tag::default();
+        tag.set_text_field("");
+        assert_eq!(tag.get_text(), "");
+    }
+
+    #[test]
+    fn test_create_all_defaults() {
+        let tag = Tag {
+            match_exact_search: true,
+            tag_id: Some(1),
+            tag_label: "test".to_string(),
+        };
+        let created = tag.create();
+        assert!(!created.match_exact_search);
+        assert_eq!(created.tag_id, None);
+        assert_eq!(created.tag_label, String::new());
+    }
 }

@@ -40,7 +40,6 @@ mod tests {
             name: Some(1),
             person: Some(1),
             person_email: Some("person@example.com".to_string()),
-            // permission: "read".to_string(),
             precautionary_statements: Some(vec![1, 2, 3]),
             producer: Some(1),
             producer_ref: Some(1),
@@ -108,7 +107,6 @@ mod tests {
         assert_eq!(default_filter.name, None);
         assert_eq!(default_filter.person, None);
         assert_eq!(default_filter.person_email, None);
-        // assert_eq!(default_filter.permission, "r");
         assert_eq!(default_filter.precautionary_statements, None);
         assert_eq!(default_filter.producer, None);
         assert_eq!(default_filter.producer_ref, None);

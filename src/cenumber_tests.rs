@@ -37,6 +37,54 @@ mod tests {
     }
 
     #[test]
+    fn test_create_defaults() {
+        let ce_number = CeNumber::default();
+        let created = ce_number.create();
+        assert!(!created.match_exact_search);
+        assert_eq!(created.ce_number_id, None);
+        assert_eq!(created.ce_number_label, String::new());
+    }
+
+    #[test]
+    fn test_set_and_get_exact_search() {
+        let mut ce_number = CeNumber::default();
+        ce_number.set_exact_search(true);
+        assert!(ce_number.get_exact_search());
+        ce_number.set_exact_search(false);
+        assert!(!ce_number.get_exact_search());
+    }
+
+    #[test]
+    fn test_get_table_name() {
+        let ce_number = CeNumber::default();
+        assert_eq!(ce_number.get_table_name(), "ce_number");
+    }
+
+    #[test]
+    fn test_get_id_field_name() {
+        let ce_number = CeNumber::default();
+        assert_eq!(ce_number.get_id_field_name(), "ce_number_id");
+    }
+
+    #[test]
+    fn test_set_and_get_id() {
+        let mut ce_number = CeNumber::default();
+        ce_number.set_id_field(42);
+        assert_eq!(ce_number.get_id(), Some(42));
+        ce_number.set_id_field(0);
+        assert_eq!(ce_number.get_id(), Some(0));
+    }
+
+    #[test]
+    fn test_set_and_get_text() {
+        let mut ce_number = CeNumber::default();
+        ce_number.set_text_field("214-480-6");
+        assert_eq!(ce_number.get_text(), "214-480-6");
+        ce_number.set_text_field("");
+        assert_eq!(ce_number.get_text(), "");
+    }
+
+    #[test]
     fn test_sanitize_and_validate_cenumber() {
         let mut cenumber = CeNumber {
             match_exact_search: false,

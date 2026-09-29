@@ -66,3 +66,7 @@ impl Searchable for Name {
         self.name_label.clone()
     }
 }
+
+#[cfg(test)]
+#[path = "name_tests.rs"]
+mod name_tests;
