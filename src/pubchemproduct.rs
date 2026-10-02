@@ -1,9 +1,8 @@
+use chimitheque_defines::{HAZARD_STATEMENT_RE, PRECAUTIONARY_STATEMENT_RE, SYMBOL_RE};
 use jsonpath_rust::JsonPathQuery;
 use log::debug;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-
-use crate::define::{HAZARD_STATEMENT_RE, PRECAUTIONARY_STATEMENT_RE, SYMBOL_RE};
 
 // A simplified pubchem product representation.
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]

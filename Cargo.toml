@@ -37,16 +37,20 @@ email_address = { version = "0.2.9", default-features = false }
 env_logger = { version = "0.10.0", default-features = false }
 jsonpath-rust = { version = "0.3.5", default-features = false }
 log = { version = "0.4.20", default-features = false }
-regex = { version = "1.10.2", default-features = false }
+regex = { version = "1.13.1", default-features = false }
 serde = { version = "1.0.228", default-features = false, features = ["derive"] }
 serde_json = { version = "1.0.149", default-features = false }
 url = { version = "2.5.0", default-features = false }
 
 chimitheque_traits = { git = "https://github.com/tbellembois/chimitheque_traits.git", branch = "main" }
 chimitheque_utils = { git = "https://github.com/tbellembois/chimitheque_utils.git", branch = "main" }
+chimitheque_defines = { git = "https://github.com/tbellembois/chimitheque_defines.git", branch = "main" }
 
 [patch."https://github.com/tbellembois/chimitheque_traits.git"]
 chimitheque_traits = { path = "/home/tbellembois/workspace/workspace_rust/chimitheque_traits" }
 
 [patch."https://github.com/tbellembois/chimitheque_utils.git"]
 chimitheque_utils = { path = "/home/tbellembois/workspace/workspace_rust/chimitheque_utils" }
+
+[patch."https://github.com/tbellembois/chimitheque_defines.git"]
+chimitheque_defines = { path = "/home/tbellembois/workspace/workspace_rust/chimitheque_defines" }

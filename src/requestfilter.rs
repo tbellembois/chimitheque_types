@@ -1,9 +1,8 @@
+use chimitheque_defines::{END_OF_URL_CAPTURE_RE, IDS_CAPTURE_RE, IDS_MATCH_RE};
 use log::debug;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use url::Url;
-
-use crate::define::{END_OF_URL_CAPTURE_RE, IDS_CAPTURE_RE, IDS_MATCH_RE};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RequestFilter {
