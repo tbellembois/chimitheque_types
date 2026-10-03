@@ -1,5 +1,6 @@
 use chimitheque_traits::searchable::Searchable;
 use serde::{Deserialize, Serialize};
+use std::fmt;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct PrecautionaryStatement {
@@ -50,6 +51,16 @@ impl Searchable for PrecautionaryStatement {
 
     fn get_text(&self) -> String {
         self.precautionary_statement_reference.clone()
+    }
+}
+
+impl fmt::Display for PrecautionaryStatement {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}: {}",
+            self.precautionary_statement_label, self.precautionary_statement_reference
+        )
     }
 }
 

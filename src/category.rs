@@ -1,6 +1,7 @@
 use chimitheque_traits::searchable::Searchable;
 use chimitheque_utils::string::{Transform, clean};
 use serde::{Deserialize, Serialize};
+use std::fmt;
 
 use crate::error::ParseError;
 
@@ -64,6 +65,12 @@ impl Searchable for Category {
 
     fn get_text(&self) -> String {
         self.category_label.clone()
+    }
+}
+
+impl fmt::Display for Category {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.category_label)
     }
 }
 

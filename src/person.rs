@@ -1,8 +1,7 @@
-use std::fmt;
-
 use chimitheque_utils::string::{Transform, clean};
 use email_address::{EmailAddress, Options};
 use serde::{Deserialize, Serialize};
+use std::fmt;
 
 use crate::entity::Entity;
 use crate::permission::Permission;

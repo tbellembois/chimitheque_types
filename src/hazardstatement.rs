@@ -1,5 +1,6 @@
 use chimitheque_traits::searchable::Searchable;
 use serde::{Deserialize, Serialize};
+use std::fmt;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct HazardStatement {
@@ -51,6 +52,16 @@ impl Searchable for HazardStatement {
 
     fn get_text(&self) -> String {
         self.hazard_statement_reference.clone()
+    }
+}
+
+impl fmt::Display for HazardStatement {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}: {}",
+            self.hazard_statement_label, self.hazard_statement_reference
+        )
     }
 }
 

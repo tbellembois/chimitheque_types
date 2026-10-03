@@ -1,6 +1,7 @@
 use chimitheque_traits::searchable::Searchable;
 use chimitheque_utils::string::{Transform, clean};
 use serde::{Deserialize, Serialize};
+use std::fmt;
 
 use crate::error::ParseError;
 
@@ -64,6 +65,12 @@ impl Searchable for ClassOfCompound {
 
     fn get_text(&self) -> String {
         self.class_of_compound_label.clone()
+    }
+}
+
+impl fmt::Display for ClassOfCompound {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.class_of_compound_label)
     }
 }
 

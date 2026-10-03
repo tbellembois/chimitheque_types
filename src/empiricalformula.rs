@@ -4,6 +4,7 @@ use chimitheque_utils::{
     string::{Transform, clean},
 };
 use serde::{Deserialize, Serialize};
+use std::fmt;
 
 use crate::error::ParseError;
 
@@ -69,6 +70,12 @@ impl Searchable for EmpiricalFormula {
 
     fn get_text(&self) -> String {
         self.empirical_formula_label.clone()
+    }
+}
+
+impl fmt::Display for EmpiricalFormula {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.empirical_formula_label)
     }
 }
 

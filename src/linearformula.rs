@@ -4,6 +4,7 @@ use chimitheque_utils::{
     string::{Transform, clean},
 };
 use serde::{Deserialize, Serialize};
+use std::fmt;
 
 use crate::error::ParseError;
 
@@ -71,6 +72,12 @@ impl Searchable for LinearFormula {
 
     fn get_text(&self) -> String {
         self.linear_formula_label.clone()
+    }
+}
+
+impl fmt::Display for LinearFormula {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.linear_formula_label)
     }
 }
 
