@@ -35,9 +35,9 @@ pub struct Product {
     /// Flag indicating if product is radioactive.
     #[serde(default)]
     pub product_radioactive: bool,
-    /// 2D chemical formula representation.
+    /// 2D chemical formula representation picture.
     pub product_twod_formula: Option<String>,
-    /// 3D chemical formula representation.
+    /// 3D chemical formula representation link.
     pub product_threed_formula: Option<String>,
     /// Disposal instructions/comments.
     pub product_disposal_comment: Option<String>,
