@@ -140,40 +140,34 @@ impl Product {
     pub fn sanitize_and_validate(
         &mut self,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        if let Some(cas_number) = self.cas_number.as_ref()
+        if let Some(ref mut cas_number) = self.cas_number
             && cas_number.cas_number_id.is_none()
         {
-            self.cas_number.as_mut().unwrap().sanitize_and_validate()?;
+            cas_number.sanitize_and_validate()?;
         }
 
-        if let Some(ce_number) = self.ce_number.as_ref()
+        if let Some(ref mut ce_number) = self.ce_number
             && ce_number.ce_number_id.is_none()
         {
-            self.ce_number.as_mut().unwrap().sanitize_and_validate()?;
+            ce_number.sanitize_and_validate()?;
         }
 
-        if let Some(category) = self.category.as_ref()
+        if let Some(ref mut category) = self.category
             && category.category_id.is_none()
         {
-            self.category.as_mut().unwrap().sanitize_and_validate()?;
+            category.sanitize_and_validate()?;
         }
 
-        if let Some(empirical_formula) = self.empirical_formula.as_ref()
+        if let Some(ref mut empirical_formula) = self.empirical_formula
             && empirical_formula.empirical_formula_id.is_none()
         {
-            self.empirical_formula
-                .as_mut()
-                .unwrap()
-                .sanitize_and_validate()?;
+            empirical_formula.sanitize_and_validate()?;
         }
 
-        if let Some(linear_formula) = self.linear_formula.as_ref()
+        if let Some(ref mut linear_formula) = self.linear_formula
             && linear_formula.linear_formula_id.is_none()
         {
-            self.linear_formula
-                .as_mut()
-                .unwrap()
-                .sanitize_and_validate()?;
+            linear_formula.sanitize_and_validate()?;
         }
 
         if self.name.name_id.is_none() {
