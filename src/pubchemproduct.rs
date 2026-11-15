@@ -1,8 +1,38 @@
 use chimitheque_defines::{HAZARD_STATEMENT_RE, PRECAUTIONARY_STATEMENT_RE, SYMBOL_RE};
 use jsonpath_rust::JsonPathQuery;
-use log::debug;
+use log::{debug, trace};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+
+/// Helper function to safely extract a String value from a JSON Value
+/// Returns None if the value doesn't exist or can't be converted to a string
+#[must_use]
+fn extract_string(value: &Value) -> Option<String> {
+    debug!("extract_string called");
+    value
+        .as_array()
+        .and_then(|arr| arr.first())
+        .and_then(|first| first.as_str())
+        .map(std::string::ToString::to_string)
+}
+
+/// Helper function to safely extract a Vec<String> from a JSON Value
+/// Returns Some(Vec<String>) if extraction succeeds, None otherwise
+#[must_use]
+fn extract_string_vec(value: &Value) -> Option<Vec<String>> {
+    value.as_array().map(|arr| {
+        arr.iter()
+            .filter_map(|item| item.as_str().map(std::string::ToString::to_string))
+            .collect()
+    })
+}
+
+/// Helper function to safely query and extract a field from JSON
+/// Returns None if the field doesn't exist, otherwise Some(value)
+#[must_use]
+fn safe_json_query(json: &Value, query: &str) -> Option<Value> {
+    json.clone().path(query).ok()
+}
 
 // A simplified pubchem product representation.
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
@@ -67,296 +97,228 @@ impl PubchemProduct {
             ..Default::default()
         };
 
-        let json_content: Value = serde_json::from_str(json_content).unwrap();
+        // Parse JSON safely, return empty product on failure
+        // No panic on malformed JSON - return default product
+        let json_content: Value = match serde_json::from_str(json_content) {
+            Ok(v) => v,
+            Err(_) => return product,
+        };
 
-        // Name.
-        let name = json_content.clone().path("$.Record.RecordTitle").unwrap();
-
-        debug!("name: {name:#?}");
-        let name_value = name.as_array().map(|v| match v.first() {
-            Some(value) => value.as_str().map(std::string::ToString::to_string),
-            None => None,
-        });
-        product.name = name_value.unwrap_or(None);
-
-        // IUPAC name.
-        let iupac_name = json_content.clone()
-        .path("$..Section[?(@.TOCHeading=='IUPAC Name')].Information[0].Value.StringWithMarkup[0].String")
-        .unwrap();
-
-        debug!("iupac_name: {iupac_name:#?}");
-        let iupac_name_value = iupac_name.as_array().map(|v| match v.first() {
-            Some(value) => value.as_str().map(std::string::ToString::to_string),
-            None => None,
-        });
-        product.iupac_name = iupac_name_value.unwrap_or(None);
-
-        // InChi.
-        let inchi = json_content
-            .clone()
-            .path(
-                "$..Section[?(@.TOCHeading=='InChI')].Information[0].Value.StringWithMarkup[0].String",
-            )
-            .unwrap();
-
-        debug!("inchi: {inchi:#?}");
-        let inchi_value = inchi.as_array().map(|v| match v.first() {
-            Some(value) => value.as_str().map(std::string::ToString::to_string),
-            None => None,
-        });
-        product.inchi = inchi_value.unwrap_or(None);
-
-        // InChi key.
-        let inchi_key = json_content
-        .clone()
-        .path(
-            "$..Section[?(@.TOCHeading=='InChIKey')].Information[0].Value.StringWithMarkup[0].String",
-        )
-        .unwrap();
-
-        debug!("inchi_key: {inchi_key:#?}");
-        let inchi_key_value = inchi_key.as_array().map(|v| match v.first() {
-            Some(value) => value.as_str().map(std::string::ToString::to_string),
-            None => None,
-        });
-        product.inchi_key = inchi_key_value.unwrap_or(None);
-
-        // Canonical SMILES.
-        let canonical_smiles = json_content
-        .clone()
-        .path(
-            "$..Section[?(@.TOCHeading=='Canonical SMILES')].Information[0].Value.StringWithMarkup[0].String",
-        )
-        .unwrap();
-
-        debug!("canonical_smiles: {canonical_smiles:#?}");
-        let canonical_smiles_value = canonical_smiles.as_array().map(|v| match v.first() {
-            Some(value) => value.as_str().map(std::string::ToString::to_string),
-            None => None,
-        });
-        product.canonical_smiles = canonical_smiles_value.unwrap_or(None);
-
-        // Molecular formula.
-        let molecular_formula = json_content
-        .clone()
-        .path(
-            "$..Section[?(@.TOCHeading=='Molecular Formula')].Information[0].Value.StringWithMarkup[0].String",
-        )
-        .unwrap();
-
-        debug!("molecular_formula: {molecular_formula:#?}");
-        let molecular_formula_value = molecular_formula.as_array().map(|v| match v.first() {
-            Some(value) => value.as_str().map(std::string::ToString::to_string),
-            None => None,
-        });
-        product.molecular_formula = molecular_formula_value.unwrap_or(None);
-
-        // CAS.
-        let cas = json_content
-            .clone()
-            .path("$..Section[?(@.TOCHeading=='CAS')].Information[0].Value.StringWithMarkup[0].String")
-            .unwrap();
-
-        debug!("cas: {cas:#?}");
-        let cas_value = cas.as_array().map(|v| match v.first() {
-            Some(value) => value.as_str().map(std::string::ToString::to_string),
-            None => None,
-        });
-        product.cas = cas_value.unwrap_or(None);
-
-        // EC.
-        let ec = json_content
-        .clone()
-        .path("$..Section[?(@.TOCHeading=='European Community (EC) Number')].Information[0].Value.StringWithMarkup[0].String")
-        .unwrap();
-
-        debug!("ec: {ec:#?}");
-        let ec_value = ec.as_array().map(|v| match v.first() {
-            Some(value) => value.as_str().map(std::string::ToString::to_string),
-            None => None,
-        });
-        product.ec = ec_value.unwrap_or(None);
-
-        // Synonyms.
-        let synonyms = json_content
-            .clone()
-            .path(
-                "$..Section[?(@.TOCHeading=='Synonyms')].Section[?(@.TOCHeading!='Removed Synonyms')]..String",
-            )
-            .unwrap();
-
-        debug!("synonyms: {synonyms:#?}");
-        product.synonyms = synonyms.as_array().map(|v| {
-            v.iter()
-                .map(|s| match s.as_str() {
-                    Some(s) => s.to_string(),
-                    None => "can not as_str".to_string(),
-                })
-                .collect()
-        });
-
-        if let Some(synonym_vec) = product.synonyms.as_mut() {
-            synonym_vec.sort();
-            synonym_vec.dedup();
+        // Name - safely extract if field exists
+        if let Some(name_value) = safe_json_query(&json_content, "$.Record.RecordTitle")
+            && let Some(name_str) = extract_string(&name_value)
+        {
+            debug!("name: {name_str}");
+            product.name = Some(name_str);
         }
 
-        // Molecular weight.
-        let molecular_weight = json_content
-            .clone()
-            .path("$..Section[?(@.TOCHeading=='Molecular Weight')].Information[0].Value.StringWithMarkup[0].String")
-            .unwrap();
+        // IUPAC name - safely extract if field exists
+        if let Some(iupac_name_value) = safe_json_query(
+            &json_content,
+            "$..Section[?(@.TOCHeading=='IUPAC Name')].Information[0].Value.StringWithMarkup[0].String",
+        ) && let Some(iupac_name_str) = extract_string(&iupac_name_value)
+        {
+            debug!("iupac_name: {iupac_name_str}");
+            product.iupac_name = Some(iupac_name_str);
+        }
 
-        debug!("molecular_weight: {molecular_weight:#?}");
-        let molecular_weight_value = molecular_weight.as_array().map(|v| match v.first() {
-            Some(value) => value.as_str().map(std::string::ToString::to_string),
-            None => None,
-        });
-        product.molecular_weight = molecular_weight_value.unwrap_or(None);
+        // InChi - safely extract if field exists
+        if let Some(inchi_value) = safe_json_query(
+            &json_content,
+            "$..Section[?(@.TOCHeading=='InChI')].Information[0].Value.StringWithMarkup[0].String",
+        ) && let Some(inchi_str) = extract_string(&inchi_value)
+        {
+            debug!("inchi: {inchi_str}");
+            product.inchi = Some(inchi_str);
+        }
 
-        // Molecular weight unit.
-        let molecular_weight_unit = json_content
-            .clone()
-            .path("$..Section[?(@.TOCHeading=='Molecular Weight')].Information[0].Value.Unit")
-            .unwrap();
+        // InChi key - safely extract if field exists
+        if let Some(inchi_key_value) = safe_json_query(
+            &json_content,
+            "$..Section[?(@.TOCHeading=='InChIKey')].Information[0].Value.StringWithMarkup[0].String",
+        ) && let Some(inchi_key_str) = extract_string(&inchi_key_value)
+        {
+            debug!("inchi_key: {inchi_key_str}");
+            product.inchi_key = Some(inchi_key_str);
+        }
 
-        debug!("molecular_weight_unit: {molecular_weight_unit:#?}");
-        let molecular_weight_unit_value =
-            molecular_weight_unit.as_array().map(|v| match v.first() {
-                Some(value) => value.as_str().map(std::string::ToString::to_string),
-                None => None,
-            });
-        product.molecular_weight_unit = molecular_weight_unit_value.unwrap_or(None);
+        // Canonical SMILES - safely extract if field exists
+        if let Some(canonical_smiles_value) = safe_json_query(
+            &json_content,
+            "$..Section[?(@.TOCHeading=='Canonical SMILES')].Information[0].Value.StringWithMarkup[0].String",
+        ) && let Some(canonical_smiles_str) = extract_string(&canonical_smiles_value)
+        {
+            debug!("canonical_smiles: {canonical_smiles_str}");
+            product.canonical_smiles = Some(canonical_smiles_str);
+        }
 
-        // Boiling point.
-        let boiling_point = json_content
-            .clone()
-            .path("$..Section[?(@.TOCHeading=='Boiling Point')].Information[?(@.Description=='PEER REVIEWED')].Value.StringWithMarkup[0].String")
-            .unwrap();
+        // Molecular formula - safely extract if field exists
+        if let Some(molecular_formula_value) = safe_json_query(
+            &json_content,
+            "$..Section[?(@.TOCHeading=='Molecular Formula')].Information[0].Value.StringWithMarkup[0].String",
+        ) && let Some(molecular_formula_str) = extract_string(&molecular_formula_value)
+        {
+            debug!("molecular_formula: {molecular_formula_str}");
+            product.molecular_formula = Some(molecular_formula_str);
+        }
 
-        debug!("boiling_point: {boiling_point:#?}");
-        let boiling_point_value = boiling_point.as_array().map(|v| match v.first() {
-            Some(value) => value.as_str().map(std::string::ToString::to_string),
-            None => None,
-        });
-        product.boiling_point = boiling_point_value.unwrap_or(None);
+        // CAS - safely extract if field exists
+        if let Some(cas_value) = safe_json_query(
+            &json_content,
+            "$..Section[?(@.TOCHeading=='CAS')].Information[0].Value.StringWithMarkup[0].String",
+        ) && let Some(cas_str) = extract_string(&cas_value)
+        {
+            debug!("cas: {cas_str}");
+            product.cas = Some(cas_str);
+        }
 
-        // Symbols.
-        let symbols = json_content
-            .clone()
-            .path("$..Information[?(@.Name=='Pictogram(s)')]..StringWithMarkup..Markup..URL")
-            .unwrap();
+        // EC - safely extract if field exists
+        if let Some(ec_value) = safe_json_query(
+            &json_content,
+            "$..Section[?(@.TOCHeading=='European Community (EC) Number')].Information[0].Value.StringWithMarkup[0].String",
+        ) && let Some(ec_str) = extract_string(&ec_value)
+        {
+            debug!("ec: {ec_str}");
+            product.ec = Some(ec_str);
+        }
 
-        debug!("symbols: {symbols:#?}");
-        let maybe_symbols_string_vec: Option<Vec<String>> = symbols.as_array().map(|v| {
-            v.iter()
-                .map(|s| match s.as_str() {
-                    Some(s) => s.to_string(),
-                    None => "can not as_str".to_string(),
-                })
-                .collect()
-        });
+        // Synonyms - safely extract if field exists
+        if let Some(synonyms_value) = safe_json_query(
+            &json_content,
+            "$..Section[?(@.TOCHeading=='Synonyms')].Section[?(@.TOCHeading!='Removed Synonyms')]..String",
+        ) && let Some(synonym_str_vec) = extract_string_vec(&synonyms_value)
+        {
+            product.synonyms = Some(synonym_str_vec);
+            // Sort and deduplicate synonyms
+            if let Some(synonym_vec) = product.synonyms.as_mut() {
+                synonym_vec.sort();
+                synonym_vec.dedup();
+            }
+        }
 
-        if let Some(symbols_string_vec) = maybe_symbols_string_vec {
-            let symbols_string = symbols_string_vec.join(",");
-            product.symbols = SYMBOL_RE
+        // Molecular weight - safely extract if field exists
+        if let Some(molecular_weight_value) = safe_json_query(
+            &json_content,
+            "$..Section[?(@.TOCHeading=='Molecular Weight')].Information[0].Value.StringWithMarkup[0].String",
+        ) && let Some(molecular_weight_str) = extract_string(&molecular_weight_value)
+        {
+            debug!("molecular_weight: {molecular_weight_str}");
+            product.molecular_weight = Some(molecular_weight_str);
+        }
+
+        // Molecular weight unit - safely extract if field exists (separate query)
+        if let Some(molecular_weight_unit_value) = safe_json_query(
+            &json_content,
+            "$..Section[?(@.TOCHeading=='Molecular Weight')].Information[0].Value.Unit",
+        ) && let Some(molecular_weight_unit_str) = extract_string(&molecular_weight_unit_value)
+        {
+            debug!("molecular_weight_unit: {molecular_weight_unit_str}");
+            product.molecular_weight_unit = Some(molecular_weight_unit_str);
+        }
+
+        // Boiling point - safely extract if field exists
+        if let Some(boiling_point_value) = safe_json_query(
+            &json_content,
+            "$..Section[?(@.TOCHeading=='Boiling Point')].Information[?(@.Description=='PEER REVIEWED')].Value.StringWithMarkup[0].String",
+        ) && let Some(boiling_point_str) = extract_string(&boiling_point_value)
+        {
+            debug!("boiling_point: {boiling_point_str}");
+            product.boiling_point = Some(boiling_point_str);
+        }
+
+        // Symbols (pictograms) - safely extract if field exists
+        if let Some(symbols_value) = safe_json_query(
+            &json_content,
+            "$..Information[?(@.Name=='Pictogram(s)')]..StringWithMarkup..Markup..URL",
+        ) && let Some(symbol_str_vec) = extract_string_vec(&symbols_value)
+        {
+            let symbols_string = symbol_str_vec.join(",");
+            let symbols_vec: Vec<String> = SYMBOL_RE
                 .captures_iter(&symbols_string)
-                .map(|p| {
+                .filter_map(|p| {
                     p.name("symbol")
                         .map(|statement| statement.as_str().to_string())
                 })
                 .collect();
+            product.symbols = Some(symbols_vec);
             if let Some(symbol_vec) = product.symbols.as_mut() {
                 symbol_vec.sort();
                 symbol_vec.dedup();
             }
+            debug!(
+                "symbols: found {} symbols",
+                product.symbols.as_ref().map_or(0, std::vec::Vec::len)
+            );
         }
 
-        // Signal.
-        let signal = json_content
-            .clone()
-            .path("$..Information[?(@.Name=='Signal')]..StringWithMarkup..String")
-            .unwrap();
-
-        debug!("signal: {signal:#?}");
-        product.signal = signal.as_array().map(|v| {
-            v.iter()
-                .map(|s| match s.as_str() {
-                    Some(s) => s.to_string(),
-                    None => "can not as_str".to_string(),
-                })
-                .collect()
-        });
-
-        if let Some(signal_vec) = product.signal.as_mut() {
-            signal_vec.sort();
-            signal_vec.dedup();
+        // Signal - safely extract if field exists
+        if let Some(signal_value) = safe_json_query(
+            &json_content,
+            "$..Information[?(@.Name=='Signal')]..StringWithMarkup..String",
+        ) && let Some(signal_str_vec) = extract_string_vec(&signal_value)
+        {
+            product.signal = Some(signal_str_vec);
+            if let Some(signal_vec) = product.signal.as_mut() {
+                signal_vec.sort();
+                signal_vec.dedup();
+            }
+            debug!(
+                "signal: found {} signals",
+                product.signal.as_ref().map_or(0, std::vec::Vec::len)
+            );
         }
 
-        // Hazard statements.
-        let hs = json_content
-            .clone()
-            .path("$..Information[?(@.Name=='GHS Hazard Statements')]..StringWithMarkup..String")
-            .unwrap();
-
-        debug!("hs: {hs:#?}");
-
-        let maybe_hazardstatement_string_vec: Option<Vec<String>> = hs.as_array().map(|v| {
-            v.iter()
-                .map(|s| match s.as_str() {
-                    Some(s) => s.to_string(),
-                    None => "can not as_str".to_string(),
-                })
-                .collect()
-        });
-
-        if let Some(hs_string_vec) = maybe_hazardstatement_string_vec {
-            let hs_string = hs_string_vec.join(",");
-            product.hs = HAZARD_STATEMENT_RE
+        // Hazard statements (GHS) - safely extract if field exists
+        if let Some(hs_value) = safe_json_query(
+            &json_content,
+            "$..Information[?(@.Name=='GHS Hazard Statements')]..StringWithMarkup..String",
+        ) && let Some(hs_str_vec) = extract_string_vec(&hs_value)
+        {
+            let hs_string = hs_str_vec.join(",");
+            let hs_vec: Vec<String> = HAZARD_STATEMENT_RE
                 .captures_iter(&hs_string)
-                .map(|p| {
+                .filter_map(|p| {
                     p.name("statement")
                         .map(|statement| statement.as_str().to_string())
                 })
                 .collect();
-            if let Some(hs_vec) = product.hs.as_mut() {
-                hs_vec.sort();
-                hs_vec.dedup();
+            product.hs = Some(hs_vec);
+            if let Some(hs_vector) = product.hs.as_mut() {
+                hs_vector.sort();
+                hs_vector.dedup();
             }
+            debug!(
+                "hs: found {} hazard statements",
+                product.hs.as_ref().map_or(0, std::vec::Vec::len)
+            );
         }
 
-        // Precautionary statements.
-        let ps = json_content
-            .clone()
-            .path("$..Information[?(@.Name=='Precautionary Statement Codes')]..StringWithMarkup[0].String")
-            .unwrap();
-
-        debug!("ps: {ps:#?}");
-
-        let maybe_precautionarystatement_string_vec: Option<Vec<String>> = ps.as_array().map(|v| {
-            v.iter()
-                .map(|s| match s.as_str() {
-                    Some(s) => s.to_string(),
-                    None => "can not as_str".to_string(),
-                })
-                .collect()
-        });
-
-        if let Some(ps_string_vec) = maybe_precautionarystatement_string_vec {
-            let ps_string = ps_string_vec.join(",");
-            product.ps = PRECAUTIONARY_STATEMENT_RE
+        // Precautionary statements - safely extract if field exists
+        if let Some(ps_value) = safe_json_query(
+            &json_content,
+            "$..Information[?(@.Name=='Precautionary Statement Codes')]..StringWithMarkup[0].String",
+        ) && let Some(ps_str_vec) = extract_string_vec(&ps_value)
+        {
+            let ps_string = ps_str_vec.join(",");
+            let ps_vec: Vec<String> = PRECAUTIONARY_STATEMENT_RE
                 .captures_iter(&ps_string)
-                .map(|p| {
+                .filter_map(|p| {
                     p.name("statement")
                         .map(|statement| statement.as_str().to_string())
                 })
                 .collect();
-            if let Some(ps_vec) = product.ps.as_mut() {
-                ps_vec.sort();
-                ps_vec.dedup();
+            product.ps = Some(ps_vec);
+            if let Some(ps_vector) = product.ps.as_mut() {
+                ps_vector.sort();
+                ps_vector.dedup();
             }
+            debug!(
+                "ps: found {} precautionary statements",
+                product.ps.as_ref().map_or(0, std::vec::Vec::len)
+            );
         }
 
-        debug!("product: {product:#?}");
+        trace!("product parsed successfully: {product:#?}");
 
         product
     }
