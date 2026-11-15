@@ -249,9 +249,12 @@ impl TryFrom<&str> for RequestFilter {
         if END_OF_URL_CAPTURE_RE.is_match(url.as_str())
             && let Some(cap) = END_OF_URL_CAPTURE_RE.captures(url.as_str())
         {
-            // We can unwrap safely here because of validation (is_match) below.
-            let id_str = cap.name("id").unwrap().as_str();
-            request_filter.id = Some(id_str.parse::<u64>().unwrap());
+            // Safe access - capture exists due to regex match, but handle parse error
+            if let Some(id_match) = cap.name("id")
+                && let Ok(id_parsed) = id_match.as_str().parse::<u64>()
+            {
+                request_filter.id = Some(id_parsed);
+            }
         }
 
         // Get the query parameters.
@@ -326,11 +329,12 @@ impl TryFrom<&str> for RequestFilter {
                     let caps = IDS_CAPTURE_RE.captures_iter(&value);
                     let mut hazard_statement_ids: Vec<u64> = Vec::new();
                     for cap in caps {
-                        // We can unwrap safely here because of validation (is_match) below.
-                        let id_str = cap.name("id").unwrap().as_str();
-                        let id = id_str.parse::<u64>().unwrap();
-
-                        hazard_statement_ids.push(id);
+                        // Safe access - capture should exist due to is_match, but handle gracefully
+                        if let Some(id_match) = cap.name("id")
+                            && let Ok(id_parsed) = id_match.as_str().parse::<u64>()
+                        {
+                            hazard_statement_ids.push(id_parsed);
+                        }
                     }
                     request_filter.hazard_statements = Some(hazard_statement_ids);
                 }
@@ -346,11 +350,12 @@ impl TryFrom<&str> for RequestFilter {
                     let caps = IDS_CAPTURE_RE.captures_iter(&value);
                     let mut storage_ids: Vec<u64> = Vec::new();
                     for cap in caps {
-                        // We can unwrap safely here because of validation (is_match) below.
-                        let id_str = cap.name("id").unwrap().as_str();
-                        let id = id_str.parse::<u64>().unwrap();
-
-                        storage_ids.push(id);
+                        // Safe access - capture should exist due to is_match, but handle gracefully
+                        if let Some(id_match) = cap.name("id")
+                            && let Ok(id_parsed) = id_match.as_str().parse::<u64>()
+                        {
+                            storage_ids.push(id_parsed);
+                        }
                     }
                     request_filter.storages = Some(storage_ids);
                 }
@@ -369,11 +374,12 @@ impl TryFrom<&str> for RequestFilter {
                     let caps = IDS_CAPTURE_RE.captures_iter(&value);
                     let mut precautionary_statement_ids: Vec<u64> = Vec::new();
                     for cap in caps {
-                        // We can unwrap safely here because of validation (is_match) below.
-                        let id_str = cap.name("id").unwrap().as_str();
-                        let id = id_str.parse::<u64>().unwrap();
-
-                        precautionary_statement_ids.push(id);
+                        // Safe access - capture should exist due to is_match, but handle gracefully
+                        if let Some(id_match) = cap.name("id")
+                            && let Ok(id_parsed) = id_match.as_str().parse::<u64>()
+                        {
+                            precautionary_statement_ids.push(id_parsed);
+                        }
                     }
                     request_filter.precautionary_statements = Some(precautionary_statement_ids);
                 }
@@ -467,11 +473,12 @@ impl TryFrom<&str> for RequestFilter {
                     let caps = IDS_CAPTURE_RE.captures_iter(&value);
                     let mut symbol_ids: Vec<u64> = Vec::new();
                     for cap in caps {
-                        // We can unwrap safely here because of validation (is_match) below.
-                        let id_str = cap.name("id").unwrap().as_str();
-                        let id = id_str.parse::<u64>().unwrap();
-
-                        symbol_ids.push(id);
+                        // Safe access - capture should exist due to is_match, but handle gracefully
+                        if let Some(id_match) = cap.name("id")
+                            && let Ok(id_parsed) = id_match.as_str().parse::<u64>()
+                        {
+                            symbol_ids.push(id_parsed);
+                        }
                     }
                     request_filter.symbols = Some(symbol_ids);
                 }
@@ -483,11 +490,12 @@ impl TryFrom<&str> for RequestFilter {
                     let caps = IDS_CAPTURE_RE.captures_iter(&value);
                     let mut tag_ids: Vec<u64> = Vec::new();
                     for cap in caps {
-                        // We can unwrap safely here because of validation (is_match) below.
-                        let id_str = cap.name("id").unwrap().as_str();
-                        let id = id_str.parse::<u64>().unwrap();
-
-                        tag_ids.push(id);
+                        // Safe access - capture should exist due to is_match, but handle gracefully
+                        if let Some(id_match) = cap.name("id")
+                            && let Ok(id_parsed) = id_match.as_str().parse::<u64>()
+                        {
+                            tag_ids.push(id_parsed);
+                        }
                     }
                     request_filter.tags = Some(tag_ids);
                 }
