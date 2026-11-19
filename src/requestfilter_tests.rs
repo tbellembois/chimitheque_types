@@ -63,8 +63,67 @@ mod tests {
         };
         assert_eq!(
             filter.to_string(),
-            "?search=test&id=1&order_by=name&order=asc&offset=0&limit=10&bookmark=true&borrowing=true&cas_number=12345&cas_number_string=ABC123&is_cmr=true&category=1&custom_name_part_of=part1&empirical_formula=1&entity=1&entity_name=entity1&hazard_statements=1,2,3&precautionary_statements=1,2,3&history=true&storages=1,2,3&name=1&producer=1&producer_ref=1&product=1&person=1&person_email=person@example.com&product_specificity=specificity1&show_bio=true&show_chem=true&show_consu=true&signal_word=1&storage=1&storage_archive=true&storage_barecode=barcode1&storage_batch_number=batch1&storage_to_destroy=true&store_location=1&store_location_can_store=true&supplier=1&symbols=1,2,3&tags=1,2,3&unit_type=quantity"
+            "?search=test&id=1&order_by=name&order=asc&offset=0&limit=10&bookmark=true&borrowing=true&cas_number=12345&cas_number_string=ABC123&is_cmr=true&category=1&custom_name_part_of=part1&empirical_formula=1&entity=1&entity_name=entity1&hazard_statements=1%2C2%2C3&precautionary_statements=1%2C2%2C3&history=true&storages=1%2C2%2C3&name=1&producer=1&producer_ref=1&product=1&person=1&person_email=person%40example.com&product_specificity=specificity1&show_bio=true&show_chem=true&show_consu=true&signal_word=1&storage=1&storage_archive=true&storage_barecode=barcode1&storage_batch_number=batch1&storage_to_destroy=true&store_location=1&store_location_can_store=true&supplier=1&symbols=1%2C2%2C3&tags=1%2C2%2C3&unit_type=quantity"
         );
+
+        let request = format!("http://localhost/products{filter}");
+        let parsed = RequestFilter::try_from(request.as_str()).unwrap();
+        assert_eq!(
+            serde_json::to_value(&parsed).unwrap(),
+            serde_json::to_value(&filter).unwrap()
+        );
+    }
+
+    #[test]
+    fn test_requestfilter_display_encodes_special_characters() {
+        let filter = RequestFilter {
+            search: Some("acetone & ethanol+#50%".to_string()),
+            person_email: Some("chemist+lab@example.com".to_string()),
+            ..Default::default()
+        };
+
+        assert_eq!(
+            filter.to_string(),
+            "?search=acetone+%26+ethanol%2B%2350%25&order=asc&person_email=chemist%2Blab%40example.com"
+        );
+    }
+
+    #[test]
+    fn test_requestfilter_text_fields_round_trip() {
+        for value in [
+            "",
+            "acetone&limit=1",
+            "chemist+lab@example.com",
+            "#fragment",
+            "%26%3D",
+            "two words",
+            "éthanol 化学 🧪",
+            "a=b?c/d",
+        ] {
+            let filter = RequestFilter {
+                search: Some(value.to_string()),
+                order_by: Some(value.to_string()),
+                order: value.to_string(),
+                cas_number_string: Some(value.to_string()),
+                custom_name_part_of: Some(value.to_string()),
+                entity_name: Some(value.to_string()),
+                person_email: Some(value.to_string()),
+                product_specificity: Some(value.to_string()),
+                storage_barecode: Some(value.to_string()),
+                storage_batch_number: Some(value.to_string()),
+                unit_type: Some(value.to_string()),
+                limit: Some(25),
+                ..Default::default()
+            };
+            let request = format!("http://localhost/products{filter}");
+            let parsed = RequestFilter::try_from(request.as_str()).unwrap();
+
+            assert_eq!(
+                serde_json::to_value(&parsed).unwrap(),
+                serde_json::to_value(&filter).unwrap(),
+                "round trip failed for {value:?}"
+            );
+        }
     }
 
     #[test]

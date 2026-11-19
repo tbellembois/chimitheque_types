@@ -2,7 +2,7 @@ use chimitheque_defines::{END_OF_URL_CAPTURE_RE, IDS_CAPTURE_RE, IDS_MATCH_RE};
 use log::debug;
 use serde::{Deserialize, Serialize};
 use std::fmt;
-use url::Url;
+use url::{Url, form_urlencoded};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RequestFilter {
@@ -63,168 +63,169 @@ pub struct RequestFilter {
 
 impl fmt::Display for RequestFilter {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut parameters: Vec<String> = vec![];
+        let mut parameters = form_urlencoded::Serializer::new(String::new());
 
         if let Some(search) = &self.search {
-            parameters.push(format!("search={search}"));
+            parameters.append_pair("search", search);
         }
         if let Some(id) = &self.id {
-            parameters.push(format!("id={id}"));
+            parameters.append_pair("id", &id.to_string());
         }
         if let Some(order_by) = &self.order_by {
-            parameters.push(format!("order_by={order_by}"));
+            parameters.append_pair("order_by", order_by);
         }
-        parameters.push(format!("order={}", self.order));
+        parameters.append_pair("order", &self.order);
         if let Some(offset) = &self.offset {
-            parameters.push(format!("offset={offset}"));
+            parameters.append_pair("offset", &offset.to_string());
         }
         if let Some(limit) = &self.limit {
-            parameters.push(format!("limit={limit}"));
+            parameters.append_pair("limit", &limit.to_string());
         }
         if self.bookmark {
-            parameters.push("bookmark=true".to_string());
+            parameters.append_pair("bookmark", "true");
         }
         if self.borrowing {
-            parameters.push("borrowing=true".to_string());
+            parameters.append_pair("borrowing", "true");
         }
         if let Some(cas_number) = &self.cas_number {
-            parameters.push(format!("cas_number={cas_number}"));
+            parameters.append_pair("cas_number", &cas_number.to_string());
         }
         if let Some(cas_number_string) = &self.cas_number_string {
-            parameters.push(format!("cas_number_string={cas_number_string}"));
+            parameters.append_pair("cas_number_string", cas_number_string);
         }
         if self.is_cmr {
-            parameters.push("is_cmr=true".to_string());
+            parameters.append_pair("is_cmr", "true");
         }
         if let Some(category) = &self.category {
-            parameters.push(format!("category={category}"));
+            parameters.append_pair("category", &category.to_string());
         }
         if let Some(custom_name_part_of) = &self.custom_name_part_of {
-            parameters.push(format!("custom_name_part_of={custom_name_part_of}"));
+            parameters.append_pair("custom_name_part_of", custom_name_part_of);
         }
         if let Some(empirical_formula) = &self.empirical_formula {
-            parameters.push(format!("empirical_formula={empirical_formula}"));
+            parameters.append_pair("empirical_formula", &empirical_formula.to_string());
         }
         if let Some(entity) = &self.entity {
-            parameters.push(format!("entity={entity}"));
+            parameters.append_pair("entity", &entity.to_string());
         }
         if let Some(entity_name) = &self.entity_name {
-            parameters.push(format!("entity_name={entity_name}"));
+            parameters.append_pair("entity_name", entity_name);
         }
         if let Some(hazard_statements) = &self.hazard_statements {
-            parameters.push(format!(
-                "hazard_statements={}",
-                hazard_statements
+            parameters.append_pair(
+                "hazard_statements",
+                &hazard_statements
                     .iter()
                     .map(std::string::ToString::to_string)
                     .collect::<Vec<String>>()
                     .join(","),
-            ));
+            );
         }
         if let Some(precautionary_statements) = &self.precautionary_statements {
-            parameters.push(format!(
-                "precautionary_statements={}",
-                precautionary_statements
+            parameters.append_pair(
+                "precautionary_statements",
+                &precautionary_statements
                     .iter()
                     .map(std::string::ToString::to_string)
                     .collect::<Vec<String>>()
                     .join(","),
-            ));
+            );
         }
         if self.history {
-            parameters.push("history=true".to_string());
+            parameters.append_pair("history", "true");
         }
         if let Some(storages) = &self.storages {
-            parameters.push(format!(
-                "storages={}",
-                storages
+            parameters.append_pair(
+                "storages",
+                &storages
                     .iter()
                     .map(std::string::ToString::to_string)
                     .collect::<Vec<String>>()
                     .join(","),
-            ));
+            );
         }
         if let Some(name) = &self.name {
-            parameters.push(format!("name={name}"));
+            parameters.append_pair("name", &name.to_string());
         }
         if let Some(producer) = &self.producer {
-            parameters.push(format!("producer={producer}"));
+            parameters.append_pair("producer", &producer.to_string());
         }
         if let Some(producer_ref) = &self.producer_ref {
-            parameters.push(format!("producer_ref={producer_ref}"));
+            parameters.append_pair("producer_ref", &producer_ref.to_string());
         }
         if let Some(product) = &self.product {
-            parameters.push(format!("product={product}"));
+            parameters.append_pair("product", &product.to_string());
         }
         if let Some(person) = &self.person {
-            parameters.push(format!("person={person}"));
+            parameters.append_pair("person", &person.to_string());
         }
         if let Some(person_email) = &self.person_email {
-            parameters.push(format!("person_email={person_email}"));
+            parameters.append_pair("person_email", person_email);
         }
         if let Some(product_specificity) = &self.product_specificity {
-            parameters.push(format!("product_specificity={product_specificity}"));
+            parameters.append_pair("product_specificity", product_specificity);
         }
         if self.show_bio {
-            parameters.push("show_bio=true".to_string());
+            parameters.append_pair("show_bio", "true");
         }
         if self.show_chem {
-            parameters.push("show_chem=true".to_string());
+            parameters.append_pair("show_chem", "true");
         }
         if self.show_consu {
-            parameters.push("show_consu=true".to_string());
+            parameters.append_pair("show_consu", "true");
         }
         if let Some(signal_word) = &self.signal_word {
-            parameters.push(format!("signal_word={signal_word}"));
+            parameters.append_pair("signal_word", &signal_word.to_string());
         }
         if let Some(storage) = &self.storage {
-            parameters.push(format!("storage={storage}"));
+            parameters.append_pair("storage", &storage.to_string());
         }
         if let Some(storage_archive) = self.storage_archive {
-            parameters.push(format!("storage_archive={storage_archive}"));
+            parameters.append_pair("storage_archive", &storage_archive.to_string());
         }
         if let Some(storage_barecode) = &self.storage_barecode {
-            parameters.push(format!("storage_barecode={storage_barecode}"));
+            parameters.append_pair("storage_barecode", storage_barecode);
         }
         if let Some(storage_batch_number) = &self.storage_batch_number {
-            parameters.push(format!("storage_batch_number={storage_batch_number}"));
+            parameters.append_pair("storage_batch_number", storage_batch_number);
         }
         if self.storage_to_destroy {
-            parameters.push("storage_to_destroy=true".to_string());
+            parameters.append_pair("storage_to_destroy", "true");
         }
         if let Some(store_location) = &self.store_location {
-            parameters.push(format!("store_location={store_location}"));
+            parameters.append_pair("store_location", &store_location.to_string());
         }
         if self.store_location_can_store {
-            parameters.push("store_location_can_store=true".to_string());
+            parameters.append_pair("store_location_can_store", "true");
         }
         if let Some(supplier) = &self.supplier {
-            parameters.push(format!("supplier={supplier}"));
+            parameters.append_pair("supplier", &supplier.to_string());
         }
         if let Some(symbols) = &self.symbols {
-            parameters.push(format!(
-                "symbols={}",
-                symbols
+            parameters.append_pair(
+                "symbols",
+                &symbols
                     .iter()
                     .map(std::string::ToString::to_string)
                     .collect::<Vec<String>>()
                     .join(","),
-            ));
+            );
         }
         if let Some(tags) = &self.tags {
-            parameters.push(format!(
-                "tags={}",
-                tags.iter()
+            parameters.append_pair(
+                "tags",
+                &tags
+                    .iter()
                     .map(std::string::ToString::to_string)
                     .collect::<Vec<String>>()
                     .join(","),
-            ));
+            );
         }
         if let Some(unit_type) = &self.unit_type {
-            parameters.push(format!("unit_type={unit_type}"));
+            parameters.append_pair("unit_type", unit_type);
         }
 
-        let result: String = parameters.join("&");
+        let result = parameters.finish();
         write!(f, "?{result}")
     }
 }
