@@ -6,12 +6,19 @@ use std::{
 
 use crate::error::ParseError;
 
+/// Unit categories serialized as `snake_case` strings, matching `Display` and `FromStr`.
+/// Legacy `PascalCase` JSON strings are also accepted during deserialization.
 #[derive(Debug, Serialize, Deserialize, Copy, Clone, PartialEq, Eq, Default)]
+#[serde(rename_all = "snake_case")]
 pub enum UnitType {
     #[default]
+    #[serde(alias = "Quantity")]
     Quantity,
+    #[serde(alias = "Concentration")]
     Concentration,
+    #[serde(alias = "Temperature")]
     Temperature,
+    #[serde(alias = "MolecularWeight")]
     MolecularWeight,
 }
 

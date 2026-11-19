@@ -10,6 +10,41 @@ mod tests {
     use crate::unittype::*;
 
     #[test]
+    fn test_serde_matches_string_representation() {
+        for (unit_type, canonical, legacy) in [
+            (UnitType::Quantity, "quantity", "Quantity"),
+            (UnitType::Concentration, "concentration", "Concentration"),
+            (UnitType::Temperature, "temperature", "Temperature"),
+            (
+                UnitType::MolecularWeight,
+                "molecular_weight",
+                "MolecularWeight",
+            ),
+        ] {
+            assert_eq!(unit_type.to_string(), canonical);
+            assert_eq!(UnitType::from_str(canonical).unwrap(), unit_type);
+            assert_eq!(
+                serde_json::to_value(unit_type).unwrap(),
+                serde_json::json!(canonical)
+            );
+
+            for input in [canonical, legacy] {
+                let parsed: UnitType = serde_json::from_value(serde_json::json!(input)).unwrap();
+                assert_eq!(parsed, unit_type);
+                assert_eq!(
+                    serde_json::to_value(parsed).unwrap(),
+                    serde_json::json!(canonical)
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn test_serde_rejects_unknown_unit_type() {
+        assert!(serde_json::from_str::<UnitType>("\"invalid\"").is_err());
+    }
+
+    #[test]
     fn test_display_quantity() {
         let unit_type = UnitType::Quantity;
         assert_eq!(unit_type.to_string(), "quantity");

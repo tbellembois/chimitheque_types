@@ -7,6 +7,7 @@ use crate::error::ParseError;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct ClassOfCompound {
+    #[serde(default)]
     pub match_exact_search: bool,
     pub class_of_compound_id: Option<u64>,
     pub class_of_compound_label: String,

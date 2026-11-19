@@ -98,4 +98,37 @@ mod tests {
         hazard_statement.set_text_field("");
         assert_eq!(hazard_statement.get_text(), "");
     }
+
+    #[test]
+    fn test_match_exact_search_serde_defaults() -> Result<(), serde_json::Error> {
+        let mut payload = serde_json::json!({
+            "hazard_statement_label": "Highly flammable liquid and vapour",
+            "hazard_statement_reference": "H225"
+        });
+        let value: HazardStatement = serde_json::from_value(payload.clone())?;
+        assert!(!value.match_exact_search);
+        assert_eq!(
+            serde_json::to_value(&value)?.get("match_exact_search"),
+            Some(&serde_json::json!(false))
+        );
+
+        for expected in [true, false] {
+            payload["match_exact_search"] = serde_json::json!(expected);
+            let value: HazardStatement = serde_json::from_value(payload.clone())?;
+            assert_eq!(value.match_exact_search, expected);
+            assert_eq!(
+                serde_json::to_value(&value)?.get("match_exact_search"),
+                Some(&serde_json::json!(expected))
+            );
+        }
+
+        for required in ["hazard_statement_label", "hazard_statement_reference"] {
+            let mut missing_required = payload.clone();
+            if let Some(object) = missing_required.as_object_mut() {
+                object.remove(required);
+            }
+            assert!(serde_json::from_value::<HazardStatement>(missing_required).is_err());
+        }
+        Ok(())
+    }
 }

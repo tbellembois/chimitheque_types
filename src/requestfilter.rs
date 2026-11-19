@@ -4,12 +4,16 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 use url::{Url, form_urlencoded};
 
+fn default_order() -> String {
+    String::from("asc")
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RequestFilter {
     pub search: Option<String>,
     pub id: Option<u64>,
     pub order_by: Option<String>,
-    #[serde(default)]
+    #[serde(default = "default_order")]
     pub order: String,
     pub offset: Option<usize>,
     pub limit: Option<usize>,
@@ -468,7 +472,7 @@ impl Default for RequestFilter {
             search: None,
             id: None,
             order_by: None,
-            order: String::from("asc"),
+            order: default_order(),
             offset: None,
             limit: None,
             bookmark: false,

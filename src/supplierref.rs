@@ -21,3 +21,7 @@ impl fmt::Display for SupplierRef {
         )
     }
 }
+
+#[cfg(test)]
+#[path = "supplierref_tests.rs"]
+mod supplierref_tests;

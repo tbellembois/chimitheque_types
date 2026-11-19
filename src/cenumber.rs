@@ -10,6 +10,7 @@ use crate::error::ParseError;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct CeNumber {
+    #[serde(default)]
     pub match_exact_search: bool,
     pub ce_number_id: Option<u64>,
     pub ce_number_label: String,

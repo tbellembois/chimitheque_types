@@ -4,6 +4,7 @@ use std::fmt;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct HazardStatement {
+    #[serde(default)]
     pub match_exact_search: bool,
     pub hazard_statement_id: Option<u64>,
     pub hazard_statement_label: String,

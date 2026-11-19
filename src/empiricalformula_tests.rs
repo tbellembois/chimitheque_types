@@ -114,7 +114,10 @@ mod tests {
     #[test]
     fn test_get_id_field_name() {
         let empirical_formula = EmpiricalFormula::default();
-        assert_eq!(empirical_formula.get_id_field_name(), "empirical_formula_id");
+        assert_eq!(
+            empirical_formula.get_id_field_name(),
+            "empirical_formula_id"
+        );
     }
 
     #[test]
@@ -133,5 +136,33 @@ mod tests {
         assert_eq!(empirical_formula.get_text(), "C6H12O6");
         empirical_formula.set_text_field("");
         assert_eq!(empirical_formula.get_text(), "");
+    }
+
+    #[test]
+    fn test_match_exact_search_serde_defaults() -> Result<(), serde_json::Error> {
+        let mut payload = serde_json::json!({"empirical_formula_label": "H2O"});
+        let value: EmpiricalFormula = serde_json::from_value(payload.clone())?;
+        assert!(!value.match_exact_search);
+        assert_eq!(
+            serde_json::to_value(&value)?.get("match_exact_search"),
+            Some(&serde_json::json!(false))
+        );
+
+        for expected in [true, false] {
+            payload["match_exact_search"] = serde_json::json!(expected);
+            let value: EmpiricalFormula = serde_json::from_value(payload.clone())?;
+            assert_eq!(value.match_exact_search, expected);
+            assert_eq!(
+                serde_json::to_value(&value)?.get("match_exact_search"),
+                Some(&serde_json::json!(expected))
+            );
+        }
+
+        let mut missing_required = payload.clone();
+        if let Some(object) = missing_required.as_object_mut() {
+            object.remove("empirical_formula_label");
+        }
+        assert!(serde_json::from_value::<EmpiricalFormula>(missing_required).is_err());
+        Ok(())
     }
 }

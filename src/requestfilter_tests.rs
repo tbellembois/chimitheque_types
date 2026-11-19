@@ -10,6 +10,26 @@ mod tests {
     use crate::requestfilter::*;
 
     #[test]
+    fn test_requestfilter_serde_defaults_match_default() {
+        let filter: RequestFilter = serde_json::from_str("{}").unwrap();
+        assert_eq!(filter.order, "asc");
+        assert_eq!(
+            serde_json::to_value(&filter).unwrap(),
+            serde_json::to_value(RequestFilter::default()).unwrap()
+        );
+    }
+
+    #[test]
+    fn test_requestfilter_serde_preserves_explicit_order() {
+        for order in ["asc", "desc", ""] {
+            let payload = serde_json::json!({"order": order});
+            let filter: RequestFilter = serde_json::from_value(payload).unwrap();
+            assert_eq!(filter.order, order);
+            assert_eq!(serde_json::to_value(&filter).unwrap()["order"], order);
+        }
+    }
+
+    #[test]
     fn test_requestfilter_display() {
         let filter = RequestFilter::default();
         assert_eq!(filter.to_string(), "?order=asc");

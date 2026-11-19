@@ -101,4 +101,32 @@ mod tests {
         assert_eq!(created.tag_id, None);
         assert_eq!(created.tag_label, String::new());
     }
+
+    #[test]
+    fn test_match_exact_search_serde_defaults() -> Result<(), serde_json::Error> {
+        let mut payload = serde_json::json!({"tag_label": "Laboratory"});
+        let value: Tag = serde_json::from_value(payload.clone())?;
+        assert!(!value.match_exact_search);
+        assert_eq!(
+            serde_json::to_value(&value)?.get("match_exact_search"),
+            Some(&serde_json::json!(false))
+        );
+
+        for expected in [true, false] {
+            payload["match_exact_search"] = serde_json::json!(expected);
+            let value: Tag = serde_json::from_value(payload.clone())?;
+            assert_eq!(value.match_exact_search, expected);
+            assert_eq!(
+                serde_json::to_value(&value)?.get("match_exact_search"),
+                Some(&serde_json::json!(expected))
+            );
+        }
+
+        let mut missing_required = payload.clone();
+        if let Some(object) = missing_required.as_object_mut() {
+            object.remove("tag_label");
+        }
+        assert!(serde_json::from_value::<Tag>(missing_required).is_err());
+        Ok(())
+    }
 }

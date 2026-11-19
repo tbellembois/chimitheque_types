@@ -21,3 +21,7 @@ impl fmt::Display for ProducerRef {
         )
     }
 }
+
+#[cfg(test)]
+#[path = "producerref_tests.rs"]
+mod producerref_tests;

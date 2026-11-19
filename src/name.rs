@@ -7,6 +7,7 @@ use crate::error::ParseError;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Name {
+    #[serde(default)]
     pub match_exact_search: bool,
     pub name_id: Option<u64>,
     pub name_label: String,

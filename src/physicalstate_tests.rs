@@ -57,4 +57,32 @@ mod tests {
         let physical_state = PhysicalState::default();
         assert_eq!(physical_state.get_text_field_name(), "physical_state_label");
     }
+
+    #[test]
+    fn test_match_exact_search_serde_defaults() -> Result<(), serde_json::Error> {
+        let mut payload = serde_json::json!({"physical_state_label": "Liquid"});
+        let value: PhysicalState = serde_json::from_value(payload.clone())?;
+        assert!(!value.match_exact_search);
+        assert_eq!(
+            serde_json::to_value(&value)?.get("match_exact_search"),
+            Some(&serde_json::json!(false))
+        );
+
+        for expected in [true, false] {
+            payload["match_exact_search"] = serde_json::json!(expected);
+            let value: PhysicalState = serde_json::from_value(payload.clone())?;
+            assert_eq!(value.match_exact_search, expected);
+            assert_eq!(
+                serde_json::to_value(&value)?.get("match_exact_search"),
+                Some(&serde_json::json!(expected))
+            );
+        }
+
+        let mut missing_required = payload.clone();
+        if let Some(object) = missing_required.as_object_mut() {
+            object.remove("physical_state_label");
+        }
+        assert!(serde_json::from_value::<PhysicalState>(missing_required).is_err());
+        Ok(())
+    }
 }

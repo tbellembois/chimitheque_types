@@ -117,4 +117,32 @@ mod tests {
         assert!(supplier.sanitize_and_validate().is_ok());
         assert_eq!(supplier.supplier_label, "hello world");
     }
+
+    #[test]
+    fn test_match_exact_search_serde_defaults() -> Result<(), serde_json::Error> {
+        let mut payload = serde_json::json!({"supplier_label": "Supplier"});
+        let value: Supplier = serde_json::from_value(payload.clone())?;
+        assert!(!value.match_exact_search);
+        assert_eq!(
+            serde_json::to_value(&value)?.get("match_exact_search"),
+            Some(&serde_json::json!(false))
+        );
+
+        for expected in [true, false] {
+            payload["match_exact_search"] = serde_json::json!(expected);
+            let value: Supplier = serde_json::from_value(payload.clone())?;
+            assert_eq!(value.match_exact_search, expected);
+            assert_eq!(
+                serde_json::to_value(&value)?.get("match_exact_search"),
+                Some(&serde_json::json!(expected))
+            );
+        }
+
+        let mut missing_required = payload.clone();
+        if let Some(object) = missing_required.as_object_mut() {
+            object.remove("supplier_label");
+        }
+        assert!(serde_json::from_value::<Supplier>(missing_required).is_err());
+        Ok(())
+    }
 }

@@ -7,6 +7,7 @@ use crate::error::ParseError;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Tag {
+    #[serde(default)]
     pub match_exact_search: bool,
     pub tag_id: Option<u64>,
     pub tag_label: String,

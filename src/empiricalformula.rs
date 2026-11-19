@@ -10,6 +10,7 @@ use crate::error::ParseError;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct EmpiricalFormula {
+    #[serde(default)]
     pub match_exact_search: bool,
     pub empirical_formula_id: Option<u64>,
     pub empirical_formula_label: String,

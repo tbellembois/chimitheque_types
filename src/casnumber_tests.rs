@@ -150,4 +150,32 @@ mod tests {
         cas_number.set_text_field("");
         assert_eq!(cas_number.get_text(), "");
     }
+
+    #[test]
+    fn test_match_exact_search_serde_defaults() -> Result<(), serde_json::Error> {
+        let mut payload = serde_json::json!({"cas_number_label": "7732-18-5"});
+        let value: CasNumber = serde_json::from_value(payload.clone())?;
+        assert!(!value.match_exact_search);
+        assert_eq!(
+            serde_json::to_value(&value)?.get("match_exact_search"),
+            Some(&serde_json::json!(false))
+        );
+
+        for expected in [true, false] {
+            payload["match_exact_search"] = serde_json::json!(expected);
+            let value: CasNumber = serde_json::from_value(payload.clone())?;
+            assert_eq!(value.match_exact_search, expected);
+            assert_eq!(
+                serde_json::to_value(&value)?.get("match_exact_search"),
+                Some(&serde_json::json!(expected))
+            );
+        }
+
+        let mut missing_required = payload.clone();
+        if let Some(object) = missing_required.as_object_mut() {
+            object.remove("cas_number_label");
+        }
+        assert!(serde_json::from_value::<CasNumber>(missing_required).is_err());
+        Ok(())
+    }
 }

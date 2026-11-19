@@ -10,6 +10,7 @@ use crate::error::ParseError;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct LinearFormula {
+    #[serde(default)]
     pub match_exact_search: bool,
     pub linear_formula_id: Option<u64>,
     pub linear_formula_label: String,

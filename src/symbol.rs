@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Symbol {
+    #[serde(default)]
     pub match_exact_search: bool,
     pub symbol_id: Option<u64>,
     pub symbol_label: String,

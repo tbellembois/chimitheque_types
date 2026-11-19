@@ -2,6 +2,19 @@
 
 Types package for the Chimitheque application.
 
+## JSON conventions
+
+- An omitted `RequestFilter.order` defaults to `"asc"`, matching `RequestFilter::default()`.
+  Explicit values, including an empty string, are preserved.
+- `match_exact_search` defaults to `false` when omitted on any type that has this field.
+  Explicit values are preserved, and the field remains present in serialized output.
+  Required labels and other required domain fields are unchanged.
+- `UnitType` serializes as `"quantity"`, `"concentration"`, `"temperature"`, or
+  `"molecular_weight"`, matching its string formatting and parsing conventions.
+  Legacy JSON spellings (`"Quantity"`, `"Concentration"`, `"Temperature"`, and
+  `"MolecularWeight"`) remain accepted as input, but output always uses snake_case.
+  Consumers expecting PascalCase output must update to accept snake_case.
+
 sample product list:
 
 - 1,4-butanediol
