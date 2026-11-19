@@ -126,6 +126,70 @@ mod tests {
         }
     }
 
+    const ID_LIST_PARAMETERS: [&str; 5] = [
+        "hazard_statements",
+        "storages",
+        "precautionary_statements",
+        "symbols",
+        "tags",
+    ];
+
+    #[test]
+    fn test_requestfilter_rejects_overflowing_id_lists() {
+        for parameter in ID_LIST_PARAMETERS {
+            for value in [
+                "18446744073709551616",
+                "18446744073709551616,1",
+                "1,18446744073709551616,2",
+                "1,18446744073709551616",
+                "9999999999999999999999999999999999999999",
+            ] {
+                let request = format!("http://localhost?{parameter}={value}");
+                let error = RequestFilter::try_from(request.as_str())
+                    .expect_err("overflowing IDs must reject the entire filter");
+
+                assert!(error.contains(parameter), "{error}");
+                assert!(
+                    error.contains("18446744073709551616") || error.contains(value),
+                    "{error}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn test_requestfilter_parses_id_lists_without_losing_values() {
+        for parameter in ID_LIST_PARAMETERS {
+            for (value, expected) in [
+                ("18446744073709551615", vec![u64::MAX]),
+                ("0,18446744073709551615,1,1", vec![0, u64::MAX, 1, 1]),
+                ("1%2C2%2C3", vec![1, 2, 3]),
+                ("1,2,", vec![1, 2]),
+            ] {
+                let request = format!("http://localhost?{parameter}={value}");
+                let filter = RequestFilter::try_from(request.as_str()).unwrap();
+
+                assert_eq!(
+                    serde_json::to_value(&filter).unwrap()[parameter],
+                    serde_json::json!(expected),
+                    "incorrect IDs for {parameter}={value}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn test_requestfilter_rejects_malformed_id_lists() {
+        for parameter in ID_LIST_PARAMETERS {
+            for value in ["", ",1", "1,,2", "1;2", "1,a,2", "-1", "1,%202"] {
+                let request = format!("http://localhost?{parameter}={value}");
+                let error = RequestFilter::try_from(request.as_str()).unwrap_err();
+
+                assert_eq!(error, format!("invalid {parameter} ids format"));
+            }
+        }
+    }
+
     #[test]
     fn test_requestfilter_try_from_valid() {
         let input = "http://localhost?search=test&limit=10";

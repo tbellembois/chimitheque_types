@@ -230,6 +230,25 @@ impl fmt::Display for RequestFilter {
     }
 }
 
+fn parse_id_list(value: &str, parameter: &str) -> Result<Vec<u64>, String> {
+    if !IDS_MATCH_RE.is_match(value) {
+        return Err(format!("invalid {parameter} ids format"));
+    }
+
+    IDS_CAPTURE_RE
+        .captures_iter(value)
+        .map(|capture| {
+            let id = capture
+                .name("id")
+                .ok_or_else(|| format!("invalid {parameter} ids format"))?
+                .as_str();
+            id.parse::<u64>().map_err(|error| {
+                format!("error with {parameter} query parameter: invalid id {id}: {error}")
+            })
+        })
+        .collect()
+}
+
 impl TryFrom<&str> for RequestFilter {
     type Error = String;
 
@@ -323,42 +342,15 @@ impl TryFrom<&str> for RequestFilter {
                     request_filter.entity_name = Some(value.to_string());
                 }
                 std::borrow::Cow::Borrowed("hazard_statements") => {
-                    if !IDS_MATCH_RE.is_match(&value) {
-                        return Err("invalid hazard_statements ids format".to_string());
-                    }
-
-                    let caps = IDS_CAPTURE_RE.captures_iter(&value);
-                    let mut hazard_statement_ids: Vec<u64> = Vec::new();
-                    for cap in caps {
-                        // Safe access - capture should exist due to is_match, but handle gracefully
-                        if let Some(id_match) = cap.name("id")
-                            && let Ok(id_parsed) = id_match.as_str().parse::<u64>()
-                        {
-                            hazard_statement_ids.push(id_parsed);
-                        }
-                    }
-                    request_filter.hazard_statements = Some(hazard_statement_ids);
+                    request_filter.hazard_statements =
+                        Some(parse_id_list(&value, "hazard_statements")?);
                 }
                 std::borrow::Cow::Borrowed("history") => match value.parse::<bool>() {
                     Ok(v) => request_filter.history = v,
                     Err(e) => return Err(format!("error with history query parameter: {e}")),
                 },
                 std::borrow::Cow::Borrowed("storages") => {
-                    if !IDS_MATCH_RE.is_match(&value) {
-                        return Err("invalid storages ids format".to_string());
-                    }
-
-                    let caps = IDS_CAPTURE_RE.captures_iter(&value);
-                    let mut storage_ids: Vec<u64> = Vec::new();
-                    for cap in caps {
-                        // Safe access - capture should exist due to is_match, but handle gracefully
-                        if let Some(id_match) = cap.name("id")
-                            && let Ok(id_parsed) = id_match.as_str().parse::<u64>()
-                        {
-                            storage_ids.push(id_parsed);
-                        }
-                    }
-                    request_filter.storages = Some(storage_ids);
+                    request_filter.storages = Some(parse_id_list(&value, "storages")?);
                 }
                 std::borrow::Cow::Borrowed("name") => match value.parse::<u64>() {
                     Ok(v) => request_filter.name = Some(v),
@@ -368,21 +360,8 @@ impl TryFrom<&str> for RequestFilter {
                 //     request_filter.permission = value.to_string();
                 // }
                 std::borrow::Cow::Borrowed("precautionary_statements") => {
-                    if !IDS_MATCH_RE.is_match(&value) {
-                        return Err("invalid precautionary_statements ids format".to_string());
-                    }
-
-                    let caps = IDS_CAPTURE_RE.captures_iter(&value);
-                    let mut precautionary_statement_ids: Vec<u64> = Vec::new();
-                    for cap in caps {
-                        // Safe access - capture should exist due to is_match, but handle gracefully
-                        if let Some(id_match) = cap.name("id")
-                            && let Ok(id_parsed) = id_match.as_str().parse::<u64>()
-                        {
-                            precautionary_statement_ids.push(id_parsed);
-                        }
-                    }
-                    request_filter.precautionary_statements = Some(precautionary_statement_ids);
+                    request_filter.precautionary_statements =
+                        Some(parse_id_list(&value, "precautionary_statements")?);
                 }
                 std::borrow::Cow::Borrowed("producer") => match value.parse::<u64>() {
                     Ok(v) => request_filter.producer = Some(v),
@@ -467,38 +446,10 @@ impl TryFrom<&str> for RequestFilter {
                     Err(e) => return Err(format!("error with supplier query parameter: {e}")),
                 },
                 std::borrow::Cow::Borrowed("symbols") => {
-                    if !IDS_MATCH_RE.is_match(&value) {
-                        return Err("invalid symbols ids format".to_string());
-                    }
-
-                    let caps = IDS_CAPTURE_RE.captures_iter(&value);
-                    let mut symbol_ids: Vec<u64> = Vec::new();
-                    for cap in caps {
-                        // Safe access - capture should exist due to is_match, but handle gracefully
-                        if let Some(id_match) = cap.name("id")
-                            && let Ok(id_parsed) = id_match.as_str().parse::<u64>()
-                        {
-                            symbol_ids.push(id_parsed);
-                        }
-                    }
-                    request_filter.symbols = Some(symbol_ids);
+                    request_filter.symbols = Some(parse_id_list(&value, "symbols")?);
                 }
                 std::borrow::Cow::Borrowed("tags") => {
-                    if !IDS_MATCH_RE.is_match(&value) {
-                        return Err("invalid tags ids format".to_string());
-                    }
-
-                    let caps = IDS_CAPTURE_RE.captures_iter(&value);
-                    let mut tag_ids: Vec<u64> = Vec::new();
-                    for cap in caps {
-                        // Safe access - capture should exist due to is_match, but handle gracefully
-                        if let Some(id_match) = cap.name("id")
-                            && let Ok(id_parsed) = id_match.as_str().parse::<u64>()
-                        {
-                            tag_ids.push(id_parsed);
-                        }
-                    }
-                    request_filter.tags = Some(tag_ids);
+                    request_filter.tags = Some(parse_id_list(&value, "tags")?);
                 }
                 std::borrow::Cow::Borrowed("unit_type") => {
                     request_filter.unit_type = Some(value.to_string());
