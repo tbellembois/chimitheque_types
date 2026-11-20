@@ -8,6 +8,7 @@ mod tests {
     )]
 
     use crate::requestfilter::*;
+    use std::fmt::Write as _;
 
     #[test]
     fn test_requestfilter_serde_defaults_match_default() {
@@ -92,6 +93,109 @@ mod tests {
             serde_json::to_value(&parsed).unwrap(),
             serde_json::to_value(&filter).unwrap()
         );
+    }
+
+    #[test]
+    fn test_requestfilter_decoded_parameter_names() {
+        // Escaping every name exercises owned Cow keys for every supported field.
+        let parameters = [
+            ("search", "acetone%20%26%20ethanol"),
+            ("id", "42"),
+            ("order_by", "name"),
+            ("order", "desc"),
+            ("offset", "5"),
+            ("limit", "10"),
+            ("bookmark", "true"),
+            ("borrowing", "true"),
+            ("cas_number", "1"),
+            ("cas_number_string", "7732-18-5"),
+            ("is_cmr", "true"),
+            ("category", "2"),
+            ("custom_name_part_of", "part"),
+            ("empirical_formula", "3"),
+            ("entity", "4"),
+            ("entity_name", "lab"),
+            ("hazard_statements", "1%2C2"),
+            ("history", "true"),
+            ("storages", "3%2C4"),
+            ("name", "5"),
+            ("person", "6"),
+            ("person_email", "chemist%2Blab%40example.com"),
+            ("precautionary_statements", "5%2C6"),
+            ("producer", "7"),
+            ("producer_ref", "8"),
+            ("product", "9"),
+            ("product_specificity", "specific"),
+            ("show_bio", "true"),
+            ("show_chem", "true"),
+            ("show_consu", "true"),
+            ("signal_word", "10"),
+            ("storage", "11"),
+            ("storage_archive", "false"),
+            ("storage_barecode", "barcode"),
+            ("storage_batch_number", "batch"),
+            ("storage_to_destroy", "true"),
+            ("store_location", "12"),
+            ("store_location_can_store", "true"),
+            ("supplier", "13"),
+            ("symbols", "7%2C8"),
+            ("tags", "9%2C10"),
+            ("unit_type", "quantity"),
+        ];
+
+        for (name, value) in parameters {
+            let encoded_name = name.bytes().fold(String::new(), |mut encoded, byte| {
+                write!(encoded, "%{byte:02X}").unwrap();
+                encoded
+            });
+            let plain_url = format!("http://localhost?{name}={value}");
+            let encoded_url = format!("http://localhost?{encoded_name}={value}");
+            let plain = RequestFilter::try_from(plain_url.as_str()).unwrap();
+            let encoded = RequestFilter::try_from(encoded_url.as_str()).unwrap();
+
+            assert_eq!(
+                serde_json::to_value(&encoded).unwrap(),
+                serde_json::to_value(&plain).unwrap(),
+                "encoded name must behave like {name}"
+            );
+        }
+    }
+
+    #[test]
+    fn test_requestfilter_decoded_parameter_names_preserve_validation() {
+        // Decoded names must not bypass numeric, boolean, or ID-list validation.
+        for (plain_query, encoded_query) in [
+            ("id=invalid", "%69d=invalid"),
+            ("limit=invalid", "l%69mit=invalid"),
+            ("bookmark=invalid", "book%6dark=invalid"),
+            ("tags=1,,2", "ta%67s=1,,2"),
+            ("tags=18446744073709551616", "ta%67s=18446744073709551616"),
+        ] {
+            let plain_url = format!("http://localhost?{plain_query}");
+            let encoded_url = format!("http://localhost?{encoded_query}");
+            let expected_error = RequestFilter::try_from(plain_url.as_str()).unwrap_err();
+            assert_eq!(
+                RequestFilter::try_from(encoded_url.as_str()).unwrap_err(),
+                expected_error,
+                "validation differs for {encoded_query}"
+            );
+        }
+    }
+
+    #[test]
+    fn test_requestfilter_mixed_parameter_name_encodings() {
+        // Preserve last-value-wins semantics when plain and escaped keys are mixed.
+        for (query, expected) in [
+            ("search=first&se%61rch=second", "second"),
+            ("se%61rch=first&search=second", "second"),
+            ("se%61rch=kept&unknown%5Fkey=ignored", "kept"),
+            // URL decoding happens once; this key decodes to se%61rch, not search.
+            ("search=kept&se%2561rch=ignored", "kept"),
+        ] {
+            let request = format!("http://localhost?{query}");
+            let filter = RequestFilter::try_from(request.as_str()).unwrap();
+            assert_eq!(filter.search.as_deref(), Some(expected), "{query}");
+        }
     }
 
     #[test]

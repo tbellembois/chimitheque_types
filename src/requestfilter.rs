@@ -286,142 +286,144 @@ impl TryFrom<&str> for RequestFilter {
             debug!("query_pair:{query_pair:?}");
 
             let (key, value) = query_pair;
-            match key {
-                std::borrow::Cow::Borrowed("search") => {
+            // Percent-decoded names may be Cow::Owned; match their contents so they
+            // behave exactly like unescaped Cow::Borrowed names without allocating.
+            match key.as_ref() {
+                "search" => {
                     request_filter.search = Some(value.to_string());
                 }
-                std::borrow::Cow::Borrowed("id") => match value.parse::<u64>() {
+                "id" => match value.parse::<u64>() {
                     Ok(v) => request_filter.id = Some(v),
                     Err(e) => return Err(format!("error with id query parameter: {e}")),
                 },
-                std::borrow::Cow::Borrowed("order_by") => {
+                "order_by" => {
                     request_filter.order_by = Some(value.to_string());
                 }
-                std::borrow::Cow::Borrowed("order") => request_filter.order = value.to_string(),
-                std::borrow::Cow::Borrowed("offset") => match value.parse::<usize>() {
+                "order" => request_filter.order = value.to_string(),
+                "offset" => match value.parse::<usize>() {
                     Ok(v) => request_filter.offset = Some(v),
                     Err(e) => return Err(format!("error with offset query parameter: {e}")),
                 },
-                std::borrow::Cow::Borrowed("limit") => match value.parse::<usize>() {
+                "limit" => match value.parse::<usize>() {
                     Ok(v) => request_filter.limit = Some(v),
                     Err(e) => return Err(format!("error with limit query parameter: {e}")),
                 },
-                std::borrow::Cow::Borrowed("bookmark") => match value.parse::<bool>() {
+                "bookmark" => match value.parse::<bool>() {
                     Ok(v) => request_filter.bookmark = v,
                     Err(e) => return Err(format!("error with bookmark query parameter: {e}")),
                 },
-                std::borrow::Cow::Borrowed("borrowing") => match value.parse::<bool>() {
+                "borrowing" => match value.parse::<bool>() {
                     Ok(v) => request_filter.borrowing = v,
                     Err(e) => return Err(format!("error with borrowing query parameter: {e}")),
                 },
-                std::borrow::Cow::Borrowed("cas_number") => match value.parse::<u64>() {
+                "cas_number" => match value.parse::<u64>() {
                     Ok(v) => request_filter.cas_number = Some(v),
                     Err(e) => return Err(format!("error with cas_number query parameter: {e}")),
                 },
-                std::borrow::Cow::Borrowed("cas_number_string") => {
+                "cas_number_string" => {
                     request_filter.cas_number_string = Some(value.to_string());
                 }
-                std::borrow::Cow::Borrowed("is_cmr") => match value.parse::<bool>() {
+                "is_cmr" => match value.parse::<bool>() {
                     Ok(v) => request_filter.is_cmr = v,
                     Err(e) => return Err(format!("error with is_cmr query parameter: {e}")),
                 },
-                std::borrow::Cow::Borrowed("category") => match value.parse::<u64>() {
+                "category" => match value.parse::<u64>() {
                     Ok(v) => request_filter.category = Some(v),
                     Err(e) => return Err(format!("error with category query parameter: {e}")),
                 },
-                std::borrow::Cow::Borrowed("custom_name_part_of") => {
+                "custom_name_part_of" => {
                     request_filter.custom_name_part_of = Some(value.to_string());
                 }
-                std::borrow::Cow::Borrowed("empirical_formula") => match value.parse::<u64>() {
+                "empirical_formula" => match value.parse::<u64>() {
                     Ok(v) => request_filter.empirical_formula = Some(v),
                     Err(e) => {
                         return Err(format!("error with empirical_formula query parameter: {e}"));
                     }
                 },
-                std::borrow::Cow::Borrowed("entity") => match value.parse::<u64>() {
+                "entity" => match value.parse::<u64>() {
                     Ok(v) => request_filter.entity = Some(v),
                     Err(e) => return Err(format!("error with entity query parameter: {e}")),
                 },
-                std::borrow::Cow::Borrowed("entity_name") => {
+                "entity_name" => {
                     request_filter.entity_name = Some(value.to_string());
                 }
-                std::borrow::Cow::Borrowed("hazard_statements") => {
+                "hazard_statements" => {
                     request_filter.hazard_statements =
                         Some(parse_id_list(&value, "hazard_statements")?);
                 }
-                std::borrow::Cow::Borrowed("history") => match value.parse::<bool>() {
+                "history" => match value.parse::<bool>() {
                     Ok(v) => request_filter.history = v,
                     Err(e) => return Err(format!("error with history query parameter: {e}")),
                 },
-                std::borrow::Cow::Borrowed("storages") => {
+                "storages" => {
                     request_filter.storages = Some(parse_id_list(&value, "storages")?);
                 }
-                std::borrow::Cow::Borrowed("name") => match value.parse::<u64>() {
+                "name" => match value.parse::<u64>() {
                     Ok(v) => request_filter.name = Some(v),
                     Err(e) => return Err(format!("error with name query parameter: {e}")),
                 },
-                // std::borrow::Cow::Borrowed("permission") => {
+                // "permission" => {
                 //     request_filter.permission = value.to_string();
                 // }
-                std::borrow::Cow::Borrowed("precautionary_statements") => {
+                "precautionary_statements" => {
                     request_filter.precautionary_statements =
                         Some(parse_id_list(&value, "precautionary_statements")?);
                 }
-                std::borrow::Cow::Borrowed("producer") => match value.parse::<u64>() {
+                "producer" => match value.parse::<u64>() {
                     Ok(v) => request_filter.producer = Some(v),
                     Err(e) => return Err(format!("error with producer query parameter: {e}")),
                 },
-                std::borrow::Cow::Borrowed("producer_ref") => match value.parse::<u64>() {
+                "producer_ref" => match value.parse::<u64>() {
                     Ok(v) => request_filter.producer_ref = Some(v),
                     Err(e) => return Err(format!("error with producer_ref query parameter: {e}")),
                 },
-                std::borrow::Cow::Borrowed("product") => match value.parse::<u64>() {
+                "product" => match value.parse::<u64>() {
                     Ok(v) => request_filter.product = Some(v),
                     Err(e) => return Err(format!("error with product query parameter: {e}")),
                 },
-                std::borrow::Cow::Borrowed("person") => match value.parse::<u64>() {
+                "person" => match value.parse::<u64>() {
                     Ok(v) => request_filter.person = Some(v),
                     Err(e) => return Err(format!("error with person query parameter: {e}")),
                 },
-                std::borrow::Cow::Borrowed("person_email") => {
+                "person_email" => {
                     request_filter.person_email = Some(value.to_string());
                 }
-                std::borrow::Cow::Borrowed("product_specificity") => {
+                "product_specificity" => {
                     request_filter.product_specificity = Some(value.to_string());
                 }
-                std::borrow::Cow::Borrowed("show_bio") => match value.parse::<bool>() {
+                "show_bio" => match value.parse::<bool>() {
                     Ok(v) => request_filter.show_bio = v,
                     Err(e) => return Err(format!("error with show_bio query parameter: {e}")),
                 },
-                std::borrow::Cow::Borrowed("show_chem") => match value.parse::<bool>() {
+                "show_chem" => match value.parse::<bool>() {
                     Ok(v) => request_filter.show_chem = v,
                     Err(e) => return Err(format!("error with show_chem query parameter: {e}")),
                 },
-                std::borrow::Cow::Borrowed("show_consu") => match value.parse::<bool>() {
+                "show_consu" => match value.parse::<bool>() {
                     Ok(v) => request_filter.show_consu = v,
                     Err(e) => return Err(format!("error with show_consu query parameter: {e}")),
                 },
-                std::borrow::Cow::Borrowed("signal_word") => match value.parse::<u64>() {
+                "signal_word" => match value.parse::<u64>() {
                     Ok(v) => request_filter.signal_word = Some(v),
                     Err(e) => return Err(format!("error with signal_word query parameter: {e}")),
                 },
-                std::borrow::Cow::Borrowed("storage") => match value.parse::<u64>() {
+                "storage" => match value.parse::<u64>() {
                     Ok(v) => request_filter.storage = Some(v),
                     Err(e) => return Err(format!("error with storage query parameter: {e}")),
                 },
-                std::borrow::Cow::Borrowed("storage_archive") => match value.parse::<bool>() {
+                "storage_archive" => match value.parse::<bool>() {
                     Ok(v) => request_filter.storage_archive = Some(v),
                     Err(e) => {
                         return Err(format!("error with storage_archive query parameter: {e}"));
                     }
                 },
-                std::borrow::Cow::Borrowed("storage_barecode") => {
+                "storage_barecode" => {
                     request_filter.storage_barecode = Some(value.to_string());
                 }
-                std::borrow::Cow::Borrowed("storage_batch_number") => {
+                "storage_batch_number" => {
                     request_filter.storage_batch_number = Some(value.to_string());
                 }
-                std::borrow::Cow::Borrowed("storage_to_destroy") => match value.parse::<bool>() {
+                "storage_to_destroy" => match value.parse::<bool>() {
                     Ok(v) => request_filter.storage_to_destroy = v,
                     Err(e) => {
                         return Err(format!(
@@ -429,33 +431,31 @@ impl TryFrom<&str> for RequestFilter {
                         ));
                     }
                 },
-                std::borrow::Cow::Borrowed("store_location") => match value.parse::<u64>() {
+                "store_location" => match value.parse::<u64>() {
                     Ok(v) => request_filter.store_location = Some(v),
                     Err(e) => {
                         return Err(format!("error with store_location query parameter: {e}"));
                     }
                 },
-                std::borrow::Cow::Borrowed("store_location_can_store") => {
-                    match value.parse::<bool>() {
-                        Ok(v) => request_filter.store_location_can_store = v,
-                        Err(e) => {
-                            return Err(format!(
-                                "error with store_location_can_store query parameter: {e}"
-                            ));
-                        }
+                "store_location_can_store" => match value.parse::<bool>() {
+                    Ok(v) => request_filter.store_location_can_store = v,
+                    Err(e) => {
+                        return Err(format!(
+                            "error with store_location_can_store query parameter: {e}"
+                        ));
                     }
-                }
-                std::borrow::Cow::Borrowed("supplier") => match value.parse::<u64>() {
+                },
+                "supplier" => match value.parse::<u64>() {
                     Ok(v) => request_filter.supplier = Some(v),
                     Err(e) => return Err(format!("error with supplier query parameter: {e}")),
                 },
-                std::borrow::Cow::Borrowed("symbols") => {
+                "symbols" => {
                     request_filter.symbols = Some(parse_id_list(&value, "symbols")?);
                 }
-                std::borrow::Cow::Borrowed("tags") => {
+                "tags" => {
                     request_filter.tags = Some(parse_id_list(&value, "tags")?);
                 }
-                std::borrow::Cow::Borrowed("unit_type") => {
+                "unit_type" => {
                     request_filter.unit_type = Some(value.to_string());
                 }
                 _ => (),
