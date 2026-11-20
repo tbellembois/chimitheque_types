@@ -15,6 +15,35 @@ Types package for the Chimitheque application.
   `"MolecularWeight"`) remain accepted as input, but output always uses snake_case.
   Consumers expecting PascalCase output must update to accept snake_case.
 
+## PubChem parsing
+
+`PubchemProduct::from_pubchem_json` now returns
+`Result<PubchemProduct, chimitheque_types::error::PubchemParseError>` instead of
+silently returning an empty product on invalid JSON. Callers must propagate the
+error with `?` or handle it explicitly:
+
+```rust
+use chimitheque_types::{error::PubchemParseError, pubchemproduct::PubchemProduct};
+
+fn parse_response(body: &str) -> Result<PubchemProduct, PubchemParseError> {
+    PubchemProduct::from_pubchem_json(body)
+}
+```
+
+- Malformed JSON preserves the original `serde_json::Error` as its error source.
+- The response must be a JSON object with an object-valued `Record`; API fault
+  responses and unrelated JSON are rejected.
+- Query failures report the product field, query, and underlying diagnostic.
+- Matched values must be strings. Nulls and other types produce a field-specific
+  error rather than being discarded, including invalid entries in lists.
+- Missing optional paths remain `None`. Scalar fields still select the first
+  match, but all matched values are checked. Extraction fails as a whole rather
+  than returning a partially populated product.
+
+This is a selected-field extractor, not a complete PubChem schema validator.
+Missing paths (including unsupported intermediate structures) are treated as
+absent. Existing heading and measurement-selection rules are unchanged.
+
 sample product list:
 
 - 1,4-butanediol

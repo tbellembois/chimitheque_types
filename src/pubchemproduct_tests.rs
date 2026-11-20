@@ -7,8 +7,10 @@ mod tests {
         clippy::too_many_lines
     )]
 
-    use crate::pubchemproduct::PubchemProduct;
+    use crate::error::PubchemParseError;
+    use crate::pubchemproduct::{PubchemProduct, query_string, query_strings};
     use serde_json::json;
+    use std::error::Error as _;
     use std::fs::{self};
 
     fn init_logger() {
@@ -66,7 +68,8 @@ mod tests {
         ];
 
         for (name, input, hazards, precautions) in fixtures {
-            let product = PubchemProduct::from_pubchem_json(input);
+            let product = PubchemProduct::from_pubchem_json(input)
+                .unwrap_or_else(|error| panic!("{name}: {error}"));
             assert_codes(product.hs, hazards, name);
             assert_codes(product.ps, precautions, name);
         }
@@ -104,7 +107,7 @@ mod tests {
                 }]
             }
         });
-        PubchemProduct::from_pubchem_json(&input.to_string())
+        PubchemProduct::from_pubchem_json(&input.to_string()).unwrap()
     }
 
     #[test]
@@ -161,9 +164,139 @@ mod tests {
         assert_codes(product.ps, "", "invalid precautions");
 
         let product =
-            PubchemProduct::from_pubchem_json(r#"{"Record":{"RecordTitle":"H302 P261"}}"#);
+            PubchemProduct::from_pubchem_json(r#"{"Record":{"RecordTitle":"H302 P261"}}"#).unwrap();
         assert_codes(product.hs, "", "missing hazards");
         assert_codes(product.ps, "", "missing precautions");
+    }
+
+    #[test]
+    fn test_invalid_json_preserves_source() {
+        for input in ["", "{", r#"{"Record":}"#] {
+            let error = PubchemProduct::from_pubchem_json(input).unwrap_err();
+            assert!(matches!(&error, PubchemParseError::InvalidJson(_)));
+            let source = error
+                .source()
+                .unwrap()
+                .downcast_ref::<serde_json::Error>()
+                .unwrap();
+            assert!(source.is_syntax() || source.is_eof());
+            assert!(error.to_string().contains("invalid PubChem JSON"));
+        }
+    }
+
+    #[test]
+    fn test_invalid_document_envelope() {
+        for (input, field, actual) in [
+            ("null", "$", "null"),
+            ("[]", "$", "array"),
+            ("42", "$", "number"),
+            ("{}", "$.Record", "missing"),
+            (
+                r#"{"Fault":{"Message":"Not found"}}"#,
+                "$.Record",
+                "missing",
+            ),
+            (r#"{"Record":null}"#, "$.Record", "null"),
+            (r#"{"Record":[]}"#, "$.Record", "array"),
+            (r#"{"Record":"water"}"#, "$.Record", "string"),
+        ] {
+            let error = PubchemProduct::from_pubchem_json(input).unwrap_err();
+            assert!(
+                matches!(&error, PubchemParseError::InvalidType {
+                    field: found_field, expected: "object", actual: found_type,
+                } if *found_field == field && *found_type == actual),
+                "{input}: {error}"
+            );
+            assert!(error.to_string().contains(field));
+            assert!(error.source().is_none());
+        }
+    }
+
+    #[test]
+    fn test_missing_optional_fields_are_not_errors() {
+        let product = PubchemProduct::from_pubchem_json(r#"{"Record":{}}"#).unwrap();
+        assert_eq!(serde_json::to_value(product).unwrap(), json!({}));
+
+        let product =
+            PubchemProduct::from_pubchem_json(r#"{"Record":{"RecordTitle":"Water"}}"#).unwrap();
+        assert_eq!(product.name.as_deref(), Some("Water"));
+        assert!(product.cas.is_none());
+        assert!(product.hs.is_none());
+        assert!(product.ps.is_none());
+    }
+
+    #[test]
+    fn test_non_string_scalar_fields_are_errors() {
+        // A matched null is malformed data, not the JSONPath no-match sentinel.
+        for (value, actual) in [
+            (json!(null), "null"),
+            (json!(42), "number"),
+            (json!(true), "boolean"),
+            (json!([]), "array"),
+            (json!({}), "object"),
+        ] {
+            let input = json!({"Record": {"RecordTitle": value}});
+            let error = PubchemProduct::from_pubchem_json(&input.to_string()).unwrap_err();
+            assert!(matches!(error, PubchemParseError::InvalidType {
+                field: "name", expected: "string", actual: found_type,
+            } if found_type == actual));
+        }
+    }
+
+    #[test]
+    fn test_non_string_list_entries_are_not_silently_dropped() {
+        for (name, field) in [
+            ("GHS Hazard Statements", "hs"),
+            ("Precautionary Statement Codes", "ps"),
+            ("Signal", "signal"),
+        ] {
+            let input = json!({
+                "Record": {
+                    "Information": [{
+                        "Name": name,
+                        "Value": {"StringWithMarkup": [
+                            {"String": "H302 P261 Warning"}, {"String": 42}
+                        ]}
+                    }]
+                }
+            });
+            let error = PubchemProduct::from_pubchem_json(&input.to_string()).unwrap_err();
+            assert!(matches!(error, PubchemParseError::InvalidType {
+                field: found_field, expected: "string", actual: "number",
+            } if found_field == field));
+        }
+    }
+
+    #[test]
+    fn test_query_errors_include_field_and_query() {
+        let query = "$[";
+        let error = query_strings(&json!({}), "name", query).unwrap_err();
+        assert!(matches!(&error, PubchemParseError::Query {
+            field: "name", query: found_query, message,
+        } if *found_query == query && !message.is_empty()));
+        assert!(error.to_string().contains("name"));
+        assert!(error.to_string().contains(query));
+    }
+
+    #[test]
+    fn test_scalar_selection_preserves_first_match_but_validates_all_matches() {
+        let input = json!({"values": ["first", "second"]});
+        assert_eq!(
+            query_string(&input, "name", "$.values[*]")
+                .unwrap()
+                .as_deref(),
+            Some("first")
+        );
+
+        let input = json!({"values": ["first", null]});
+        assert!(matches!(
+            query_string(&input, "name", "$.values[*]").unwrap_err(),
+            PubchemParseError::InvalidType {
+                field: "name",
+                expected: "string",
+                actual: "null",
+            }
+        ));
     }
 
     #[test]
@@ -174,7 +307,7 @@ mod tests {
             let entry_path = entry.unwrap().path();
             let json_string =
                 fs::read_to_string(entry_path).expect("error while opening json file");
-            let product = PubchemProduct::from_pubchem_json(json_string.as_str());
+            let product = PubchemProduct::from_pubchem_json(json_string.as_str()).unwrap();
 
             assert!(product.iupac_name.is_some());
         }
