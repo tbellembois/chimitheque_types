@@ -1,8 +1,42 @@
-use chimitheque_defines::{HAZARD_STATEMENT_RE, PRECAUTIONARY_STATEMENT_RE, SYMBOL_RE};
+use chimitheque_defines::SYMBOL_RE;
 use jsonpath_rust::JsonPathQuery;
 use log::{debug, trace};
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use std::sync::LazyLock;
+
+// PubChem embeds codes in prose, unlike the shared tab-separated reference-table regexes.
+#[allow(
+    clippy::expect_used,
+    reason = "the regex is a constant covered by extraction tests"
+)]
+static PUBCHEM_HAZARD_CODE_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(
+        r"(?-u)\b(?:EU)?H[0-9]{3}[A-Za-z]{0,2}(?:[ \t]*\+[ \t]*(?:EU)?H[0-9]{3}[A-Za-z]{0,2})*\b",
+    )
+    .expect("valid PubChem hazard code regex")
+});
+
+#[allow(
+    clippy::expect_used,
+    reason = "the regex is a constant covered by extraction tests"
+)]
+static PUBCHEM_PRECAUTIONARY_CODE_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?-u)\bP[0-9]{3}(?:[ \t]*\+[ \t]*P[0-9]{3})*\b")
+        .expect("valid PubChem precautionary code regex")
+});
+
+fn extract_safety_codes(values: &[String], pattern: &Regex) -> Vec<String> {
+    let mut codes: Vec<String> = values
+        .iter()
+        .flat_map(|value| pattern.find_iter(value))
+        .map(|code| code.as_str().replace([' ', '\t'], ""))
+        .collect();
+    codes.sort();
+    codes.dedup();
+    codes
+}
 
 /// Helper function to safely extract a String value from a JSON Value
 /// Returns None if the value doesn't exist or can't be converted to a string
@@ -274,19 +308,7 @@ impl PubchemProduct {
             "$..Information[?(@.Name=='GHS Hazard Statements')]..StringWithMarkup..String",
         ) && let Some(hs_str_vec) = extract_string_vec(&hs_value)
         {
-            let hs_string = hs_str_vec.join(",");
-            let hs_vec: Vec<String> = HAZARD_STATEMENT_RE
-                .captures_iter(&hs_string)
-                .filter_map(|p| {
-                    p.name("statement")
-                        .map(|statement| statement.as_str().to_string())
-                })
-                .collect();
-            product.hs = Some(hs_vec);
-            if let Some(hs_vector) = product.hs.as_mut() {
-                hs_vector.sort();
-                hs_vector.dedup();
-            }
+            product.hs = Some(extract_safety_codes(&hs_str_vec, &PUBCHEM_HAZARD_CODE_RE));
             debug!(
                 "hs: found {} hazard statements",
                 product.hs.as_ref().map_or(0, std::vec::Vec::len)
@@ -296,22 +318,13 @@ impl PubchemProduct {
         // Precautionary statements - safely extract if field exists
         if let Some(ps_value) = safe_json_query(
             &json_content,
-            "$..Information[?(@.Name=='Precautionary Statement Codes')]..StringWithMarkup[0].String",
+            "$..Information[?(@.Name=='Precautionary Statement Codes')]..StringWithMarkup..String",
         ) && let Some(ps_str_vec) = extract_string_vec(&ps_value)
         {
-            let ps_string = ps_str_vec.join(",");
-            let ps_vec: Vec<String> = PRECAUTIONARY_STATEMENT_RE
-                .captures_iter(&ps_string)
-                .filter_map(|p| {
-                    p.name("statement")
-                        .map(|statement| statement.as_str().to_string())
-                })
-                .collect();
-            product.ps = Some(ps_vec);
-            if let Some(ps_vector) = product.ps.as_mut() {
-                ps_vector.sort();
-                ps_vector.dedup();
-            }
+            product.ps = Some(extract_safety_codes(
+                &ps_str_vec,
+                &PUBCHEM_PRECAUTIONARY_CODE_RE,
+            ));
             debug!(
                 "ps: found {} precautionary statements",
                 product.ps.as_ref().map_or(0, std::vec::Vec::len)
