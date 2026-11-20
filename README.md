@@ -15,6 +15,32 @@ Types package for the Chimitheque application.
   `"MolecularWeight"`) remain accepted as input, but output always uses snake_case.
   Consumers expecting PascalCase output must update to accept snake_case.
 
+## Account email normalization
+
+`Person::sanitize_and_validate()` applies this explicit policy:
+
+- Trim surrounding whitespace, but never collapse whitespace inside an address.
+- Accept a bare mailbox only; reject display names (`Alice <alice@example.com>`)
+  and angle-bracket wrappers (`<alice@example.com>`).
+- Lowercase the entire address, including the local part, using Rust's Unicode
+  lowercasing. This is an application-level account identity policy, even though
+  email local parts can technically be case-sensitive.
+- Preserve plus tags, quotes, and significant whitespace inside quotes. Do not
+  apply IDNA conversion or provider-specific rules such as removing dots or plus tags.
+- Retain support for single-label domains and domain literals. Validation checks
+  syntax, not DNS existence, deliverability, or mailbox ownership.
+- Leave the original value unchanged if validation fails. Repeated successful
+  normalization is idempotent.
+
+For example, ` User+Lab@EXAMPLE.COM ` becomes `user+lab@example.com`, while
+`"A  B"@EXAMPLE.COM` becomes `"a  b"@example.com` without changing the quoted spaces.
+Normalization is explicit; Serde deserialization alone does not apply it.
+
+Consumers using emails for login or uniqueness must apply the same lowercasing
+policy and check for collisions before normalizing existing stored addresses.
+Unlike generic string cleaning, this policy does not collapse quoted whitespace.
+Display-name inputs are rejected.
+
 ## PubChem parsing
 
 `PubchemProduct::from_pubchem_json` now returns

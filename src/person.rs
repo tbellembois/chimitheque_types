@@ -1,4 +1,3 @@
-use chimitheque_utils::string::{Transform, clean};
 use email_address::{EmailAddress, Options};
 use serde::{Deserialize, Serialize};
 use std::fmt;
@@ -13,7 +12,7 @@ use crate::permission::Permission;
 pub struct Person {
     /// Unique identifier for the person (None if not yet persisted)
     pub person_id: Option<u64>,
-    /// Email address of the person (will be sanitized and validated)
+    /// Bare mailbox address; explicitly normalized by `Self::sanitize_and_validate`.
     pub person_email: String,
 
     // Computed fields on select, not in DB.
@@ -45,27 +44,36 @@ impl fmt::Display for Person {
 }
 
 impl Person {
-    /// Sanitizes and validates the person's email address.
-    /// Converts email to lowercase and validates it's a properly formatted email address.
+    /// Validates a bare mailbox address and applies the account email policy.
     ///
-    /// # Returns
-    /// - `Ok(())` if email is valid
-    /// - `Err(Box<dyn std::error::Error + Send + Sync>)` if email is invalid
+    /// Trims surrounding whitespace and lowercases the entire address, including
+    /// the local part, as an application-level account identity policy. Plus tags,
+    /// quotes, and quoted whitespace are preserved. Display names and angle-bracket
+    /// wrappers are rejected. Single-label domains and domain literals remain
+    /// supported. No IDNA conversion or provider-specific alias normalization is
+    /// performed.
+    ///
+    /// # Errors
+    ///
+    /// Returns the email parser's error for invalid or unsupported mailbox syntax.
+    /// The original email is left unchanged on failure.
     pub fn sanitize_and_validate(
         &mut self,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        self.person_email = clean(&self.person_email, Transform::Lowercase);
-
-        if let Err(err) = EmailAddress::parse_with_options(
-            &self.person_email,
+        // Lowercase local parts deliberately, but do not collapse quoted whitespace.
+        // Validate the normalized candidate before replacing the original value.
+        let normalized = self.person_email.trim().to_lowercase();
+        EmailAddress::parse_with_options(
+            &normalized,
             Options {
-                ..Default::default()
+                minimum_sub_domains: 0,
+                allow_domain_literal: true,
+                allow_display_text: false,
             },
-        ) {
-            Err(Box::new(err))
-        } else {
-            Ok(())
-        }
+        )?;
+
+        self.person_email = normalized;
+        Ok(())
     }
 }
 
