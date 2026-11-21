@@ -14,7 +14,10 @@ use crate::{
     producerref::ProducerRef, producttype::ProductType, signalword::SignalWord,
     supplierref::SupplierRef, symbol::Symbol, tag::Tag, unit::Unit,
 };
-use chimitheque_utils::inchi::{is_inchi, is_inchikey};
+use chimitheque_utils::{
+    inchi::{is_inchi, is_inchikey},
+    smiles::is_canonical_smiles,
+};
 use serde::{Deserialize, Serialize};
 
 /// Main `Product` structure representing a chemical or related product.
@@ -143,7 +146,7 @@ impl Product {
     /// are validated; existing ones are left unchanged.
     ///
     /// Optional text fields are cleaned; an empty value becomes `None`. The
-    /// `InChI` and `InChIKey` must be valid. The molecular weight must be greater
+    /// `InChI`, `InChIKey` and SMILES must be valid. The molecular weight must be greater
     /// than 0, the temperature a finite number, each with its unit, and the
     /// numbers per carton and per bag greater than 0.
     ///
@@ -175,6 +178,12 @@ impl Product {
             "product_inchikey",
             is_inchikey,
             "a valid InChIKey",
+        )?;
+        check_format(
+            self.product_canonical_smiles.as_deref(),
+            "product_canonical_smiles",
+            is_canonical_smiles,
+            "a valid SMILES",
         )?;
 
         check_positive(self.product_molecular_weight, "product_molecular_weight")?;

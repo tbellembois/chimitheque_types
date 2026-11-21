@@ -257,6 +257,22 @@ mod tests {
         assert_eq!(error.to_string(), "product_inchi: must be a valid InChI");
 
         let mut product = product_named("ethanol");
+        product.product_canonical_smiles = Some(" CCO ".to_string());
+        product.sanitize_and_validate().unwrap();
+        assert_eq!(product.product_canonical_smiles.as_deref(), Some("CCO"));
+
+        let mut product = product_named("ethanol");
+        product.product_canonical_smiles = Some("C1CC".to_string());
+        let error = product.sanitize_and_validate().unwrap_err();
+        assert!(matches!(
+            error,
+            ValidationError::InvalidFormat {
+                field: "product_canonical_smiles",
+                ..
+            }
+        ));
+
+        let mut product = product_named("ethanol");
         product.product_inchikey = Some("LFQSCWFLJHTTHZ".to_string());
         let error = product.sanitize_and_validate().unwrap_err();
         assert!(matches!(
