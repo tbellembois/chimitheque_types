@@ -8,6 +8,7 @@ mod tests {
     )]
 
     use crate::classofcompound::*;
+    use chimitheque_traits::searchable::Searchable;
 
     #[test]
     fn test_class_of_compound_searchable() {

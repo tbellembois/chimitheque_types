@@ -8,6 +8,7 @@ mod tests {
     )]
 
     use crate::linearformula::*;
+    use chimitheque_traits::searchable::Searchable;
 
     #[test]
     fn test_linear_formula_searchable() {

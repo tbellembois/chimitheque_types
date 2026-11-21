@@ -8,6 +8,7 @@ mod tests {
     )]
 
     use crate::cenumber::*;
+    use chimitheque_traits::searchable::Searchable;
 
     #[test]
     fn test_ce_number_searchable() {

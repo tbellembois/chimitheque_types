@@ -8,6 +8,7 @@ mod tests {
     )]
 
     use crate::signalword::*;
+    use chimitheque_traits::searchable::Searchable;
 
     #[test]
     fn test_signalword_searchable() {

@@ -8,6 +8,7 @@ mod tests {
     )]
 
     use crate::precautionarystatement::*;
+    use chimitheque_traits::searchable::Searchable;
 
     #[test]
     fn test_precautionary_statement_searchable() {

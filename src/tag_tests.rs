@@ -8,6 +8,7 @@ mod tests {
     )]
 
     use crate::tag::*;
+    use chimitheque_traits::searchable::Searchable;
 
     #[test]
     fn test_tag_searchable() {

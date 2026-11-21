@@ -8,6 +8,7 @@ mod tests {
     )]
 
     use crate::category::*;
+    use chimitheque_traits::searchable::Searchable;
 
     #[test]
     fn test_category_searchable() {

@@ -8,6 +8,7 @@ mod tests {
     )]
 
     use crate::casnumber::*;
+    use chimitheque_traits::searchable::Searchable;
 
     #[test]
     fn test_cas_number_searchable() {

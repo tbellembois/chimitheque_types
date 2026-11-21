@@ -1,9 +1,9 @@
-use chimitheque_traits::searchable::Searchable;
 use chimitheque_utils::string::{Transform, clean};
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
 use crate::error::ParseError;
+use crate::searchable::impl_searchable;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct ClassOfCompound {
@@ -25,49 +25,7 @@ impl ClassOfCompound {
     }
 }
 
-impl Searchable for ClassOfCompound {
-    fn create(&self) -> Self {
-        ClassOfCompound {
-            ..Default::default()
-        }
-    }
-
-    fn set_exact_search(&mut self, match_exact_search: bool) {
-        self.match_exact_search = match_exact_search;
-    }
-
-    fn get_exact_search(&self) -> bool {
-        self.match_exact_search
-    }
-
-    fn get_table_name(&self) -> String {
-        String::from("class_of_compound")
-    }
-
-    fn get_id_field_name(&self) -> String {
-        String::from("class_of_compound_id")
-    }
-
-    fn set_id_field(&mut self, id: u64) {
-        self.class_of_compound_id = Some(id);
-    }
-
-    fn get_text_field_name(&self) -> String {
-        String::from("class_of_compound_label")
-    }
-
-    fn set_text_field(&mut self, text: &str) {
-        self.class_of_compound_label = text.to_string();
-    }
-
-    fn get_id(&self) -> Option<u64> {
-        self.class_of_compound_id
-    }
-
-    fn get_text(&self) -> String {
-        self.class_of_compound_label.clone()
-    }
-}
+impl_searchable!(ClassOfCompound, table: "class_of_compound", id: class_of_compound_id, text: class_of_compound_label);
 
 impl fmt::Display for ClassOfCompound {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

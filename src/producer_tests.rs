@@ -8,6 +8,7 @@ mod tests {
     )]
 
     use crate::producer::*;
+    use chimitheque_traits::searchable::Searchable;
 
     #[test]
     fn test_producer_searchable() {

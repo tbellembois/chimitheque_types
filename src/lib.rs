@@ -30,6 +30,7 @@ pub mod producttype;
 pub mod pubchem;
 pub mod pubchemproduct;
 pub mod requestfilter;
+mod searchable;
 pub mod signalword;
 pub mod sortorder;
 pub mod stock;

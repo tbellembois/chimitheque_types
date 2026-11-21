@@ -8,6 +8,7 @@ mod tests {
     )]
 
     use crate::hazardstatement::*;
+    use chimitheque_traits::searchable::Searchable;
 
     #[test]
     fn test_hazard_statement_searchable() {
