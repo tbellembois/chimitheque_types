@@ -263,4 +263,38 @@ mod tests {
         storage.unit_concentration = None;
         storage.validate_unit_types(base_unit_type).unwrap();
     }
+
+    #[test]
+    fn test_sanitize_and_validate_expiration_date() {
+        let entry = chrono::DateTime::from_timestamp(1_700_000_000, 0);
+        let later = chrono::DateTime::from_timestamp(1_700_000_100, 0);
+
+        for (entry_date, expiration_date) in [(entry, later), (entry, entry), (None, entry)] {
+            let mut storage = Storage {
+                storage_entry_date: entry_date,
+                storage_expiration_date: expiration_date,
+                ..Default::default()
+            };
+            storage.sanitize_and_validate().unwrap();
+        }
+
+        // Stock already expired when it enters is refused.
+        let mut storage = Storage {
+            storage_entry_date: later,
+            storage_expiration_date: entry,
+            ..Default::default()
+        };
+        let error = storage.sanitize_and_validate().unwrap_err();
+        assert!(matches!(
+            error,
+            ValidationError::OutOfRange {
+                field: "storage_expiration_date",
+                ..
+            }
+        ));
+        assert_eq!(
+            error.to_string(),
+            "storage_expiration_date: must be on or after storage_entry_date"
+        );
+    }
 }

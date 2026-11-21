@@ -111,8 +111,8 @@ impl Storage {
     ///
     /// Optional text fields are cleaned; an empty value becomes `None`. The
     /// quantity and concentration must be 0 or more, each with its unit, the
-    /// numbers of bags and cartons greater than 0, and the exit and opening
-    /// dates not before the entry date.
+    /// numbers of bags and cartons greater than 0, and the exit, opening and
+    /// expiration dates not before the entry date.
     ///
     /// # Returns
     ///
@@ -140,24 +140,20 @@ impl Storage {
             "when storage_concentration is set",
         )?;
 
-        if let (Some(entry_date), Some(exit_date)) =
-            (self.storage_entry_date, self.storage_exit_date)
-            && exit_date < entry_date
-        {
-            return Err(ValidationError::OutOfRange {
-                field: "storage_exit_date",
-                expected: "on or after storage_entry_date",
-            });
-        }
-
-        if let (Some(entry_date), Some(opening_date)) =
-            (self.storage_entry_date, self.storage_opening_date)
-            && opening_date < entry_date
-        {
-            return Err(ValidationError::OutOfRange {
-                field: "storage_opening_date",
-                expected: "on or after storage_entry_date",
-            });
+        // Exit, opening and expiration dates can not be before the entry date.
+        if let Some(entry_date) = self.storage_entry_date {
+            for (field, date) in [
+                ("storage_exit_date", self.storage_exit_date),
+                ("storage_opening_date", self.storage_opening_date),
+                ("storage_expiration_date", self.storage_expiration_date),
+            ] {
+                if date.is_some_and(|date| date < entry_date) {
+                    return Err(ValidationError::OutOfRange {
+                        field,
+                        expected: "on or after storage_entry_date",
+                    });
+                }
+            }
         }
 
         if let Some(ref mut supplier) = self.supplier
