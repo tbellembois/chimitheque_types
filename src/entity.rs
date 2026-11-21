@@ -6,7 +6,7 @@ use std::fmt;
 use chimitheque_utils::string::{Transform, clean};
 use serde::{Deserialize, Serialize};
 
-use crate::person::Person;
+use crate::{error::ParseError, person::Person};
 
 /// Main `Entity` structure representing an organization or group.
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
@@ -43,15 +43,20 @@ impl fmt::Display for Entity {
 impl Entity {
     /// Validates and sanitizes all fields of the `Entity`.
     ///
-    /// Cleans the entity name and description to remove unwanted characters.
+    /// Cleans the entity name and description to remove unwanted characters,
+    /// and ensures the name is not empty.
     ///
     /// # Returns
     ///
-    /// `Ok(())` if validation succeeds, or an error if validation fails.
+    /// `Ok(())` if validation succeeds, or `ParseError::EmptyInput` if the
+    /// cleaned name is empty.
     pub fn sanitize_and_validate(
         &mut self,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         self.entity_name = clean(&self.entity_name, Transform::None);
+        if self.entity_name.is_empty() {
+            return Err(Box::new(ParseError::EmptyInput));
+        }
 
         if let Some(entity_description) = self.entity_description.as_mut() {
             *entity_description = clean(entity_description, Transform::None);

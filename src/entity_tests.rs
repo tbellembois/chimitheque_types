@@ -31,4 +31,20 @@ mod tests {
         assert!(entity.sanitize_and_validate().is_ok());
         assert_eq!(entity.entity_description, None);
     }
+
+    #[test]
+    fn test_sanitize_and_validate_empty_name() {
+        for name in ["", "   "] {
+            let mut entity = Entity {
+                entity_name: name.to_string(),
+                entity_description: Some("description".to_string()),
+                ..Default::default()
+            };
+            let error = entity.sanitize_and_validate().unwrap_err();
+            assert!(matches!(
+                error.downcast_ref::<ParseError>(),
+                Some(ParseError::EmptyInput)
+            ));
+        }
+    }
 }
