@@ -69,7 +69,9 @@ mod tests {
         for value in ["", "up", "ascending"] {
             let request = format!("http://localhost?order={value}");
             assert_eq!(
-                RequestFilter::try_from(request.as_str()).unwrap_err(),
+                RequestFilter::try_from(request.as_str())
+                    .unwrap_err()
+                    .to_string(),
                 format!("error with order query parameter: wrong sort order: {value}")
             );
         }
@@ -315,7 +317,8 @@ mod tests {
             ] {
                 let request = format!("http://localhost?{parameter}={value}");
                 let error = RequestFilter::try_from(request.as_str())
-                    .expect_err("overflowing IDs must reject the entire filter");
+                    .expect_err("overflowing IDs must reject the entire filter")
+                    .to_string();
 
                 assert!(error.contains(parameter), "{error}");
                 assert!(
@@ -348,13 +351,45 @@ mod tests {
     }
 
     #[test]
+    fn test_requestfilter_error_variants() {
+        use crate::error::RequestFilterError;
+        use std::error::Error as _;
+
+        let error = RequestFilter::try_from("not a url").unwrap_err();
+        assert!(matches!(error, RequestFilterError::InvalidUrl(_)));
+        assert!(error.to_string().starts_with("can not parse url: "));
+        assert!(error.source().is_some());
+
+        let error = RequestFilter::try_from("http://localhost?limit=ten").unwrap_err();
+        assert!(matches!(
+            &error,
+            RequestFilterError::InvalidParameter {
+                parameter: "limit",
+                ..
+            }
+        ));
+        assert_eq!(
+            error.to_string(),
+            "error with limit query parameter: invalid digit found in string"
+        );
+        assert!(error.source().is_none());
+
+        let error = RequestFilter::try_from("http://localhost?tags=1,,2").unwrap_err();
+        assert_eq!(
+            error,
+            RequestFilterError::InvalidIdList { parameter: "tags" }
+        );
+        assert_eq!(error.to_string(), "invalid tags ids format");
+    }
+
+    #[test]
     fn test_requestfilter_rejects_malformed_id_lists() {
         for parameter in ID_LIST_PARAMETERS {
             for value in ["", ",1", "1,,2", "1;2", "1,a,2", "-1", "1,%202"] {
                 let request = format!("http://localhost?{parameter}={value}");
                 let error = RequestFilter::try_from(request.as_str()).unwrap_err();
 
-                assert_eq!(error, format!("invalid {parameter} ids format"));
+                assert_eq!(error.to_string(), format!("invalid {parameter} ids format"));
             }
         }
     }

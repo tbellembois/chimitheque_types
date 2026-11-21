@@ -4,6 +4,7 @@
 use std::fmt;
 
 use crate::entity::Entity;
+use crate::error::ValidationError;
 use chimitheque_utils::string::{Transform, clean};
 use serde::{Deserialize, Serialize};
 
@@ -53,12 +54,12 @@ impl StoreLocation {
     /// # Returns
     ///
     /// `Ok(())` if validation succeeds, or an error if validation fails.
-    pub fn sanitize_and_validate(
-        &mut self,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
         self.store_location_name = clean(&self.store_location_name, Transform::None);
         if self.store_location_name.is_empty() {
-            return Err(Box::new(crate::error::ParseError::EmptyInput));
+            return Err(ValidationError::Empty {
+                field: "store_location_name",
+            });
         }
         Ok(())
     }

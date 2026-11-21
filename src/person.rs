@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 
 use crate::entity::Entity;
+use crate::error::ValidationError;
 use crate::permission::Permission;
 
 /// Represents a person in the system with their unique identifier and email.
@@ -55,11 +56,10 @@ impl Person {
     ///
     /// # Errors
     ///
-    /// Returns the email parser's error for invalid or unsupported mailbox syntax.
+    /// Returns `ValidationError::InvalidEmail`, wrapping the email parser's error,
+    /// for invalid or unsupported mailbox syntax.
     /// The original email is left unchanged on failure.
-    pub fn sanitize_and_validate(
-        &mut self,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
         // Lowercase local parts deliberately, but do not collapse quoted whitespace.
         // Validate the normalized candidate before replacing the original value.
         let normalized = self.person_email.trim().to_lowercase();
@@ -70,7 +70,8 @@ impl Person {
                 allow_domain_literal: true,
                 allow_display_text: false,
             },
-        )?;
+        )
+        .map_err(ValidationError::InvalidEmail)?;
 
         self.person_email = normalized;
         Ok(())

@@ -1,7 +1,7 @@
 use chimitheque_utils::string::{Transform, clean};
 use serde::{Deserialize, Serialize};
 
-use crate::error::ParseError;
+use crate::error::ValidationError;
 use crate::searchable::impl_searchable;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
@@ -13,12 +13,12 @@ pub struct Producer {
 }
 
 impl Producer {
-    pub fn sanitize_and_validate(
-        &mut self,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
         self.producer_label = clean(&self.producer_label, Transform::None);
         if self.producer_label.is_empty() {
-            return Err(Box::new(ParseError::EmptyInput));
+            return Err(ValidationError::Empty {
+                field: "producer_label",
+            });
         }
         Ok(())
     }

@@ -6,8 +6,8 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    borrowing::Borrowing, person::Person, product::Product, storelocation::StoreLocation,
-    supplier::Supplier, unit::Unit,
+    borrowing::Borrowing, error::ValidationError, person::Person, product::Product,
+    storelocation::StoreLocation, supplier::Supplier, unit::Unit,
 };
 
 /// Main `Storage` structure representing chemical storage information.
@@ -105,9 +105,7 @@ impl Storage {
     /// # Returns
     ///
     /// `Ok(())` if validation succeeds, or an error if validation fails.
-    pub fn sanitize_and_validate(
-        &mut self,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
         Ok(())
     }
 }

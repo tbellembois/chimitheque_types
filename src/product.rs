@@ -4,11 +4,11 @@ use std::fmt;
 
 use crate::{
     casnumber::CasNumber, category::Category, cenumber::CeNumber, classofcompound::ClassOfCompound,
-    empiricalformula::EmpiricalFormula, entity::Entity, hazardstatement::HazardStatement,
-    linearformula::LinearFormula, name::Name, person::Person, physicalstate::PhysicalState,
-    precautionarystatement::PrecautionaryStatement, producerref::ProducerRef,
-    producttype::ProductType, signalword::SignalWord, supplierref::SupplierRef, symbol::Symbol,
-    tag::Tag, unit::Unit,
+    empiricalformula::EmpiricalFormula, entity::Entity, error::ValidationError,
+    hazardstatement::HazardStatement, linearformula::LinearFormula, name::Name, person::Person,
+    physicalstate::PhysicalState, precautionarystatement::PrecautionaryStatement,
+    producerref::ProducerRef, producttype::ProductType, signalword::SignalWord,
+    supplierref::SupplierRef, symbol::Symbol, tag::Tag, unit::Unit,
 };
 use serde::{Deserialize, Serialize};
 
@@ -137,9 +137,7 @@ impl Product {
     /// # Returns
     ///
     /// `Ok(())` if validation succeeds, or an error if validation fails.
-    pub fn sanitize_and_validate(
-        &mut self,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
         if let Some(ref mut cas_number) = self.cas_number
             && cas_number.cas_number_id.is_none()
         {

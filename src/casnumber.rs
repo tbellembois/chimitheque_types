@@ -5,7 +5,7 @@ use chimitheque_utils::{
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
-use crate::error::ParseError;
+use crate::error::ValidationError;
 use crate::searchable::impl_searchable;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
@@ -18,14 +18,14 @@ pub struct CasNumber {
 }
 
 impl CasNumber {
-    pub fn sanitize_and_validate(
-        &mut self,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
         self.cas_number_label = clean(&self.cas_number_label, Transform::None);
         if self.cas_number_label.is_empty() {
-            return Err(Box::new(ParseError::EmptyInput));
+            return Err(ValidationError::Empty {
+                field: "cas_number_label",
+            });
         }
-        is_cas_number(&self.cas_number_label)
+        is_cas_number(&self.cas_number_label).map_err(ValidationError::InvalidCasNumber)
     }
 }
 

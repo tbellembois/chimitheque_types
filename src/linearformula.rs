@@ -5,7 +5,7 @@ use chimitheque_utils::{
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
-use crate::error::ParseError;
+use crate::error::ValidationError;
 use crate::searchable::impl_searchable;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
@@ -17,15 +17,20 @@ pub struct LinearFormula {
 }
 
 impl LinearFormula {
-    pub fn sanitize_and_validate(
-        &mut self,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
         let cleaned_empirical_formula = clean(&self.linear_formula_label, Transform::None);
         if cleaned_empirical_formula.is_empty() {
-            return Err(Box::new(ParseError::EmptyInput));
+            return Err(ValidationError::Empty {
+                field: "linear_formula_label",
+            });
         }
 
-        let _ = to_empirical_formula(cleaned_empirical_formula.as_str())?;
+        let _ = to_empirical_formula(cleaned_empirical_formula.as_str()).map_err(|source| {
+            ValidationError::InvalidFormula {
+                field: "linear_formula_label",
+                source,
+            }
+        })?;
 
         self.linear_formula_label = cleaned_empirical_formula;
         Ok(())

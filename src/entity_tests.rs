@@ -8,6 +8,7 @@ mod tests {
     )]
 
     use crate::entity::*;
+    use crate::error::ValidationError;
 
     #[test]
     fn test_sanitize_and_validate_cleans_name_and_description() {
@@ -42,9 +43,12 @@ mod tests {
             };
             let error = entity.sanitize_and_validate().unwrap_err();
             assert!(matches!(
-                error.downcast_ref::<ParseError>(),
-                Some(ParseError::EmptyInput)
+                error,
+                ValidationError::Empty {
+                    field: "entity_name"
+                }
             ));
+            assert_eq!(error.to_string(), "entity_name: empty input");
         }
     }
 }

@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::{fmt, str::FromStr};
 use url::{Url, form_urlencoded};
 
-use crate::sortorder::SortOrder;
+use crate::{error::RequestFilterError, sortorder::SortOrder};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RequestFilter {
@@ -209,19 +209,22 @@ fn join_ids(ids: &[u64]) -> String {
 }
 
 /// Parses a single query parameter value, naming the parameter in the error.
-fn parse_param<T>(parameter: &str, value: &str) -> Result<T, String>
+fn parse_param<T>(parameter: &'static str, value: &str) -> Result<T, RequestFilterError>
 where
     T: FromStr,
     T::Err: fmt::Display,
 {
     value
         .parse::<T>()
-        .map_err(|e| format!("error with {parameter} query parameter: {e}"))
+        .map_err(|e| RequestFilterError::InvalidParameter {
+            parameter,
+            message: e.to_string(),
+        })
 }
 
-fn parse_id_list(value: &str, parameter: &str) -> Result<Vec<u64>, String> {
+fn parse_id_list(value: &str, parameter: &'static str) -> Result<Vec<u64>, RequestFilterError> {
     if !IDS_MATCH_RE.is_match(value) {
-        return Err(format!("invalid {parameter} ids format"));
+        return Err(RequestFilterError::InvalidIdList { parameter });
     }
 
     IDS_CAPTURE_RE
@@ -229,17 +232,19 @@ fn parse_id_list(value: &str, parameter: &str) -> Result<Vec<u64>, String> {
         .map(|capture| {
             let id = capture
                 .name("id")
-                .ok_or_else(|| format!("invalid {parameter} ids format"))?
+                .ok_or(RequestFilterError::InvalidIdList { parameter })?
                 .as_str();
-            id.parse::<u64>().map_err(|error| {
-                format!("error with {parameter} query parameter: invalid id {id}: {error}")
-            })
+            id.parse::<u64>()
+                .map_err(|error| RequestFilterError::InvalidParameter {
+                    parameter,
+                    message: format!("invalid id {id}: {error}"),
+                })
         })
         .collect()
 }
 
 impl TryFrom<&str> for RequestFilter {
-    type Error = String;
+    type Error = RequestFilterError;
 
     fn try_from(request: &str) -> Result<Self, Self::Error> {
         debug!("request:{request}");
@@ -250,7 +255,7 @@ impl TryFrom<&str> for RequestFilter {
         // Parse request URL.
         let url = match Url::parse(request) {
             Ok(url) => url,
-            Err(e) => return Err(format!("can not parse url: {e}")),
+            Err(e) => return Err(RequestFilterError::InvalidUrl(e)),
         };
 
         // Trying to capture an id at the end of the URL.

@@ -6,7 +6,7 @@ use std::fmt;
 use chimitheque_utils::string::{Transform, clean};
 use serde::{Deserialize, Serialize};
 
-use crate::{error::ParseError, person::Person};
+use crate::{error::ValidationError, person::Person};
 
 /// Main `Entity` structure representing an organization or group.
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
@@ -48,14 +48,14 @@ impl Entity {
     ///
     /// # Returns
     ///
-    /// `Ok(())` if validation succeeds, or `ParseError::EmptyInput` if the
+    /// `Ok(())` if validation succeeds, or `ValidationError::Empty` if the
     /// cleaned name is empty.
-    pub fn sanitize_and_validate(
-        &mut self,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
         self.entity_name = clean(&self.entity_name, Transform::None);
         if self.entity_name.is_empty() {
-            return Err(Box::new(ParseError::EmptyInput));
+            return Err(ValidationError::Empty {
+                field: "entity_name",
+            });
         }
 
         if let Some(entity_description) = self.entity_description.as_mut() {
