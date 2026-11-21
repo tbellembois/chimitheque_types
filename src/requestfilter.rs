@@ -362,9 +362,6 @@ impl TryFrom<&str> for RequestFilter {
                     Ok(v) => request_filter.name = Some(v),
                     Err(e) => return Err(format!("error with name query parameter: {e}")),
                 },
-                // "permission" => {
-                //     request_filter.permission = value.to_string();
-                // }
                 "precautionary_statements" => {
                     request_filter.precautionary_statements =
                         Some(parse_id_list(&value, "precautionary_statements")?);
@@ -489,7 +486,6 @@ impl Default for RequestFilter {
             history: false,
             storages: None,
             name: None,
-            // permission: String::from("r"),
             precautionary_statements: None,
             producer: None,
             producer_ref: None,
