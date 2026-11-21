@@ -75,7 +75,10 @@ mod tests {
     #[test]
     fn test_get_id_field_name() {
         let class_of_compound = ClassOfCompound::default();
-        assert_eq!(class_of_compound.get_id_field_name(), "class_of_compound_id");
+        assert_eq!(
+            class_of_compound.get_id_field_name(),
+            "class_of_compound_id"
+        );
     }
 
     #[test]

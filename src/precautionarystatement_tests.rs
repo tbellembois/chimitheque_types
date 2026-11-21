@@ -74,13 +74,19 @@ mod tests {
     #[test]
     fn test_get_table_name() {
         let precautionary_statement = PrecautionaryStatement::default();
-        assert_eq!(precautionary_statement.get_table_name(), "precautionary_statement");
+        assert_eq!(
+            precautionary_statement.get_table_name(),
+            "precautionary_statement"
+        );
     }
 
     #[test]
     fn test_get_id_field_name() {
         let precautionary_statement = PrecautionaryStatement::default();
-        assert_eq!(precautionary_statement.get_id_field_name(), "precautionary_statement_id");
+        assert_eq!(
+            precautionary_statement.get_id_field_name(),
+            "precautionary_statement_id"
+        );
     }
 
     #[test]
