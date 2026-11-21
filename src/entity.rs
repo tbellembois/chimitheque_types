@@ -53,9 +53,13 @@ impl Entity {
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         self.entity_name = clean(&self.entity_name, Transform::None);
 
-        if let Some(entity_description) = self.entity_description.clone() {
-            self.entity_description = Some(clean(entity_description.as_str(), Transform::None));
+        if let Some(entity_description) = self.entity_description.as_mut() {
+            *entity_description = clean(entity_description, Transform::None);
         }
         Ok(())
     }
 }
+
+#[cfg(test)]
+#[path = "entity_tests.rs"]
+mod entity_tests;
