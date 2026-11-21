@@ -23,7 +23,7 @@ impl Display for ParseError {
 
 impl std::error::Error for ParseError {}
 
-/// An invalid PubChem document or a failure to extract one of its fields.
+/// An invalid `PubChem` document or a failure to extract one of its fields.
 #[derive(Debug)]
 #[non_exhaustive]
 pub enum PubchemParseError {
@@ -36,7 +36,7 @@ pub enum PubchemParseError {
         expected: &'static str,
         actual: &'static str,
     },
-    /// A JSONPath expression could not be evaluated.
+    /// A `JSONPath` expression could not be evaluated.
     Query {
         field: &'static str,
         query: &'static str,

@@ -155,16 +155,16 @@ pub struct PubchemProduct {
 }
 
 impl PubchemProduct {
-    /// Extracts a product from a PubChem PUG View JSON document.
+    /// Extracts a product from a `PubChem` PUG View JSON document.
     ///
     /// Missing optional paths remain `None`. This extracts selected fields rather
-    /// than validating the complete PubChem schema. Scalar fields retain the first
+    /// than validating the complete `PubChem` schema. Scalar fields retain the first
     /// match, but all matched values must be strings.
     ///
     /// # Errors
     ///
     /// Returns an error for invalid JSON, a missing or non-object `Record`, an
-    /// invalid JSONPath query, or a non-string extracted value (including null).
+    /// invalid `JSONPath` query, or a non-string extracted value (including null).
     ///
     /// # Examples
     ///
