@@ -51,4 +51,15 @@ mod tests {
             assert_eq!(error.to_string(), "entity_name: empty input");
         }
     }
+
+    #[test]
+    fn test_sanitize_and_validate_empty_description() {
+        let mut entity = Entity {
+            entity_name: "lab".to_string(),
+            entity_description: Some("   ".to_string()),
+            ..Default::default()
+        };
+        entity.sanitize_and_validate().unwrap();
+        assert_eq!(entity.entity_description, None);
+    }
 }

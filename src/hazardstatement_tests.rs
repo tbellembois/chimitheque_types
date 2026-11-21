@@ -132,4 +132,38 @@ mod tests {
         }
         Ok(())
     }
+
+    fn assert_empty(result: Result<(), crate::error::ValidationError>, expected_field: &str) {
+        let error = result.unwrap_err();
+        assert!(
+            matches!(error, crate::error::ValidationError::Empty { field } if field == expected_field),
+            "{error:?}"
+        );
+    }
+
+    #[test]
+    fn test_sanitize_and_validate() {
+        let mut value = HazardStatement {
+            hazard_statement_label: " May  cause cancer ".to_string(),
+            hazard_statement_reference: " H350 ".to_string(),
+            hazard_statement_cmr: Some("  ".to_string()),
+            ..Default::default()
+        };
+        value.sanitize_and_validate().unwrap();
+        assert_eq!(value.hazard_statement_label, "May cause cancer");
+        assert_eq!(value.hazard_statement_reference, "H350");
+        assert_eq!(value.hazard_statement_cmr, None);
+
+        let mut value = HazardStatement {
+            hazard_statement_reference: "H350".to_string(),
+            ..Default::default()
+        };
+        assert_empty(value.sanitize_and_validate(), "hazard_statement_label");
+
+        let mut value = HazardStatement {
+            hazard_statement_label: "label".to_string(),
+            ..Default::default()
+        };
+        assert_empty(value.sanitize_and_validate(), "hazard_statement_reference");
+    }
 }

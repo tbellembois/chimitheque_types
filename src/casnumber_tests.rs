@@ -179,4 +179,19 @@ mod tests {
         assert!(serde_json::from_value::<CasNumber>(missing_required).is_err());
         Ok(())
     }
+
+    #[test]
+    fn test_sanitize_and_validate_cmr() {
+        let mut value = CasNumber {
+            cas_number_label: "7732-18-5".to_string(),
+            cas_number_cmr: Some("  C1A   M2 ".to_string()),
+            ..Default::default()
+        };
+        value.sanitize_and_validate().unwrap();
+        assert_eq!(value.cas_number_cmr.as_deref(), Some("C1A M2"));
+
+        value.cas_number_cmr = Some(" ".to_string());
+        value.sanitize_and_validate().unwrap();
+        assert_eq!(value.cas_number_cmr, None);
+    }
 }

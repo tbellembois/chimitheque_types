@@ -75,4 +75,19 @@ mod tests {
         assert!(store_location.sanitize_and_validate().is_ok());
         assert_eq!(store_location.store_location_name, "hello world");
     }
+
+    #[test]
+    fn test_sanitize_and_validate_color() {
+        let mut value = StoreLocation {
+            store_location_name: "shelf".to_string(),
+            store_location_color: Some(" #ff0000 ".to_string()),
+            ..Default::default()
+        };
+        value.sanitize_and_validate().unwrap();
+        assert_eq!(value.store_location_color.as_deref(), Some("#ff0000"));
+
+        value.store_location_color = Some("   ".to_string());
+        value.sanitize_and_validate().unwrap();
+        assert_eq!(value.store_location_color, None);
+    }
 }

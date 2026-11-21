@@ -115,4 +115,30 @@ mod tests {
         assert!(serde_json::from_value::<SignalWord>(missing_required).is_err());
         Ok(())
     }
+
+    fn assert_empty(result: Result<(), crate::error::ValidationError>, expected_field: &str) {
+        let error = result.unwrap_err();
+        assert!(
+            matches!(error, crate::error::ValidationError::Empty { field } if field == expected_field),
+            "{error:?}"
+        );
+    }
+
+    #[test]
+    fn test_sanitize_and_validate_label() {
+        let mut value = SignalWord {
+            signal_word_label: "  danger  ".to_string(),
+            ..Default::default()
+        };
+        value.sanitize_and_validate().unwrap();
+        assert_eq!(value.signal_word_label, "danger");
+
+        for empty in ["", "   "] {
+            let mut value = SignalWord {
+                signal_word_label: empty.to_string(),
+                ..Default::default()
+            };
+            assert_empty(value.sanitize_and_validate(), "signal_word_label");
+        }
+    }
 }

@@ -5,6 +5,10 @@ use std::fmt;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
+use crate::validation::{
+    check_non_negative, check_non_zero_count, clean_optional_text, trim_optional_text,
+};
+
 use crate::{
     borrowing::Borrowing, error::ValidationError, person::Person, product::Product,
     storelocation::StoreLocation, supplier::Supplier, unit::Unit,
@@ -101,16 +105,44 @@ impl Storage {
     /// Validates and sanitizes all fields of the `Storage`.
     ///
     /// Validates a new supplier (without an id); an existing one is left
-    /// unchanged.
+    /// unchanged. Validates the borrowing, if any.
+    ///
+    /// Optional text fields are cleaned; an empty value becomes `None`. The
+    /// quantity and concentration must be 0 or more, the numbers of bags and
+    /// cartons greater than 0, and the exit date not before the entry date.
     ///
     /// # Returns
     ///
     /// `Ok(())` if validation succeeds, or an error if validation fails.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
+        trim_optional_text(&mut self.storage_comment);
+        clean_optional_text(&mut self.storage_reference);
+        clean_optional_text(&mut self.storage_batch_number);
+        clean_optional_text(&mut self.storage_barecode);
+
+        check_non_negative(self.storage_quantity, "storage_quantity")?;
+        check_non_negative(self.storage_concentration, "storage_concentration")?;
+        check_non_zero_count(self.storage_number_of_bag, "storage_number_of_bag")?;
+        check_non_zero_count(self.storage_number_of_carton, "storage_number_of_carton")?;
+
+        if let (Some(entry_date), Some(exit_date)) =
+            (self.storage_entry_date, self.storage_exit_date)
+            && exit_date < entry_date
+        {
+            return Err(ValidationError::OutOfRange {
+                field: "storage_exit_date",
+                expected: "on or after storage_entry_date",
+            });
+        }
+
         if let Some(ref mut supplier) = self.supplier
             && supplier.supplier_id.is_none()
         {
             supplier.sanitize_and_validate()?;
+        }
+
+        if let Some(ref mut borrowing) = self.borrowing {
+            borrowing.sanitize_and_validate()?;
         }
 
         Ok(())

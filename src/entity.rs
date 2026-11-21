@@ -6,7 +6,7 @@ use std::fmt;
 use chimitheque_utils::string::{Transform, clean};
 use serde::{Deserialize, Serialize};
 
-use crate::{error::ValidationError, person::Person};
+use crate::{error::ValidationError, person::Person, validation::clean_optional_text};
 
 /// Main `Entity` structure representing an organization or group.
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
@@ -58,9 +58,7 @@ impl Entity {
             });
         }
 
-        if let Some(entity_description) = self.entity_description.as_mut() {
-            *entity_description = clean(entity_description, Transform::None);
-        }
+        clean_optional_text(&mut self.entity_description);
         Ok(())
     }
 }

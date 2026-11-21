@@ -143,4 +143,42 @@ mod tests {
         }
         Ok(())
     }
+
+    fn assert_empty(result: Result<(), crate::error::ValidationError>, expected_field: &str) {
+        let error = result.unwrap_err();
+        assert!(
+            matches!(error, crate::error::ValidationError::Empty { field } if field == expected_field),
+            "{error:?}"
+        );
+    }
+
+    #[test]
+    fn test_sanitize_and_validate() {
+        let mut value = PrecautionaryStatement {
+            precautionary_statement_label: " Wear  gloves ".to_string(),
+            precautionary_statement_reference: " P280 ".to_string(),
+            ..Default::default()
+        };
+        value.sanitize_and_validate().unwrap();
+        assert_eq!(value.precautionary_statement_label, "Wear gloves");
+        assert_eq!(value.precautionary_statement_reference, "P280");
+
+        let mut value = PrecautionaryStatement {
+            precautionary_statement_reference: "P280".to_string(),
+            ..Default::default()
+        };
+        assert_empty(
+            value.sanitize_and_validate(),
+            "precautionary_statement_label",
+        );
+
+        let mut value = PrecautionaryStatement {
+            precautionary_statement_label: "label".to_string(),
+            ..Default::default()
+        };
+        assert_empty(
+            value.sanitize_and_validate(),
+            "precautionary_statement_reference",
+        );
+    }
 }

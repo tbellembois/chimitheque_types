@@ -1,5 +1,12 @@
 #[cfg(test)]
 mod tests {
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::too_many_lines
+    )]
+
     use chimitheque_traits::searchable::Searchable;
 
     use crate::physicalstate::PhysicalState;
@@ -84,5 +91,31 @@ mod tests {
         }
         assert!(serde_json::from_value::<PhysicalState>(missing_required).is_err());
         Ok(())
+    }
+
+    fn assert_empty(result: Result<(), crate::error::ValidationError>, expected_field: &str) {
+        let error = result.unwrap_err();
+        assert!(
+            matches!(error, crate::error::ValidationError::Empty { field } if field == expected_field),
+            "{error:?}"
+        );
+    }
+
+    #[test]
+    fn test_sanitize_and_validate_label() {
+        let mut value = PhysicalState {
+            physical_state_label: "  liquid  ".to_string(),
+            ..Default::default()
+        };
+        value.sanitize_and_validate().unwrap();
+        assert_eq!(value.physical_state_label, "liquid");
+
+        for empty in ["", "   "] {
+            let mut value = PhysicalState {
+                physical_state_label: empty.to_string(),
+                ..Default::default()
+            };
+            assert_empty(value.sanitize_and_validate(), "physical_state_label");
+        }
     }
 }

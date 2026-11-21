@@ -1,4 +1,6 @@
 use crate::supplier::Supplier;
+use crate::{error::ValidationError, validation::require_text};
+use chimitheque_utils::string::Transform;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
@@ -10,6 +12,27 @@ pub struct SupplierRef {
     pub supplier_ref_label: String,
 
     pub supplier: Supplier,
+}
+
+impl SupplierRef {
+    /// Cleans the reference label and ensures it is not empty. A new supplier
+    /// (without an id) is validated too; an existing one is left unchanged.
+    ///
+    /// # Errors
+    ///
+    /// Returns `ValidationError::Empty` if the label or a new supplier label is
+    /// empty.
+    pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
+        require_text(
+            &mut self.supplier_ref_label,
+            "supplier_ref_label",
+            Transform::None,
+        )?;
+        if self.supplier.supplier_id.is_none() {
+            self.supplier.sanitize_and_validate()?;
+        }
+        Ok(())
+    }
 }
 
 impl fmt::Display for SupplierRef {

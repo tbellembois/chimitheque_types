@@ -5,6 +5,7 @@ use std::fmt;
 
 use crate::entity::Entity;
 use crate::error::ValidationError;
+use crate::validation::clean_optional_text;
 use chimitheque_utils::string::{Transform, clean};
 use serde::{Deserialize, Serialize};
 
@@ -61,6 +62,7 @@ impl StoreLocation {
                 field: "store_location_name",
             });
         }
+        clean_optional_text(&mut self.store_location_color);
         Ok(())
     }
 }

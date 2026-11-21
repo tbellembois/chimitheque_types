@@ -7,6 +7,7 @@ use std::fmt;
 
 use crate::error::ValidationError;
 use crate::searchable::impl_searchable;
+use crate::validation::clean_optional_text;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct CasNumber {
@@ -25,6 +26,7 @@ impl CasNumber {
                 field: "cas_number_label",
             });
         }
+        clean_optional_text(&mut self.cas_number_cmr);
         is_cas_number(&self.cas_number_label).map_err(ValidationError::InvalidCasNumber)
     }
 }

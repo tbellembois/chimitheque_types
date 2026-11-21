@@ -2,6 +2,9 @@
 /// Represents a chemical or related product with various attributes and metadata.
 use std::fmt;
 
+use crate::validation::{
+    check_finite, check_positive, check_positive_count, clean_optional_text, trim_optional_text,
+};
 use crate::{
     casnumber::CasNumber, category::Category, cenumber::CeNumber, classofcompound::ClassOfCompound,
     empiricalformula::EmpiricalFormula, entity::Entity, error::ValidationError,
@@ -133,14 +136,36 @@ impl Product {
     /// Validates and sanitizes all fields of the `Product`.
     ///
     /// Ensures all nested structures are properly validated: the name, CAS and CE
-    /// numbers, category, formulas, synonyms, classes of compounds and tags.
-    /// Only new entries (without an id) are validated; existing ones are left
-    /// unchanged.
+    /// numbers, category, formulas, producer reference, supplier references,
+    /// synonyms, classes of compounds and tags. Only new entries (without an id)
+    /// are validated; existing ones are left unchanged.
+    ///
+    /// Optional text fields are cleaned; an empty value becomes `None`. The
+    /// molecular weight must be greater than 0, the temperature a finite number,
+    /// and the numbers per carton and per bag greater than 0.
     ///
     /// # Returns
     ///
     /// `Ok(())` if validation succeeds, or an error if validation fails.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
+        // Single-line identifiers: inner whitespace is collapsed.
+        clean_optional_text(&mut self.product_inchi);
+        clean_optional_text(&mut self.product_inchikey);
+        clean_optional_text(&mut self.product_canonical_smiles);
+        clean_optional_text(&mut self.product_specificity);
+        // Free text, links and pictures: only trimmed, line breaks are kept.
+        trim_optional_text(&mut self.product_msds);
+        trim_optional_text(&mut self.product_sheet);
+        trim_optional_text(&mut self.product_twod_formula);
+        trim_optional_text(&mut self.product_threed_formula);
+        trim_optional_text(&mut self.product_disposal_comment);
+        trim_optional_text(&mut self.product_remark);
+
+        check_positive(self.product_molecular_weight, "product_molecular_weight")?;
+        check_finite(self.product_temperature, "product_temperature")?;
+        check_positive_count(self.product_number_per_carton, "product_number_per_carton")?;
+        check_positive_count(self.product_number_per_bag, "product_number_per_bag")?;
+
         if let Some(ref mut cas_number) = self.cas_number
             && cas_number.cas_number_id.is_none()
         {
@@ -173,6 +198,20 @@ impl Product {
 
         if self.name.name_id.is_none() {
             self.name.sanitize_and_validate()?;
+        }
+
+        if let Some(ref mut producer_ref) = self.producer_ref
+            && producer_ref.producer_ref_id.is_none()
+        {
+            producer_ref.sanitize_and_validate()?;
+        }
+
+        if let Some(supplier_refs) = self.supplier_refs.as_mut() {
+            for supplier_ref in supplier_refs {
+                if supplier_ref.supplier_ref_id.is_none() {
+                    supplier_ref.sanitize_and_validate()?;
+                }
+            }
         }
 
         if let Some(synonyms) = self.synonyms.as_mut() {
