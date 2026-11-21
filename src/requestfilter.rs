@@ -1,7 +1,7 @@
 use chimitheque_defines::{END_OF_URL_CAPTURE_RE, IDS_CAPTURE_RE, IDS_MATCH_RE};
 use log::debug;
 use serde::{Deserialize, Serialize};
-use std::fmt;
+use std::{fmt, str::FromStr};
 use url::{Url, form_urlencoded};
 
 fn default_order() -> String {
@@ -116,37 +116,19 @@ impl fmt::Display for RequestFilter {
             parameters.append_pair("entity_name", entity_name);
         }
         if let Some(hazard_statements) = &self.hazard_statements {
-            parameters.append_pair(
-                "hazard_statements",
-                &hazard_statements
-                    .iter()
-                    .map(std::string::ToString::to_string)
-                    .collect::<Vec<String>>()
-                    .join(","),
-            );
+            parameters.append_pair("hazard_statements", &join_ids(hazard_statements));
         }
         if let Some(precautionary_statements) = &self.precautionary_statements {
             parameters.append_pair(
                 "precautionary_statements",
-                &precautionary_statements
-                    .iter()
-                    .map(std::string::ToString::to_string)
-                    .collect::<Vec<String>>()
-                    .join(","),
+                &join_ids(precautionary_statements),
             );
         }
         if self.history {
             parameters.append_pair("history", "true");
         }
         if let Some(storages) = &self.storages {
-            parameters.append_pair(
-                "storages",
-                &storages
-                    .iter()
-                    .map(std::string::ToString::to_string)
-                    .collect::<Vec<String>>()
-                    .join(","),
-            );
+            parameters.append_pair("storages", &join_ids(storages));
         }
         if let Some(name) = &self.name {
             parameters.append_pair("name", &name.to_string());
@@ -206,24 +188,10 @@ impl fmt::Display for RequestFilter {
             parameters.append_pair("supplier", &supplier.to_string());
         }
         if let Some(symbols) = &self.symbols {
-            parameters.append_pair(
-                "symbols",
-                &symbols
-                    .iter()
-                    .map(std::string::ToString::to_string)
-                    .collect::<Vec<String>>()
-                    .join(","),
-            );
+            parameters.append_pair("symbols", &join_ids(symbols));
         }
         if let Some(tags) = &self.tags {
-            parameters.append_pair(
-                "tags",
-                &tags
-                    .iter()
-                    .map(std::string::ToString::to_string)
-                    .collect::<Vec<String>>()
-                    .join(","),
-            );
+            parameters.append_pair("tags", &join_ids(tags));
         }
         if let Some(unit_type) = &self.unit_type {
             parameters.append_pair("unit_type", unit_type);
@@ -232,6 +200,25 @@ impl fmt::Display for RequestFilter {
         let result = parameters.finish();
         write!(f, "?{result}")
     }
+}
+
+/// Joins ids into a comma-separated string, e.g. `[1, 2]` -> `"1,2"`.
+fn join_ids(ids: &[u64]) -> String {
+    ids.iter()
+        .map(ToString::to_string)
+        .collect::<Vec<String>>()
+        .join(",")
+}
+
+/// Parses a single query parameter value, naming the parameter in the error.
+fn parse_param<T>(parameter: &str, value: &str) -> Result<T, String>
+where
+    T: FromStr,
+    T::Err: fmt::Display,
+{
+    value
+        .parse::<T>()
+        .map_err(|e| format!("error with {parameter} query parameter: {e}"))
 }
 
 fn parse_id_list(value: &str, parameter: &str) -> Result<Vec<u64>, String> {
@@ -292,58 +279,31 @@ impl TryFrom<&str> for RequestFilter {
                 "search" => {
                     request_filter.search = Some(value.to_string());
                 }
-                "id" => match value.parse::<u64>() {
-                    Ok(v) => request_filter.id = Some(v),
-                    Err(e) => return Err(format!("error with id query parameter: {e}")),
-                },
+                "id" => request_filter.id = Some(parse_param("id", &value)?),
                 "order_by" => {
                     request_filter.order_by = Some(value.to_string());
                 }
                 "order" => request_filter.order = value.to_string(),
-                "offset" => match value.parse::<usize>() {
-                    Ok(v) => request_filter.offset = Some(v),
-                    Err(e) => return Err(format!("error with offset query parameter: {e}")),
-                },
-                "limit" => match value.parse::<usize>() {
-                    Ok(v) => request_filter.limit = Some(v),
-                    Err(e) => return Err(format!("error with limit query parameter: {e}")),
-                },
-                "bookmark" => match value.parse::<bool>() {
-                    Ok(v) => request_filter.bookmark = v,
-                    Err(e) => return Err(format!("error with bookmark query parameter: {e}")),
-                },
-                "borrowing" => match value.parse::<bool>() {
-                    Ok(v) => request_filter.borrowing = v,
-                    Err(e) => return Err(format!("error with borrowing query parameter: {e}")),
-                },
-                "cas_number" => match value.parse::<u64>() {
-                    Ok(v) => request_filter.cas_number = Some(v),
-                    Err(e) => return Err(format!("error with cas_number query parameter: {e}")),
-                },
+                "offset" => request_filter.offset = Some(parse_param("offset", &value)?),
+                "limit" => request_filter.limit = Some(parse_param("limit", &value)?),
+                "bookmark" => request_filter.bookmark = parse_param("bookmark", &value)?,
+                "borrowing" => request_filter.borrowing = parse_param("borrowing", &value)?,
+                "cas_number" => {
+                    request_filter.cas_number = Some(parse_param("cas_number", &value)?);
+                }
                 "cas_number_string" => {
                     request_filter.cas_number_string = Some(value.to_string());
                 }
-                "is_cmr" => match value.parse::<bool>() {
-                    Ok(v) => request_filter.is_cmr = v,
-                    Err(e) => return Err(format!("error with is_cmr query parameter: {e}")),
-                },
-                "category" => match value.parse::<u64>() {
-                    Ok(v) => request_filter.category = Some(v),
-                    Err(e) => return Err(format!("error with category query parameter: {e}")),
-                },
+                "is_cmr" => request_filter.is_cmr = parse_param("is_cmr", &value)?,
+                "category" => request_filter.category = Some(parse_param("category", &value)?),
                 "custom_name_part_of" => {
                     request_filter.custom_name_part_of = Some(value.to_string());
                 }
-                "empirical_formula" => match value.parse::<u64>() {
-                    Ok(v) => request_filter.empirical_formula = Some(v),
-                    Err(e) => {
-                        return Err(format!("error with empirical_formula query parameter: {e}"));
-                    }
-                },
-                "entity" => match value.parse::<u64>() {
-                    Ok(v) => request_filter.entity = Some(v),
-                    Err(e) => return Err(format!("error with entity query parameter: {e}")),
-                },
+                "empirical_formula" => {
+                    request_filter.empirical_formula =
+                        Some(parse_param("empirical_formula", &value)?);
+                }
+                "entity" => request_filter.entity = Some(parse_param("entity", &value)?),
                 "entity_name" => {
                     request_filter.entity_name = Some(value.to_string());
                 }
@@ -351,101 +311,54 @@ impl TryFrom<&str> for RequestFilter {
                     request_filter.hazard_statements =
                         Some(parse_id_list(&value, "hazard_statements")?);
                 }
-                "history" => match value.parse::<bool>() {
-                    Ok(v) => request_filter.history = v,
-                    Err(e) => return Err(format!("error with history query parameter: {e}")),
-                },
+                "history" => request_filter.history = parse_param("history", &value)?,
                 "storages" => {
                     request_filter.storages = Some(parse_id_list(&value, "storages")?);
                 }
-                "name" => match value.parse::<u64>() {
-                    Ok(v) => request_filter.name = Some(v),
-                    Err(e) => return Err(format!("error with name query parameter: {e}")),
-                },
+                "name" => request_filter.name = Some(parse_param("name", &value)?),
                 "precautionary_statements" => {
                     request_filter.precautionary_statements =
                         Some(parse_id_list(&value, "precautionary_statements")?);
                 }
-                "producer" => match value.parse::<u64>() {
-                    Ok(v) => request_filter.producer = Some(v),
-                    Err(e) => return Err(format!("error with producer query parameter: {e}")),
-                },
-                "producer_ref" => match value.parse::<u64>() {
-                    Ok(v) => request_filter.producer_ref = Some(v),
-                    Err(e) => return Err(format!("error with producer_ref query parameter: {e}")),
-                },
-                "product" => match value.parse::<u64>() {
-                    Ok(v) => request_filter.product = Some(v),
-                    Err(e) => return Err(format!("error with product query parameter: {e}")),
-                },
-                "person" => match value.parse::<u64>() {
-                    Ok(v) => request_filter.person = Some(v),
-                    Err(e) => return Err(format!("error with person query parameter: {e}")),
-                },
+                "producer" => request_filter.producer = Some(parse_param("producer", &value)?),
+                "producer_ref" => {
+                    request_filter.producer_ref = Some(parse_param("producer_ref", &value)?);
+                }
+                "product" => request_filter.product = Some(parse_param("product", &value)?),
+                "person" => request_filter.person = Some(parse_param("person", &value)?),
                 "person_email" => {
                     request_filter.person_email = Some(value.to_string());
                 }
                 "product_specificity" => {
                     request_filter.product_specificity = Some(value.to_string());
                 }
-                "show_bio" => match value.parse::<bool>() {
-                    Ok(v) => request_filter.show_bio = v,
-                    Err(e) => return Err(format!("error with show_bio query parameter: {e}")),
-                },
-                "show_chem" => match value.parse::<bool>() {
-                    Ok(v) => request_filter.show_chem = v,
-                    Err(e) => return Err(format!("error with show_chem query parameter: {e}")),
-                },
-                "show_consu" => match value.parse::<bool>() {
-                    Ok(v) => request_filter.show_consu = v,
-                    Err(e) => return Err(format!("error with show_consu query parameter: {e}")),
-                },
-                "signal_word" => match value.parse::<u64>() {
-                    Ok(v) => request_filter.signal_word = Some(v),
-                    Err(e) => return Err(format!("error with signal_word query parameter: {e}")),
-                },
-                "storage" => match value.parse::<u64>() {
-                    Ok(v) => request_filter.storage = Some(v),
-                    Err(e) => return Err(format!("error with storage query parameter: {e}")),
-                },
-                "storage_archive" => match value.parse::<bool>() {
-                    Ok(v) => request_filter.storage_archive = Some(v),
-                    Err(e) => {
-                        return Err(format!("error with storage_archive query parameter: {e}"));
-                    }
-                },
+                "show_bio" => request_filter.show_bio = parse_param("show_bio", &value)?,
+                "show_chem" => request_filter.show_chem = parse_param("show_chem", &value)?,
+                "show_consu" => request_filter.show_consu = parse_param("show_consu", &value)?,
+                "signal_word" => {
+                    request_filter.signal_word = Some(parse_param("signal_word", &value)?);
+                }
+                "storage" => request_filter.storage = Some(parse_param("storage", &value)?),
+                "storage_archive" => {
+                    request_filter.storage_archive = Some(parse_param("storage_archive", &value)?);
+                }
                 "storage_barecode" => {
                     request_filter.storage_barecode = Some(value.to_string());
                 }
                 "storage_batch_number" => {
                     request_filter.storage_batch_number = Some(value.to_string());
                 }
-                "storage_to_destroy" => match value.parse::<bool>() {
-                    Ok(v) => request_filter.storage_to_destroy = v,
-                    Err(e) => {
-                        return Err(format!(
-                            "error with storage_to_destroy query parameter: {e}"
-                        ));
-                    }
-                },
-                "store_location" => match value.parse::<u64>() {
-                    Ok(v) => request_filter.store_location = Some(v),
-                    Err(e) => {
-                        return Err(format!("error with store_location query parameter: {e}"));
-                    }
-                },
-                "store_location_can_store" => match value.parse::<bool>() {
-                    Ok(v) => request_filter.store_location_can_store = v,
-                    Err(e) => {
-                        return Err(format!(
-                            "error with store_location_can_store query parameter: {e}"
-                        ));
-                    }
-                },
-                "supplier" => match value.parse::<u64>() {
-                    Ok(v) => request_filter.supplier = Some(v),
-                    Err(e) => return Err(format!("error with supplier query parameter: {e}")),
-                },
+                "storage_to_destroy" => {
+                    request_filter.storage_to_destroy = parse_param("storage_to_destroy", &value)?;
+                }
+                "store_location" => {
+                    request_filter.store_location = Some(parse_param("store_location", &value)?);
+                }
+                "store_location_can_store" => {
+                    request_filter.store_location_can_store =
+                        parse_param("store_location_can_store", &value)?;
+                }
+                "supplier" => request_filter.supplier = Some(parse_param("supplier", &value)?),
                 "symbols" => {
                     request_filter.symbols = Some(parse_id_list(&value, "symbols")?);
                 }
