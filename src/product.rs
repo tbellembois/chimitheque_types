@@ -132,7 +132,10 @@ impl fmt::Display for Product {
 impl Product {
     /// Validates and sanitizes all fields of the `Product`.
     ///
-    /// Ensures all nested structures are properly validated.
+    /// Ensures all nested structures are properly validated: the name, CAS and CE
+    /// numbers, category, formulas, synonyms, classes of compounds and tags.
+    /// Only new entries (without an id) are validated; existing ones are left
+    /// unchanged.
     ///
     /// # Returns
     ///
@@ -172,6 +175,22 @@ impl Product {
             self.name.sanitize_and_validate()?;
         }
 
+        if let Some(synonyms) = self.synonyms.as_mut() {
+            for synonym in synonyms {
+                if synonym.name_id.is_none() {
+                    synonym.sanitize_and_validate()?;
+                }
+            }
+        }
+
+        if let Some(classes_of_compound) = self.classes_of_compound.as_mut() {
+            for class_of_compound in classes_of_compound {
+                if class_of_compound.class_of_compound_id.is_none() {
+                    class_of_compound.sanitize_and_validate()?;
+                }
+            }
+        }
+
         if let Some(tags) = self.tags.as_mut() {
             for tag in tags {
                 if tag.tag_id.is_none() {
@@ -183,3 +202,7 @@ impl Product {
         Ok(())
     }
 }
+
+#[cfg(test)]
+#[path = "product_tests.rs"]
+mod product_tests;
