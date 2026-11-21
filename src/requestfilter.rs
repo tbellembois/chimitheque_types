@@ -55,7 +55,7 @@ pub struct RequestFilter {
     /// returned; with `id`, the storage and its history are returned.
     #[serde(default)]
     pub history: bool,
-    /// Storage ids. Not used by the database queries.
+    /// When selecting storages: only storages with these ids.
     pub storages: Option<Vec<u64>>,
     /// Only products with this name id, as name or synonym.
     pub name: Option<u64>,
@@ -73,7 +73,7 @@ pub struct RequestFilter {
     /// When selecting storages: only storages of this product id. When
     /// selecting products, use `id` instead.
     pub product: Option<u64>,
-    /// Product specificity. Not used by the database queries.
+    /// Only products whose specificity contains this text.
     pub product_specificity: Option<String>,
     /// Include biological reagents.
     #[serde(default)]
