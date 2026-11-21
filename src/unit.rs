@@ -4,22 +4,21 @@ use crate::{error::ValidationError, validation::require_text};
 use chimitheque_utils::string::Transform;
 use serde::{Deserialize, Serialize};
 
-/// Represents a measurement unit with its properties and optional relationships.
-///
-/// # Fields
-/// * `unit_id` - Unique identifier for the unit (None if not yet persisted)
-/// * `unit_label` - Human-readable name of the unit (e.g., "gram", "milliliter")
-/// * `unit_multiplier` - Conversion factor to base unit (1.0 for base units)
-/// * `unit_type` - Categorization of the unit (mass, volume, etc.)
-/// * `unit` - Optional reference to a parent/base unit for conversion hierarchy
+/// A measurement unit, e.g. `mL`, possibly converting to a reference unit of
+/// the same type, e.g. `L`.
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Unit {
+    /// Database id; `None` for a new unit.
     pub unit_id: Option<u64>,
+    /// Unit symbol, e.g. `mL` (case-sensitive).
     pub unit_label: String,
+    /// Conversion factor to the reference unit of the same type.
     pub unit_multiplier: f64,
+    /// What the unit measures.
     #[serde(default)]
     pub unit_type: UnitType,
 
+    /// Reference unit this unit converts to, if any.
     pub unit: Option<Box<Unit>>,
 }
 

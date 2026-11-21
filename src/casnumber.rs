@@ -9,16 +9,28 @@ use crate::error::ValidationError;
 use crate::searchable::impl_searchable;
 use crate::validation::{check_format, clean_optional_text, is_cmr_classification};
 
+/// A CAS registry number identifying a chemical substance, e.g. `7732-18-5`.
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct CasNumber {
+    /// When searching, match the label exactly instead of partially.
     #[serde(default)]
     pub match_exact_search: bool,
+    /// Database id; `None` for a new cas number.
     pub cas_number_id: Option<u64>,
+    /// CAS number, e.g. `7732-18-5`.
     pub cas_number_label: String,
+    /// CMR classification codes, e.g. `C1A M2`, if the substance is CMR.
     pub cas_number_cmr: Option<String>,
 }
 
 impl CasNumber {
+    /// Cleans the CAS number and its CMR codes, and checks that the CAS number is
+    /// valid and the CMR codes are known. An empty CMR value becomes `None`.
+    ///
+    /// # Errors
+    ///
+    /// Returns `ValidationError::Empty`, `ValidationError::InvalidCasNumber` or
+    /// `ValidationError::InvalidFormat`.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
         self.cas_number_label = clean(&self.cas_number_label, Transform::None);
         if self.cas_number_label.is_empty() {

@@ -5,12 +5,17 @@ use chimitheque_utils::string::Transform;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
+/// A GHS precautionary statement, e.g. `P280` "Wear protective gloves".
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct PrecautionaryStatement {
+    /// When searching, match the label exactly instead of partially.
     #[serde(default)]
     pub match_exact_search: bool,
+    /// Database id; `None` for a new precautionary statement.
     pub precautionary_statement_id: Option<u64>,
+    /// Statement text.
     pub precautionary_statement_label: String,
+    /// GHS reference, e.g. `P280` or `P301+P317`.
     pub precautionary_statement_reference: String,
 }
 

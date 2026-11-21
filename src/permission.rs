@@ -5,17 +5,23 @@ use std::{
     str::FromStr,
 };
 
+/// What a permission allows on an item.
 #[derive(Debug, PartialEq, Serialize, Deserialize, Copy, Clone, Default)]
 pub enum PermissionName {
+    /// No access (`n`).
     #[default]
     #[serde(rename = "n")]
     None,
+    /// Read access (`r`).
     #[serde(rename = "r")]
     Read,
+    /// Read and write access (`w`).
     #[serde(rename = "w")]
     Write,
+    /// Borrow access (`b`).
     #[serde(rename = "b")]
     Borrow,
+    /// Full access (`all`).
     #[serde(rename = "all")]
     All,
 }
@@ -50,19 +56,26 @@ impl FromStr for PermissionName {
 // StoreLocations is not used by the backend as the policy to CRUD store locations
 // are defined by policies on entities. See casbin policy definition.
 // It is used by the frontend to check permissions on store locations with fake http requests.
+/// What a permission applies to.
 #[derive(Debug, PartialEq, Serialize, Deserialize, Clone, Default)]
 pub enum PermissionItem {
+    /// Every item (`all`).
     #[serde(rename = "all")]
     All,
+    /// Entities (`entities`).
     #[serde(rename = "entities")]
     Entities,
+    /// Products (`products`).
     #[default]
     #[serde(rename = "products")]
     Products,
+    /// Restricted products (`rproducts`).
     #[serde(rename = "rproducts")]
     RestrictedProducts,
+    /// Storages (`storages`).
     #[serde(rename = "storages")]
     Storages,
+    /// Store locations (`store_locations`).
     #[serde(rename = "store_locations")]
     StoreLocations,
 }
@@ -96,11 +109,16 @@ impl FromStr for PermissionItem {
     }
 }
 
+/// A person's permission on an item, optionally restricted to one entity.
 #[derive(Debug, PartialEq, Serialize, Deserialize, Clone, Default)]
 pub struct Permission {
+    /// Person the permission is granted to.
     pub person: Person,
+    /// What the permission allows.
     pub permission_name: PermissionName,
+    /// What the permission applies to.
     pub permission_item: PermissionItem,
+    /// Entity the permission is restricted to; `None` for all entities.
     pub permission_entity: Option<u64>,
 }
 

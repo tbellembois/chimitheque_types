@@ -1,3 +1,5 @@
+//! Error types returned when validating or parsing the types of this crate.
+
 use chimitheque_utils::{
     casnumber::CasNumberError, cenumber::CeNumberError, formula::ToEmpiricalFormulaError,
 };
@@ -13,37 +15,47 @@ use crate::unittype::UnitType;
 #[non_exhaustive]
 pub enum ValidationError {
     /// A required field is empty after cleaning.
-    Empty { field: &'static str },
+    Empty {
+        /// Name of the empty field.
+        field: &'static str,
+    },
     /// The CAS number label is not a valid CAS number.
     InvalidCasNumber(CasNumberError),
     /// The CE number label is not a valid CE number.
     InvalidCeNumber(CeNumberError),
     /// A formula field can not be converted into an empirical formula.
     InvalidFormula {
+        /// Name of the formula field.
         field: &'static str,
+        /// Error from the empirical formula parser.
         source: ToEmpiricalFormulaError,
     },
     /// The person email is not a valid mailbox address.
     InvalidEmail(email_address::Error),
     /// A number or date is outside its allowed range.
     OutOfRange {
+        /// Name of the number or date field.
         field: &'static str,
         /// Allowed range, e.g. `greater than 0`.
         expected: &'static str,
     },
     /// A text field does not have the expected format.
     InvalidFormat {
+        /// Name of the text field.
         field: &'static str,
         /// Expected format, e.g. `a valid InChIKey`.
         expected: &'static str,
     },
     /// A unit field holds a unit of the wrong type, or an unknown unit.
     InvalidUnit {
+        /// Name of the unit field.
         field: &'static str,
+        /// Unit type the field requires.
         expected: UnitType,
     },
     /// A field is missing although another field requires it.
     Required {
+        /// Name of the missing field.
         field: &'static str,
         /// Why the field is required, e.g. `when product_molecular_weight is set`.
         reason: &'static str,
@@ -110,11 +122,16 @@ pub enum RequestFilterError {
     InvalidUrl(url::ParseError),
     /// A query parameter value can not be parsed.
     InvalidParameter {
+        /// Name of the query parameter.
         parameter: &'static str,
+        /// Why the value can not be parsed.
         message: String,
     },
     /// A comma-separated list of ids is malformed.
-    InvalidIdList { parameter: &'static str },
+    InvalidIdList {
+        /// Name of the query parameter.
+        parameter: &'static str,
+    },
 }
 
 impl Display for RequestFilterError {
@@ -138,12 +155,19 @@ impl std::error::Error for RequestFilterError {
     }
 }
 
+/// A string that does not name a known value of an enum, e.g. when parsing
+/// a `UnitType` with `FromStr`. Each variant holds the rejected string.
 #[derive(Debug)]
 pub enum ParseError {
+    /// Not a known `UnitType`.
     ParseUnitTypeError(String),
+    /// Not a known `ProductType`.
     ParseProductTypeError(String),
+    /// Not a known `PermissionName`.
     ParsePermissionNameError(String),
+    /// Not a known `PermissionItem`.
     ParsePermissionItemError(String),
+    /// Not a known `SortOrder`.
     ParseSortOrderError(String),
 }
 
@@ -171,13 +195,18 @@ pub enum PubchemParseError {
     InvalidType {
         /// Product field name or document path where validation failed.
         field: &'static str,
+        /// Expected JSON type.
         expected: &'static str,
+        /// JSON type found.
         actual: &'static str,
     },
     /// A `JSONPath` expression could not be evaluated.
     Query {
+        /// Product field being extracted.
         field: &'static str,
+        /// The `JSONPath` expression.
         query: &'static str,
+        /// Error reported by the `JSONPath` engine.
         message: String,
     },
 }

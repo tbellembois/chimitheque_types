@@ -7,13 +7,19 @@ use chimitheque_utils::string::Transform;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
+/// A GHS hazard statement, e.g. `H350` "May cause cancer".
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct HazardStatement {
+    /// When searching, match the label exactly instead of partially.
     #[serde(default)]
     pub match_exact_search: bool,
+    /// Database id; `None` for a new hazard statement.
     pub hazard_statement_id: Option<u64>,
+    /// Statement text.
     pub hazard_statement_label: String,
+    /// GHS reference, e.g. `H350` or `H300+H310`.
     pub hazard_statement_reference: String,
+    /// CMR classification codes associated with the statement, if any.
     pub hazard_statement_cmr: Option<String>,
 }
 

@@ -4,15 +4,24 @@ use serde::{Deserialize, Serialize};
 use crate::error::ValidationError;
 use crate::searchable::impl_searchable;
 
+/// A product producer (manufacturer).
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Producer {
+    /// When searching, match the label exactly instead of partially.
     #[serde(default)]
     pub match_exact_search: bool,
+    /// Database id; `None` for a new producer.
     pub producer_id: Option<u64>,
+    /// Producer name.
     pub producer_label: String,
 }
 
 impl Producer {
+    /// Cleans the label and ensures it is not empty.
+    ///
+    /// # Errors
+    ///
+    /// Returns `ValidationError::Empty` if the cleaned label is empty.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
         self.producer_label = clean(&self.producer_label, Transform::None);
         if self.producer_label.is_empty() {

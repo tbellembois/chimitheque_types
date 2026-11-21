@@ -11,13 +11,17 @@ use crate::error::ParseError;
 #[derive(Debug, Serialize, Deserialize, Copy, Clone, PartialEq, Eq, Default)]
 #[serde(rename_all = "snake_case")]
 pub enum UnitType {
+    /// A quantity (volume, mass, length), e.g. `mL`, `g`.
     #[default]
     #[serde(alias = "Quantity")]
     Quantity,
+    /// A concentration, e.g. `mg/L`, `%`.
     #[serde(alias = "Concentration")]
     Concentration,
+    /// A temperature, e.g. `°C`.
     #[serde(alias = "Temperature")]
     Temperature,
+    /// A molecular weight, e.g. `g/mol`.
     #[serde(alias = "MolecularWeight")]
     MolecularWeight,
 }

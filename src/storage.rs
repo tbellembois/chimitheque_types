@@ -1,5 +1,6 @@
-/// Storage module containing the `Storage` struct and its implementations.
-/// Represents chemical storage information including quantities, locations, and tracking data.
+//! Storage module containing the `Storage` struct and its implementations.
+//! Represents chemical storage information including quantities, locations, and tracking data.
+
 use std::fmt;
 
 use chrono::{DateTime, Utc};

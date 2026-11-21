@@ -1,6 +1,7 @@
-/// Storage location module containing the `StoreLocation` struct and its implementations.
-/// Represents physical or logical locations where chemical products can be stored.
-/// Supports hierarchical storage organization through parent-child relationships.
+//! Storage location module containing the `StoreLocation` struct and its implementations.
+//! Represents physical or logical locations where chemical products can be stored.
+//! Supports hierarchical storage organization through parent-child relationships.
+
 use std::fmt;
 
 use crate::entity::Entity;

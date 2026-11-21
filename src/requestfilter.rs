@@ -6,60 +6,110 @@ use url::{Url, form_urlencoded};
 
 use crate::{error::RequestFilterError, sortorder::SortOrder};
 
+/// Filtering, sorting and paging options of a list request.
+///
+/// Built from the query parameters of a request URL with `TryFrom<&str>`,
+/// and turned back into query parameters with `Display`. Fields that do not
+/// apply to the listed items are ignored.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RequestFilter {
+    /// Text to search in the listed items, e.g. part of a label.
     pub search: Option<String>,
+    /// Id of a single item to return.
     pub id: Option<u64>,
+    /// Column to sort by.
     pub order_by: Option<String>,
+    /// Sort direction; ascending by default.
     #[serde(default)]
     pub order: SortOrder,
+    /// Number of items to skip, for paging.
     pub offset: Option<usize>,
+    /// Maximum number of items to return, for paging.
     pub limit: Option<usize>,
+    /// Only products bookmarked by the current person.
     #[serde(default)]
     pub bookmark: bool,
+    /// Only borrowed storages.
     #[serde(default)]
     pub borrowing: bool,
+    /// Only items with this CAS number id.
     pub cas_number: Option<u64>,
+    /// Only items with this CAS number, e.g. `7732-18-5`.
     pub cas_number_string: Option<String>,
+    /// Only CMR products (carcinogenic, mutagenic or reprotoxic).
     #[serde(default)]
     pub is_cmr: bool,
+    /// Only products of this category id.
     pub category: Option<u64>,
+    /// Only products whose name contains this text.
     pub custom_name_part_of: Option<String>,
+    /// Only products with this empirical formula id.
     pub empirical_formula: Option<u64>,
+    /// Only items of this entity id.
     pub entity: Option<u64>,
+    /// Only the entity with exactly this name.
     pub entity_name: Option<String>,
+    /// Only products with these hazard statement ids.
     pub hazard_statements: Option<Vec<u64>>,
+    /// Include storage history. Without it, only current storages are
+    /// returned; with `id`, the storage and its history are returned.
     #[serde(default)]
     pub history: bool,
+    /// Storage ids. Not used by the database queries.
     pub storages: Option<Vec<u64>>,
+    /// Only products with this name id, as name or synonym.
     pub name: Option<u64>,
+    /// Only items of this person id.
     pub person: Option<u64>,
+    /// Only the person with exactly this email.
     pub person_email: Option<String>,
+    /// Only products with these precautionary statement ids.
     #[serde(default)]
     pub precautionary_statements: Option<Vec<u64>>,
+    /// Only items of this producer id.
     pub producer: Option<u64>,
+    /// Only products with this producer reference id.
     pub producer_ref: Option<u64>,
-    pub product: Option<u64>, // a product id while selecting storages, not a product id while selecting products - use id instead
+    /// When selecting storages: only storages of this product id. When
+    /// selecting products, use `id` instead.
+    pub product: Option<u64>,
+    /// Product specificity. Not used by the database queries.
     pub product_specificity: Option<String>,
+    /// Include biological reagents.
     #[serde(default)]
     pub show_bio: bool,
+    /// Include chemical products.
     #[serde(default)]
     pub show_chem: bool,
+    /// Include laboratory consumables.
     #[serde(default)]
     pub show_consu: bool,
+    /// Only products with this signal word id.
     pub signal_word: Option<u64>,
-    pub storage: Option<u64>, // a storage id while selecting products (ie the product that has for storage this "storage" id), not a storage id while selecting storages - use id instead
+    /// When selecting products: only the product of this storage id. When
+    /// selecting storages, use `id` instead.
+    pub storage: Option<u64>,
+    /// Only archived storages if `true`, only non-archived ones if `false`.
     pub storage_archive: Option<bool>,
+    /// Only storages whose barcode contains this text.
     pub storage_barecode: Option<String>,
+    /// Only storages whose batch number contains this text.
     pub storage_batch_number: Option<String>,
+    /// Only storages marked to destroy.
     #[serde(default)]
     pub storage_to_destroy: bool,
+    /// Only items in this store location id.
     pub store_location: Option<u64>,
+    /// Only store locations that can hold storages.
     #[serde(default)]
     pub store_location_can_store: bool,
+    /// Only items of this supplier id.
     pub supplier: Option<u64>,
+    /// Only products with these hazard symbol ids.
     pub symbols: Option<Vec<u64>>,
+    /// Only products with these tag ids.
     pub tags: Option<Vec<u64>>,
+    /// Only units of this type, e.g. `quantity`.
     pub unit_type: Option<String>,
 }
 

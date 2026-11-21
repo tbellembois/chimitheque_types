@@ -93,56 +93,74 @@ fn query_string(
 }
 
 // A simplified pubchem product representation.
+/// A simplified product extracted from a `PubChem` PUG View document.
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
 pub struct PubchemProduct {
+    /// Record title (common name).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
 
+    /// IUPAC name.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub iupac_name: Option<String>,
 
+    /// `InChI` identifier.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub inchi: Option<String>,
 
+    /// `InChIKey` identifier.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub inchi_key: Option<String>,
 
+    /// Canonical SMILES.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub canonical_smiles: Option<String>,
 
+    /// Molecular formula.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub molecular_formula: Option<String>,
 
+    /// CAS registry number.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub cas: Option<String>,
 
+    /// European Community (EC) number.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ec: Option<String>,
 
+    /// Molecular weight, as text.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub molecular_weight: Option<String>,
 
+    /// Unit of the molecular weight.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub molecular_weight_unit: Option<String>,
 
+    /// Peer-reviewed boiling point, as text.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub boiling_point: Option<String>,
 
+    /// Synonyms (removed synonyms excluded).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub synonyms: Option<Vec<String>>,
 
+    /// URLs of the GHS pictograms.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub symbols: Option<Vec<String>>,
 
+    /// GHS signal words.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub signal: Option<Vec<String>>,
 
+    /// GHS hazard statement codes, e.g. `H350`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub hs: Option<Vec<String>>,
 
+    /// GHS precautionary statement codes, e.g. `P280`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ps: Option<Vec<String>>,
 
+    /// 2D structure picture, a base64-encoded PNG.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub twodpicture: Option<String>, // base64 encoded png
 }

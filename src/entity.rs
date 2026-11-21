@@ -1,6 +1,7 @@
-/// Entity module containing the `Entity` struct and its implementations.
-/// Represents organizations, departments, or groups that manage chemical products and storage.
-/// Entities can contain multiple people, storage locations, and products.
+//! Entity module containing the `Entity` struct and its implementations.
+//! Represents organizations, departments, or groups that manage chemical products and storage.
+//! Entities can contain multiple people, storage locations, and products.
+
 use std::fmt;
 
 use chimitheque_utils::string::{Transform, clean};

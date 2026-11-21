@@ -1,5 +1,6 @@
-/// Product module containing the `Product` struct and its implementations.
-/// Represents a chemical or related product with various attributes and metadata.
+//! Product module containing the `Product` struct and its implementations.
+//! Represents a chemical or related product with various attributes and metadata.
+
 use std::fmt;
 
 use crate::unittype::UnitType;

@@ -6,13 +6,17 @@ use std::{
 
 use crate::error::ParseError;
 
+/// Kind of product.
 #[derive(Debug, Serialize, Deserialize, PartialEq, Copy, Clone, Default)]
 pub enum ProductType {
+    /// A chemical product (`chem`).
     #[default]
     #[serde(rename = "chem")]
     Chem,
+    /// A biological reagent (`bio`).
     #[serde(rename = "bio")]
     Bio,
+    /// A laboratory consumable (`cons`).
     #[serde(rename = "cons")]
     Cons,
 }
@@ -39,3 +43,7 @@ impl FromStr for ProductType {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "producttype_tests.rs"]
+mod producttype_tests;

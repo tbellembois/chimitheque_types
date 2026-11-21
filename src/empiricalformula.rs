@@ -8,15 +8,26 @@ use std::fmt;
 use crate::error::ValidationError;
 use crate::searchable::impl_searchable;
 
+/// An empirical formula, stored sorted (C, H, then alphabetical), e.g. `C2H6O`.
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct EmpiricalFormula {
+    /// When searching, match the label exactly instead of partially.
     #[serde(default)]
     pub match_exact_search: bool,
+    /// Database id; `None` for a new empirical formula.
     pub empirical_formula_id: Option<u64>,
+    /// Empirical formula, e.g. `C2H6O`.
     pub empirical_formula_label: String,
 }
 
 impl EmpiricalFormula {
+    /// Cleans and sorts the formula (C, H, then alphabetical) and ensures it is
+    /// not empty.
+    ///
+    /// # Errors
+    ///
+    /// Returns `ValidationError::InvalidFormula` if the formula can not be parsed,
+    /// or `ValidationError::Empty`.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
         let sorted_and_cleaned_empirical_formula =
             to_empirical_formula(&clean(&self.empirical_formula_label, Transform::None)).map_err(

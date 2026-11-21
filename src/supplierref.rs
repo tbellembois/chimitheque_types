@@ -4,13 +4,18 @@ use chimitheque_utils::string::Transform;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
+/// A supplier's catalogue reference for a product.
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct SupplierRef {
+    /// When searching, match the label exactly instead of partially.
     #[serde(default)]
     pub match_exact_search: bool,
+    /// Database id; `None` for a new supplier ref.
     pub supplier_ref_id: Option<u64>,
+    /// Reference label.
     pub supplier_ref_label: String,
 
+    /// Supplier the reference belongs to.
     pub supplier: Supplier,
 }
 

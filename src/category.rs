@@ -5,15 +5,24 @@ use std::fmt;
 use crate::error::ValidationError;
 use crate::searchable::impl_searchable;
 
+/// A product category, e.g. a type of laboratory consumable.
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Category {
+    /// When searching, match the label exactly instead of partially.
     #[serde(default)]
     pub match_exact_search: bool,
+    /// Database id; `None` for a new category.
     pub category_id: Option<u64>,
+    /// Category label.
     pub category_label: String,
 }
 
 impl Category {
+    /// Cleans the label and ensures it is not empty.
+    ///
+    /// # Errors
+    ///
+    /// Returns `ValidationError::Empty` if the cleaned label is empty.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
         self.category_label = clean(&self.category_label, Transform::None);
         if self.category_label.is_empty() {

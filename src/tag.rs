@@ -5,15 +5,24 @@ use std::fmt;
 use crate::error::ValidationError;
 use crate::searchable::impl_searchable;
 
+/// A free tag attached to products.
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Tag {
+    /// When searching, match the label exactly instead of partially.
     #[serde(default)]
     pub match_exact_search: bool,
+    /// Database id; `None` for a new tag.
     pub tag_id: Option<u64>,
+    /// Tag label.
     pub tag_label: String,
 }
 
 impl Tag {
+    /// Cleans the label and ensures it is not empty.
+    ///
+    /// # Errors
+    ///
+    /// Returns `ValidationError::Empty` if the cleaned label is empty.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
         self.tag_label = clean(&self.tag_label, Transform::None);
         if self.tag_label.is_empty() {

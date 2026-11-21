@@ -3,11 +3,15 @@ use crate::{error::ValidationError, validation::require_text};
 use chimitheque_utils::string::Transform;
 use serde::{Deserialize, Serialize};
 
+/// A physical state, e.g. `liquid`.
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct PhysicalState {
+    /// When searching, match the label exactly instead of partially.
     #[serde(default)]
     pub match_exact_search: bool,
+    /// Database id; `None` for a new physical state.
     pub physical_state_id: Option<u64>,
+    /// Physical state label.
     pub physical_state_label: String,
 }
 

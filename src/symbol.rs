@@ -3,11 +3,15 @@ use crate::{error::ValidationError, validation::require_text};
 use chimitheque_utils::string::Transform;
 use serde::{Deserialize, Serialize};
 
+/// A GHS hazard pictogram, e.g. `GHS01`.
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Symbol {
+    /// When searching, match the label exactly instead of partially.
     #[serde(default)]
     pub match_exact_search: bool,
+    /// Database id; `None` for a new symbol.
     pub symbol_id: Option<u64>,
+    /// Pictogram code, e.g. `GHS01`.
     pub symbol_label: String,
 }
 

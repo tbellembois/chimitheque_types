@@ -3,11 +3,15 @@ use crate::{error::ValidationError, validation::require_text};
 use chimitheque_utils::string::Transform;
 use serde::{Deserialize, Serialize};
 
+/// A GHS signal word, `danger` or `warning`.
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct SignalWord {
+    /// When searching, match the label exactly instead of partially.
     #[serde(default)]
     pub match_exact_search: bool,
+    /// Database id; `None` for a new signal word.
     pub signal_word_id: Option<u64>,
+    /// Signal word.
     pub signal_word_label: String,
 }
 
