@@ -1,6 +1,6 @@
 use crate::error::PubchemParseError;
 use chimitheque_defines::SYMBOL_RE;
-use jsonpath_rust::JsonPathQuery;
+use jsonpath_rust::JsonPath;
 use log::{debug, trace};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
@@ -55,27 +55,20 @@ fn query_strings(
     field: &'static str,
     query: &'static str,
 ) -> Result<Option<Vec<String>>, PubchemParseError> {
-    let result = json
-        .clone()
-        .path(query)
-        .map_err(|message| PubchemParseError::Query {
+    let matches = json
+        .query(query)
+        .map_err(|error| PubchemParseError::Query {
             field,
             query,
-            message,
+            message: error.to_string(),
         })?;
 
-    // jsonpath-rust uses bare null for no matches, but [null] for a matched null.
-    // Only the former represents absent optional data; the latter is a type error.
-    if result.is_null() {
+    // No matches means absent optional data. A matched null is a type error.
+    if matches.is_empty() {
         return Ok(None);
     }
-    let matches = result.as_array().ok_or(PubchemParseError::InvalidType {
-        field,
-        expected: "query match array",
-        actual: json_type(&result),
-    })?;
     let strings = matches
-        .iter()
+        .into_iter()
         .map(|value| {
             value
                 .as_str()
