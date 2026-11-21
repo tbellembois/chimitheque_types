@@ -31,6 +31,7 @@ pub mod pubchem;
 pub mod pubchemproduct;
 pub mod requestfilter;
 pub mod signalword;
+pub mod sortorder;
 pub mod stock;
 pub mod storage;
 pub mod storelocation;

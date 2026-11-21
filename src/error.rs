@@ -7,6 +7,7 @@ pub enum ParseError {
     ParseProductTypeError(String),
     ParsePermissionNameError(String),
     ParsePermissionItemError(String),
+    ParseSortOrderError(String),
 }
 
 impl Display for ParseError {
@@ -16,6 +17,7 @@ impl Display for ParseError {
             ParseError::ParseProductTypeError(s) => write!(f, "wrong product type: {s}"),
             ParseError::ParsePermissionNameError(s) => write!(f, "wrong permission name: {s}"),
             ParseError::ParsePermissionItemError(s) => write!(f, "wrong permission item: {s}"),
+            ParseError::ParseSortOrderError(s) => write!(f, "wrong sort order: {s}"),
             ParseError::EmptyInput => write!(f, "empty input"),
         }
     }

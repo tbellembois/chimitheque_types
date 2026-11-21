@@ -8,12 +8,13 @@ mod tests {
     )]
 
     use crate::requestfilter::*;
+    use crate::sortorder::SortOrder;
     use std::fmt::Write as _;
 
     #[test]
     fn test_requestfilter_serde_defaults_match_default() {
         let filter: RequestFilter = serde_json::from_str("{}").unwrap();
-        assert_eq!(filter.order, "asc");
+        assert_eq!(filter.order, SortOrder::Asc);
         assert_eq!(
             serde_json::to_value(&filter).unwrap(),
             serde_json::to_value(RequestFilter::default()).unwrap()
@@ -21,12 +22,56 @@ mod tests {
     }
 
     #[test]
-    fn test_requestfilter_serde_preserves_explicit_order() {
-        for order in ["asc", "desc", ""] {
-            let payload = serde_json::json!({"order": order});
+    fn test_requestfilter_serde_order() {
+        for (input, expected) in [
+            ("asc", SortOrder::Asc),
+            ("desc", SortOrder::Desc),
+            ("DESC", SortOrder::Desc),
+        ] {
+            let payload = serde_json::json!({"order": input});
             let filter: RequestFilter = serde_json::from_value(payload).unwrap();
-            assert_eq!(filter.order, order);
-            assert_eq!(serde_json::to_value(&filter).unwrap()["order"], order);
+            assert_eq!(filter.order, expected);
+            assert_eq!(
+                serde_json::to_value(&filter).unwrap()["order"],
+                expected.as_str()
+            );
+        }
+    }
+
+    #[test]
+    fn test_requestfilter_serde_rejects_invalid_order() {
+        for order in ["", "up", "ascending"] {
+            let payload = serde_json::json!({"order": order});
+            assert!(
+                serde_json::from_value::<RequestFilter>(payload).is_err(),
+                "{order:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn test_requestfilter_try_from_order() {
+        for (value, expected) in [
+            ("asc", SortOrder::Asc),
+            ("desc", SortOrder::Desc),
+            ("DESC", SortOrder::Desc),
+            ("Asc", SortOrder::Asc),
+        ] {
+            let request = format!("http://localhost?order={value}");
+            let filter = RequestFilter::try_from(request.as_str()).unwrap();
+            assert_eq!(filter.order, expected, "{value}");
+            assert_eq!(filter.to_string(), format!("?order={}", expected.as_str()));
+        }
+    }
+
+    #[test]
+    fn test_requestfilter_try_from_rejects_invalid_order() {
+        for value in ["", "up", "ascending"] {
+            let request = format!("http://localhost?order={value}");
+            assert_eq!(
+                RequestFilter::try_from(request.as_str()).unwrap_err(),
+                format!("error with order query parameter: wrong sort order: {value}")
+            );
         }
     }
 
@@ -42,7 +87,7 @@ mod tests {
             search: Some("test".to_string()),
             id: Some(1),
             order_by: Some("name".to_string()),
-            order: "asc".to_string(),
+            order: SortOrder::Asc,
             offset: Some(0),
             limit: Some(10),
             bookmark: true,
@@ -168,6 +213,7 @@ mod tests {
             ("id=invalid", "%69d=invalid"),
             ("limit=invalid", "l%69mit=invalid"),
             ("bookmark=invalid", "book%6dark=invalid"),
+            ("order=invalid", "ord%65r=invalid"),
             ("tags=1,,2", "ta%67s=1,,2"),
             ("tags=18446744073709551616", "ta%67s=18446744073709551616"),
         ] {
@@ -227,7 +273,6 @@ mod tests {
             let filter = RequestFilter {
                 search: Some(value.to_string()),
                 order_by: Some(value.to_string()),
-                order: value.to_string(),
                 cas_number_string: Some(value.to_string()),
                 custom_name_part_of: Some(value.to_string()),
                 entity_name: Some(value.to_string()),
@@ -335,7 +380,7 @@ mod tests {
         assert_eq!(default_filter.search, None);
         assert_eq!(default_filter.id, None);
         assert_eq!(default_filter.order_by, None);
-        assert_eq!(default_filter.order, "asc");
+        assert_eq!(default_filter.order, SortOrder::Asc);
         assert_eq!(default_filter.offset, None);
         assert_eq!(default_filter.limit, None);
         assert!(!default_filter.bookmark);

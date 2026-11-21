@@ -4,17 +4,15 @@ use serde::{Deserialize, Serialize};
 use std::{fmt, str::FromStr};
 use url::{Url, form_urlencoded};
 
-fn default_order() -> String {
-    String::from("asc")
-}
+use crate::sortorder::SortOrder;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RequestFilter {
     pub search: Option<String>,
     pub id: Option<u64>,
     pub order_by: Option<String>,
-    #[serde(default = "default_order")]
-    pub order: String,
+    #[serde(default)]
+    pub order: SortOrder,
     pub offset: Option<usize>,
     pub limit: Option<usize>,
     #[serde(default)]
@@ -78,7 +76,7 @@ impl fmt::Display for RequestFilter {
         if let Some(order_by) = &self.order_by {
             parameters.append_pair("order_by", order_by);
         }
-        parameters.append_pair("order", &self.order);
+        parameters.append_pair("order", self.order.as_str());
         if let Some(offset) = &self.offset {
             parameters.append_pair("offset", &offset.to_string());
         }
@@ -283,7 +281,7 @@ impl TryFrom<&str> for RequestFilter {
                 "order_by" => {
                     request_filter.order_by = Some(value.to_string());
                 }
-                "order" => request_filter.order = value.to_string(),
+                "order" => request_filter.order = parse_param("order", &value)?,
                 "offset" => request_filter.offset = Some(parse_param("offset", &value)?),
                 "limit" => request_filter.limit = Some(parse_param("limit", &value)?),
                 "bookmark" => request_filter.bookmark = parse_param("bookmark", &value)?,
@@ -382,7 +380,7 @@ impl Default for RequestFilter {
             search: None,
             id: None,
             order_by: None,
-            order: default_order(),
+            order: SortOrder::Asc,
             offset: None,
             limit: None,
             bookmark: false,

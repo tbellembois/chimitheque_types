@@ -4,8 +4,11 @@ Types package for the Chimitheque application.
 
 ## JSON conventions
 
-- An omitted `RequestFilter.order` defaults to `"asc"`, matching `RequestFilter::default()`.
-  Explicit values, including an empty string, are preserved.
+- `RequestFilter.order` is a `SortOrder` (`Asc` or `Desc`) and serializes as `"asc"` or
+  `"desc"`. An omitted value defaults to `"asc"`, matching `RequestFilter::default()`.
+  Input is case-insensitive in JSON and in the `?order=` URL parameter (`"DESC"` is
+  accepted), but output is always lowercase. Any other value, including an empty
+  string, is rejected.
 - `match_exact_search` defaults to `false` when omitted on any type that has this field.
   Explicit values are preserved, and the field remains present in serialized output.
   Required labels and other required domain fields are unchanged.
