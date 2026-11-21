@@ -3,6 +3,8 @@ use chimitheque_utils::{
 };
 use std::fmt::{Display, Formatter};
 
+use crate::unittype::UnitType;
+
 /// A field rejected by a type's `sanitize_and_validate` method.
 ///
 /// Messages are prefixed with the name of the field that failed, for example
@@ -35,6 +37,11 @@ pub enum ValidationError {
         /// Expected format, e.g. `a valid InChIKey`.
         expected: &'static str,
     },
+    /// A unit field holds a unit of the wrong type, or an unknown unit.
+    InvalidUnit {
+        field: &'static str,
+        expected: UnitType,
+    },
     /// A field is missing although another field requires it.
     Required {
         field: &'static str,
@@ -52,6 +59,7 @@ impl ValidationError {
             | Self::InvalidFormula { field, .. }
             | Self::OutOfRange { field, .. }
             | Self::InvalidFormat { field, .. }
+            | Self::InvalidUnit { field, .. }
             | Self::Required { field, .. } => field,
             Self::InvalidCasNumber(_) => "cas_number_label",
             Self::InvalidCeNumber(_) => "ce_number_label",
@@ -72,6 +80,7 @@ impl Display for ValidationError {
             Self::OutOfRange { expected, .. } | Self::InvalidFormat { expected, .. } => {
                 write!(f, "{field}: must be {expected}")
             }
+            Self::InvalidUnit { expected, .. } => write!(f, "{field}: must be a {expected} unit"),
             Self::Required { reason, .. } => write!(f, "{field}: required {reason}"),
         }
     }
@@ -83,6 +92,7 @@ impl std::error::Error for ValidationError {
             Self::Empty { .. }
             | Self::OutOfRange { .. }
             | Self::InvalidFormat { .. }
+            | Self::InvalidUnit { .. }
             | Self::Required { .. } => None,
             Self::InvalidCasNumber(error) => Some(error),
             Self::InvalidCeNumber(error) => Some(error),

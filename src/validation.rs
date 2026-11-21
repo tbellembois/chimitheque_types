@@ -4,7 +4,7 @@ use chimitheque_utils::string::{Transform, clean};
 use regex::Regex;
 use std::sync::LazyLock;
 
-use crate::error::ValidationError;
+use crate::{error::ValidationError, unit::Unit, unittype::UnitType};
 
 // GHS references: a code, or codes combined with "+". Hazard codes may carry
 // letter suffixes (H360Fd) and an EU prefix (EUH014); one precautionary
@@ -199,6 +199,23 @@ pub(crate) fn require_if(
         return Err(ValidationError::Required { field, reason });
     }
     Ok(())
+}
+
+/// Rejects a set unit whose type, looked up from its id with `unit_type_of`,
+/// is not `expected`. A unit without an id or with an unknown id is rejected too.
+pub(crate) fn check_unit_type(
+    unit: Option<&Unit>,
+    field: &'static str,
+    expected: UnitType,
+    unit_type_of: &impl Fn(u64) -> Option<UnitType>,
+) -> Result<(), ValidationError> {
+    let Some(unit) = unit else {
+        return Ok(());
+    };
+    match unit.unit_id.and_then(unit_type_of) {
+        Some(unit_type) if unit_type == expected => Ok(()),
+        _ => Err(ValidationError::InvalidUnit { field, expected }),
+    }
 }
 
 #[cfg(test)]

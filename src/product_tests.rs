@@ -317,4 +317,66 @@ mod tests {
         product.unit_temperature = Some(Unit::default());
         product.sanitize_and_validate().unwrap();
     }
+
+    /// Unit types as in the base data: °C, g/mol, mL and mg/L.
+    fn base_unit_type(unit_id: u64) -> Option<crate::unittype::UnitType> {
+        use crate::unittype::UnitType;
+        match unit_id {
+            14 => Some(UnitType::Temperature),
+            24 => Some(UnitType::MolecularWeight),
+            2 => Some(UnitType::Quantity),
+            21 => Some(UnitType::Concentration),
+            _ => None,
+        }
+    }
+
+    fn unit_with_id(unit_id: Option<u64>) -> Unit {
+        // The request may carry only the id: unit_type keeps its default value.
+        Unit {
+            unit_id,
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn test_validate_unit_types() {
+        let mut product = product_named("ethanol");
+        product.validate_unit_types(base_unit_type).unwrap();
+
+        product.unit_temperature = Some(unit_with_id(Some(14)));
+        product.unit_molecular_weight = Some(unit_with_id(Some(24)));
+        product.validate_unit_types(base_unit_type).unwrap();
+
+        // mL (a quantity unit) as temperature unit.
+        product.unit_temperature = Some(unit_with_id(Some(2)));
+        let error = product.validate_unit_types(base_unit_type).unwrap_err();
+        assert!(matches!(
+            error,
+            ValidationError::InvalidUnit {
+                field: "unit_temperature",
+                ..
+            }
+        ));
+        assert_eq!(
+            error.to_string(),
+            "unit_temperature: must be a temperature unit"
+        );
+
+        // °C as molecular weight unit, an unknown id, and a unit without id.
+        for unit_id in [Some(14), Some(999), None] {
+            let mut product = product_named("ethanol");
+            product.unit_molecular_weight = Some(unit_with_id(unit_id));
+            let error = product.validate_unit_types(base_unit_type).unwrap_err();
+            assert!(
+                matches!(
+                    error,
+                    ValidationError::InvalidUnit {
+                        field: "unit_molecular_weight",
+                        ..
+                    }
+                ),
+                "{unit_id:?}"
+            );
+        }
+    }
 }

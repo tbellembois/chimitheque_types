@@ -208,4 +208,59 @@ mod tests {
             }
         ));
     }
+
+    /// Unit types as in the base data: °C, g/mol, mL and mg/L.
+    fn base_unit_type(unit_id: u64) -> Option<crate::unittype::UnitType> {
+        use crate::unittype::UnitType;
+        match unit_id {
+            14 => Some(UnitType::Temperature),
+            24 => Some(UnitType::MolecularWeight),
+            2 => Some(UnitType::Quantity),
+            21 => Some(UnitType::Concentration),
+            _ => None,
+        }
+    }
+
+    fn unit_with_id(unit_id: Option<u64>) -> Unit {
+        // The request may carry only the id: unit_type keeps its default value.
+        Unit {
+            unit_id,
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn test_validate_unit_types() {
+        let mut storage = Storage::default();
+        storage.validate_unit_types(base_unit_type).unwrap();
+
+        storage.unit_quantity = Some(unit_with_id(Some(2)));
+        storage.unit_concentration = Some(unit_with_id(Some(21)));
+        storage.validate_unit_types(base_unit_type).unwrap();
+
+        // mg/L (a concentration unit) as quantity unit.
+        storage.unit_quantity = Some(unit_with_id(Some(21)));
+        let error = storage.validate_unit_types(base_unit_type).unwrap_err();
+        assert!(matches!(
+            error,
+            ValidationError::InvalidUnit {
+                field: "unit_quantity",
+                ..
+            }
+        ));
+        assert_eq!(error.to_string(), "unit_quantity: must be a quantity unit");
+
+        // mL as concentration unit.
+        let mut storage = Storage {
+            unit_concentration: Some(unit_with_id(Some(2))),
+            ..Default::default()
+        };
+        let error = storage.validate_unit_types(base_unit_type).unwrap_err();
+        assert_eq!(
+            error.to_string(),
+            "unit_concentration: must be a concentration unit"
+        );
+        storage.unit_concentration = None;
+        storage.validate_unit_types(base_unit_type).unwrap();
+    }
 }

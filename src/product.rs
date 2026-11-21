@@ -2,9 +2,10 @@
 /// Represents a chemical or related product with various attributes and metadata.
 use std::fmt;
 
+use crate::unittype::UnitType;
 use crate::validation::{
-    check_finite, check_format, check_positive, check_positive_count, clean_optional_text,
-    require_if, trim_optional_text,
+    check_finite, check_format, check_positive, check_positive_count, check_unit_type,
+    clean_optional_text, require_if, trim_optional_text,
 };
 use crate::{
     casnumber::CasNumber, category::Category, cenumber::CeNumber, classofcompound::ClassOfCompound,
@@ -276,6 +277,36 @@ impl Product {
         }
 
         Ok(())
+    }
+
+    /// Checks that `unit_temperature` is a temperature unit and
+    /// `unit_molecular_weight` a molecular weight unit.
+    ///
+    /// The unit type is looked up from the unit id with `unit_type_of`, not
+    /// read from the request: a client may send only the unit id, in which case
+    /// `unit_type` holds its default value. Call it after `sanitize_and_validate`,
+    /// with the unit types from the database.
+    ///
+    /// # Errors
+    ///
+    /// Returns `ValidationError::InvalidUnit` for a unit of the wrong type, or a
+    /// unit without an id or with an unknown id.
+    pub fn validate_unit_types(
+        &self,
+        unit_type_of: impl Fn(u64) -> Option<UnitType>,
+    ) -> Result<(), ValidationError> {
+        check_unit_type(
+            self.unit_temperature.as_ref(),
+            "unit_temperature",
+            UnitType::Temperature,
+            &unit_type_of,
+        )?;
+        check_unit_type(
+            self.unit_molecular_weight.as_ref(),
+            "unit_molecular_weight",
+            UnitType::MolecularWeight,
+            &unit_type_of,
+        )
     }
 }
 
