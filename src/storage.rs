@@ -100,12 +100,23 @@ impl fmt::Display for Storage {
 impl Storage {
     /// Validates and sanitizes all fields of the `Storage`.
     ///
-    /// Ensures all nested structures are properly validated.
+    /// Validates a new supplier (without an id); an existing one is left
+    /// unchanged.
     ///
     /// # Returns
     ///
     /// `Ok(())` if validation succeeds, or an error if validation fails.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
+        if let Some(ref mut supplier) = self.supplier
+            && supplier.supplier_id.is_none()
+        {
+            supplier.sanitize_and_validate()?;
+        }
+
         Ok(())
     }
 }
+
+#[cfg(test)]
+#[path = "storage_tests.rs"]
+mod storage_tests;
