@@ -194,4 +194,24 @@ mod tests {
         value.sanitize_and_validate().unwrap();
         assert_eq!(value.cas_number_cmr, None);
     }
+
+    #[test]
+    fn test_sanitize_and_validate_cmr_format() {
+        let mut value = CasNumber {
+            cas_number_label: "7732-18-5".to_string(),
+            cas_number_cmr: Some("C1a lact".to_string()),
+            ..Default::default()
+        };
+        value.sanitize_and_validate().unwrap();
+
+        value.cas_number_cmr = Some("C1A unknown".to_string());
+        let error = value.sanitize_and_validate().unwrap_err();
+        assert!(matches!(
+            error,
+            crate::error::ValidationError::InvalidFormat {
+                field: "cas_number_cmr",
+                ..
+            }
+        ));
+    }
 }

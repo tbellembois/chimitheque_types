@@ -7,7 +7,7 @@ use std::fmt;
 
 use crate::error::ValidationError;
 use crate::searchable::impl_searchable;
-use crate::validation::clean_optional_text;
+use crate::validation::{check_format, clean_optional_text, is_cmr_classification};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct CasNumber {
@@ -27,6 +27,12 @@ impl CasNumber {
             });
         }
         clean_optional_text(&mut self.cas_number_cmr);
+        check_format(
+            self.cas_number_cmr.as_deref(),
+            "cas_number_cmr",
+            is_cmr_classification,
+            "space-separated CMR codes (C1A, C1B, C2, M1A, M1B, M2, R1A, R1B, R2, LACT)",
+        )?;
         is_cas_number(&self.cas_number_label).map_err(ValidationError::InvalidCasNumber)
     }
 }

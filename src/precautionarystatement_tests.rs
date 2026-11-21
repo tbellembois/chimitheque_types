@@ -181,4 +181,34 @@ mod tests {
             "precautionary_statement_reference",
         );
     }
+
+    #[test]
+    fn test_sanitize_and_validate_reference_format() {
+        for reference in ["P280", "P301+P317", "P301+P330+P331[+P310]"] {
+            let mut value = PrecautionaryStatement {
+                precautionary_statement_label: "label".to_string(),
+                precautionary_statement_reference: reference.to_string(),
+                ..Default::default()
+            };
+            value.sanitize_and_validate().unwrap();
+        }
+
+        for reference in ["H350", "P28", "P280+"] {
+            let mut value = PrecautionaryStatement {
+                precautionary_statement_label: "label".to_string(),
+                precautionary_statement_reference: reference.to_string(),
+                ..Default::default()
+            };
+            assert!(
+                matches!(
+                    value.sanitize_and_validate().unwrap_err(),
+                    crate::error::ValidationError::InvalidFormat {
+                        field: "precautionary_statement_reference",
+                        ..
+                    }
+                ),
+                "{reference}"
+            );
+        }
+    }
 }

@@ -6,7 +6,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 use crate::validation::{
-    check_non_negative, check_non_zero_count, clean_optional_text, trim_optional_text,
+    check_non_negative, check_non_zero_count, clean_optional_text, require_if, trim_optional_text,
 };
 
 use crate::{
@@ -108,8 +108,9 @@ impl Storage {
     /// unchanged. Validates the borrowing, if any.
     ///
     /// Optional text fields are cleaned; an empty value becomes `None`. The
-    /// quantity and concentration must be 0 or more, the numbers of bags and
-    /// cartons greater than 0, and the exit date not before the entry date.
+    /// quantity and concentration must be 0 or more, each with its unit, the
+    /// numbers of bags and cartons greater than 0, and the exit and opening
+    /// dates not before the entry date.
     ///
     /// # Returns
     ///
@@ -124,6 +125,18 @@ impl Storage {
         check_non_negative(self.storage_concentration, "storage_concentration")?;
         check_non_zero_count(self.storage_number_of_bag, "storage_number_of_bag")?;
         check_non_zero_count(self.storage_number_of_carton, "storage_number_of_carton")?;
+        require_if(
+            self.storage_quantity.is_some(),
+            self.unit_quantity.is_some(),
+            "unit_quantity",
+            "when storage_quantity is set",
+        )?;
+        require_if(
+            self.storage_concentration.is_some(),
+            self.unit_concentration.is_some(),
+            "unit_concentration",
+            "when storage_concentration is set",
+        )?;
 
         if let (Some(entry_date), Some(exit_date)) =
             (self.storage_entry_date, self.storage_exit_date)
@@ -131,6 +144,16 @@ impl Storage {
         {
             return Err(ValidationError::OutOfRange {
                 field: "storage_exit_date",
+                expected: "on or after storage_entry_date",
+            });
+        }
+
+        if let (Some(entry_date), Some(opening_date)) =
+            (self.storage_entry_date, self.storage_opening_date)
+            && opening_date < entry_date
+        {
+            return Err(ValidationError::OutOfRange {
+                field: "storage_opening_date",
                 expected: "on or after storage_entry_date",
             });
         }

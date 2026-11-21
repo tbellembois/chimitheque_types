@@ -29,6 +29,18 @@ pub enum ValidationError {
         /// Allowed range, e.g. `greater than 0`.
         expected: &'static str,
     },
+    /// A text field does not have the expected format.
+    InvalidFormat {
+        field: &'static str,
+        /// Expected format, e.g. `a valid InChIKey`.
+        expected: &'static str,
+    },
+    /// A field is missing although another field requires it.
+    Required {
+        field: &'static str,
+        /// Why the field is required, e.g. `when product_molecular_weight is set`.
+        reason: &'static str,
+    },
 }
 
 impl ValidationError {
@@ -38,7 +50,9 @@ impl ValidationError {
         match self {
             Self::Empty { field }
             | Self::InvalidFormula { field, .. }
-            | Self::OutOfRange { field, .. } => field,
+            | Self::OutOfRange { field, .. }
+            | Self::InvalidFormat { field, .. }
+            | Self::Required { field, .. } => field,
             Self::InvalidCasNumber(_) => "cas_number_label",
             Self::InvalidCeNumber(_) => "ce_number_label",
             Self::InvalidEmail(_) => "person_email",
@@ -55,7 +69,10 @@ impl Display for ValidationError {
             Self::InvalidCeNumber(error) => write!(f, "{field}: {error}"),
             Self::InvalidFormula { source, .. } => write!(f, "{field}: {source}"),
             Self::InvalidEmail(error) => write!(f, "{field}: {error}"),
-            Self::OutOfRange { expected, .. } => write!(f, "{field}: must be {expected}"),
+            Self::OutOfRange { expected, .. } | Self::InvalidFormat { expected, .. } => {
+                write!(f, "{field}: must be {expected}")
+            }
+            Self::Required { reason, .. } => write!(f, "{field}: required {reason}"),
         }
     }
 }
@@ -63,7 +80,10 @@ impl Display for ValidationError {
 impl std::error::Error for ValidationError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
-            Self::Empty { .. } | Self::OutOfRange { .. } => None,
+            Self::Empty { .. }
+            | Self::OutOfRange { .. }
+            | Self::InvalidFormat { .. }
+            | Self::Required { .. } => None,
             Self::InvalidCasNumber(error) => Some(error),
             Self::InvalidCeNumber(error) => Some(error),
             Self::InvalidFormula { source, .. } => Some(source),

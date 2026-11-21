@@ -1,4 +1,5 @@
 use crate::searchable::impl_searchable;
+use crate::validation::{check_format, is_precautionary_reference};
 use crate::{error::ValidationError, validation::require_text};
 use chimitheque_utils::string::Transform;
 use serde::{Deserialize, Serialize};
@@ -29,6 +30,12 @@ impl PrecautionaryStatement {
             &mut self.precautionary_statement_reference,
             "precautionary_statement_reference",
             Transform::None,
+        )?;
+        check_format(
+            Some(&self.precautionary_statement_reference),
+            "precautionary_statement_reference",
+            is_precautionary_reference,
+            "a GHS precautionary reference like P280 or P301+P317",
         )?;
         Ok(())
     }

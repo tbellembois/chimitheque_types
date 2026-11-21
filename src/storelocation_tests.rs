@@ -90,4 +90,26 @@ mod tests {
         value.sanitize_and_validate().unwrap();
         assert_eq!(value.store_location_color, None);
     }
+
+    #[test]
+    fn test_sanitize_and_validate_color_format() {
+        for color in ["red", "#ff00", "ff0000", "#gg0000"] {
+            let mut value = StoreLocation {
+                store_location_name: "shelf".to_string(),
+                store_location_color: Some(color.to_string()),
+                ..Default::default()
+            };
+            let error = value.sanitize_and_validate().unwrap_err();
+            assert!(
+                matches!(
+                    error,
+                    crate::error::ValidationError::InvalidFormat {
+                        field: "store_location_color",
+                        ..
+                    }
+                ),
+                "{color}"
+            );
+        }
+    }
 }

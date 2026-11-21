@@ -1,5 +1,7 @@
 use crate::searchable::impl_searchable;
-use crate::validation::clean_optional_text;
+use crate::validation::{
+    check_format, clean_optional_text, is_cmr_classification, is_hazard_reference,
+};
 use crate::{error::ValidationError, validation::require_text};
 use chimitheque_utils::string::Transform;
 use serde::{Deserialize, Serialize};
@@ -35,6 +37,18 @@ impl HazardStatement {
             Transform::None,
         )?;
         clean_optional_text(&mut self.hazard_statement_cmr);
+        check_format(
+            Some(&self.hazard_statement_reference),
+            "hazard_statement_reference",
+            is_hazard_reference,
+            "a GHS hazard reference like H350 or H300+H310",
+        )?;
+        check_format(
+            self.hazard_statement_cmr.as_deref(),
+            "hazard_statement_cmr",
+            is_cmr_classification,
+            "space-separated CMR codes (C1A, C1B, C2, M1A, M1B, M2, R1A, R1B, R2, LACT)",
+        )?;
         Ok(())
     }
 }

@@ -7,7 +7,7 @@ mod tests {
         clippy::too_many_lines
     )]
 
-    use crate::{error::ValidationError, storage::*, supplier::Supplier};
+    use crate::{error::ValidationError, storage::*, supplier::Supplier, unit::Unit};
 
     /// Makes a storage invalid, and the field expected in the error.
     type InvalidCase = (fn(&mut Storage), &'static str);
@@ -75,6 +75,8 @@ mod tests {
             storage_quantity: Some(0.0),
             storage_concentration: Some(1.5),
             storage_number_of_bag: Some(1),
+            unit_quantity: Some(Unit::default()),
+            unit_concentration: Some(Unit::default()),
             ..Default::default()
         };
         storage.sanitize_and_validate().unwrap();
@@ -151,5 +153,59 @@ mod tests {
         };
         storage.sanitize_and_validate().unwrap();
         assert_eq!(storage.borrowing.unwrap().borrowing_comment, None);
+    }
+
+    #[test]
+    fn test_sanitize_and_validate_units_required() {
+        for (storage, expected_field) in [
+            (
+                Storage {
+                    storage_quantity: Some(1.0),
+                    ..Default::default()
+                },
+                "unit_quantity",
+            ),
+            (
+                Storage {
+                    storage_concentration: Some(1.0),
+                    ..Default::default()
+                },
+                "unit_concentration",
+            ),
+        ] {
+            let mut storage = storage;
+            let error = storage.sanitize_and_validate().unwrap_err();
+            assert!(
+                matches!(error, ValidationError::Required { field, .. } if field == expected_field),
+                "{error:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn test_sanitize_and_validate_opening_date() {
+        let entry = chrono::DateTime::from_timestamp(1_700_000_000, 0);
+        let later = chrono::DateTime::from_timestamp(1_700_000_100, 0);
+
+        let mut storage = Storage {
+            storage_entry_date: entry,
+            storage_opening_date: later,
+            ..Default::default()
+        };
+        storage.sanitize_and_validate().unwrap();
+
+        let mut storage = Storage {
+            storage_entry_date: later,
+            storage_opening_date: entry,
+            ..Default::default()
+        };
+        let error = storage.sanitize_and_validate().unwrap_err();
+        assert!(matches!(
+            error,
+            ValidationError::OutOfRange {
+                field: "storage_opening_date",
+                ..
+            }
+        ));
     }
 }

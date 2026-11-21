@@ -117,4 +117,31 @@ mod tests {
             "product_molecular_weight: must be greater than 0"
         );
     }
+
+    #[test]
+    fn test_reference_color_and_cmr_formats() {
+        assert!(is_hazard_reference("H361fd"));
+        assert!(is_hazard_reference("EUH001+H300"));
+        assert!(!is_hazard_reference("H35"));
+        assert!(!is_hazard_reference("H350 "));
+
+        assert!(is_precautionary_reference("P301+P330+P331[+P310]"));
+        assert!(!is_precautionary_reference("P301+"));
+
+        assert!(is_html_color("#A1b2C3"));
+        assert!(!is_html_color("#A1b2C"));
+
+        assert!(is_cmr_classification("C1A M2 R1B"));
+        assert!(is_cmr_classification("lact"));
+        assert!(!is_cmr_classification(""));
+        assert!(!is_cmr_classification("C1A C9"));
+    }
+
+    #[test]
+    fn test_require_if() {
+        assert!(require_if(false, false, "f", "when x is set").is_ok());
+        assert!(require_if(true, true, "f", "when x is set").is_ok());
+        let error = require_if(true, false, "f", "when x is set").unwrap_err();
+        assert_eq!(error.to_string(), "f: required when x is set");
+    }
 }

@@ -5,7 +5,7 @@ use std::fmt;
 
 use crate::entity::Entity;
 use crate::error::ValidationError;
-use crate::validation::clean_optional_text;
+use crate::validation::{check_format, clean_optional_text, is_html_color};
 use chimitheque_utils::string::{Transform, clean};
 use serde::{Deserialize, Serialize};
 
@@ -63,6 +63,12 @@ impl StoreLocation {
             });
         }
         clean_optional_text(&mut self.store_location_color);
+        check_format(
+            self.store_location_color.as_deref(),
+            "store_location_color",
+            is_html_color,
+            "a color like #RRGGBB",
+        )?;
         Ok(())
     }
 }

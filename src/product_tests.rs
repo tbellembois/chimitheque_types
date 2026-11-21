@@ -10,6 +10,7 @@ mod tests {
     use crate::{
         classofcompound::ClassOfCompound, error::ValidationError, name::Name, producer::Producer,
         producerref::ProducerRef, product::*, supplier::Supplier, supplierref::SupplierRef,
+        unit::Unit,
     };
 
     /// Makes a value invalid, and the field expected in the error.
@@ -152,6 +153,8 @@ mod tests {
         product.product_temperature = Some(-20.0);
         product.product_number_per_carton = Some(12);
         product.product_number_per_bag = Some(1);
+        product.unit_molecular_weight = Some(Unit::default());
+        product.unit_temperature = Some(Unit::default());
         product.sanitize_and_validate().unwrap();
 
         let cases: [InvalidCase<Product>; 5] = [
@@ -227,6 +230,75 @@ mod tests {
             producer_ref_id: Some(5),
             ..Default::default()
         });
+        product.sanitize_and_validate().unwrap();
+    }
+
+    #[test]
+    fn test_sanitize_and_validate_identifiers() {
+        let mut product = product_named("ethanol");
+        product.product_inchi = Some(" InChI=1S/C2H6O/c1-2-3/h3H,2H2,1H3 ".to_string());
+        product.product_inchikey = Some("LFQSCWFLJHTTHZ-UHFFFAOYSA-N".to_string());
+        product.sanitize_and_validate().unwrap();
+        assert_eq!(
+            product.product_inchi.as_deref(),
+            Some("InChI=1S/C2H6O/c1-2-3/h3H,2H2,1H3")
+        );
+
+        let mut product = product_named("ethanol");
+        product.product_inchi = Some("C2H6O".to_string());
+        let error = product.sanitize_and_validate().unwrap_err();
+        assert!(matches!(
+            error,
+            ValidationError::InvalidFormat {
+                field: "product_inchi",
+                ..
+            }
+        ));
+        assert_eq!(error.to_string(), "product_inchi: must be a valid InChI");
+
+        let mut product = product_named("ethanol");
+        product.product_inchikey = Some("LFQSCWFLJHTTHZ".to_string());
+        let error = product.sanitize_and_validate().unwrap_err();
+        assert!(matches!(
+            error,
+            ValidationError::InvalidFormat {
+                field: "product_inchikey",
+                ..
+            }
+        ));
+    }
+
+    #[test]
+    fn test_sanitize_and_validate_units_required() {
+        let mut product = product_named("ethanol");
+        product.product_molecular_weight = Some(46.07);
+        let error = product.sanitize_and_validate().unwrap_err();
+        assert!(matches!(
+            error,
+            ValidationError::Required {
+                field: "unit_molecular_weight",
+                ..
+            }
+        ));
+        assert_eq!(
+            error.to_string(),
+            "unit_molecular_weight: required when product_molecular_weight is set"
+        );
+
+        let mut product = product_named("ethanol");
+        product.product_temperature = Some(20.0);
+        let error = product.sanitize_and_validate().unwrap_err();
+        assert!(matches!(
+            error,
+            ValidationError::Required {
+                field: "unit_temperature",
+                ..
+            }
+        ));
+
+        // A unit without a value is accepted.
+        let mut product = product_named("ethanol");
+        product.unit_temperature = Some(Unit::default());
         product.sanitize_and_validate().unwrap();
     }
 }

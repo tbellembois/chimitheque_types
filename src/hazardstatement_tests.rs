@@ -166,4 +166,44 @@ mod tests {
         };
         assert_empty(value.sanitize_and_validate(), "hazard_statement_reference");
     }
+
+    #[test]
+    fn test_sanitize_and_validate_reference_and_cmr_format() {
+        for reference in ["H350", "H360Fd", "H300+H310", "EUH014"] {
+            let mut value = HazardStatement {
+                hazard_statement_label: "label".to_string(),
+                hazard_statement_reference: reference.to_string(),
+                hazard_statement_cmr: Some("c1a m2".to_string()),
+                ..Default::default()
+            };
+            value.sanitize_and_validate().unwrap();
+        }
+
+        let mut value = HazardStatement {
+            hazard_statement_label: "label".to_string(),
+            hazard_statement_reference: "P280".to_string(),
+            ..Default::default()
+        };
+        assert!(matches!(
+            value.sanitize_and_validate().unwrap_err(),
+            crate::error::ValidationError::InvalidFormat {
+                field: "hazard_statement_reference",
+                ..
+            }
+        ));
+
+        let mut value = HazardStatement {
+            hazard_statement_label: "label".to_string(),
+            hazard_statement_reference: "H350".to_string(),
+            hazard_statement_cmr: Some("C1A X9".to_string()),
+            ..Default::default()
+        };
+        assert!(matches!(
+            value.sanitize_and_validate().unwrap_err(),
+            crate::error::ValidationError::InvalidFormat {
+                field: "hazard_statement_cmr",
+                ..
+            }
+        ));
+    }
 }

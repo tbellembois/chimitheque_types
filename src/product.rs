@@ -3,7 +3,8 @@
 use std::fmt;
 
 use crate::validation::{
-    check_finite, check_positive, check_positive_count, clean_optional_text, trim_optional_text,
+    check_finite, check_format, check_positive, check_positive_count, clean_optional_text,
+    require_if, trim_optional_text,
 };
 use crate::{
     casnumber::CasNumber, category::Category, cenumber::CeNumber, classofcompound::ClassOfCompound,
@@ -13,6 +14,7 @@ use crate::{
     producerref::ProducerRef, producttype::ProductType, signalword::SignalWord,
     supplierref::SupplierRef, symbol::Symbol, tag::Tag, unit::Unit,
 };
+use chimitheque_utils::inchi::{is_inchi, is_inchikey};
 use serde::{Deserialize, Serialize};
 
 /// Main `Product` structure representing a chemical or related product.
@@ -141,8 +143,9 @@ impl Product {
     /// are validated; existing ones are left unchanged.
     ///
     /// Optional text fields are cleaned; an empty value becomes `None`. The
-    /// molecular weight must be greater than 0, the temperature a finite number,
-    /// and the numbers per carton and per bag greater than 0.
+    /// `InChI` and `InChIKey` must be valid. The molecular weight must be greater
+    /// than 0, the temperature a finite number, each with its unit, and the
+    /// numbers per carton and per bag greater than 0.
     ///
     /// # Returns
     ///
@@ -161,8 +164,33 @@ impl Product {
         trim_optional_text(&mut self.product_disposal_comment);
         trim_optional_text(&mut self.product_remark);
 
+        check_format(
+            self.product_inchi.as_deref(),
+            "product_inchi",
+            is_inchi,
+            "a valid InChI",
+        )?;
+        check_format(
+            self.product_inchikey.as_deref(),
+            "product_inchikey",
+            is_inchikey,
+            "a valid InChIKey",
+        )?;
+
         check_positive(self.product_molecular_weight, "product_molecular_weight")?;
         check_finite(self.product_temperature, "product_temperature")?;
+        require_if(
+            self.product_molecular_weight.is_some(),
+            self.unit_molecular_weight.is_some(),
+            "unit_molecular_weight",
+            "when product_molecular_weight is set",
+        )?;
+        require_if(
+            self.product_temperature.is_some(),
+            self.unit_temperature.is_some(),
+            "unit_temperature",
+            "when product_temperature is set",
+        )?;
         check_positive_count(self.product_number_per_carton, "product_number_per_carton")?;
         check_positive_count(self.product_number_per_bag, "product_number_per_bag")?;
 
