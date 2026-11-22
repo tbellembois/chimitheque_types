@@ -119,7 +119,7 @@ mod tests {
             &error,
             ValidationError::InvalidFormula {
                 field: "empirical_formula_label",
-                source: ToEmpiricalFormulaError::UnknowAtom(atom),
+                source: ToEmpiricalFormulaError::UnknownAtom(atom),
             } if atom == "Xx"
         ));
         assert_eq!(

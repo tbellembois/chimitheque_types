@@ -18,7 +18,7 @@ use crate::{
 };
 use chimitheque_utils::{
     inchi::{is_inchi, is_inchikey},
-    smiles::is_canonical_smiles,
+    smiles::is_smiles,
 };
 use serde::{Deserialize, Serialize};
 
@@ -185,7 +185,7 @@ impl Product {
         check_format(
             self.product_canonical_smiles.as_deref(),
             "product_canonical_smiles",
-            is_canonical_smiles,
+            is_smiles,
             "a valid SMILES",
         )?;
 
