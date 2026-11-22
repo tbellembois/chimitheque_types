@@ -1,4 +1,9 @@
-use crate::error::PubchemParseError;
+use crate::error::{PubchemParseError, ValidationError};
+use crate::{
+    casnumber::CasNumber, cenumber::CeNumber, empiricalformula::EmpiricalFormula,
+    hazardstatement::HazardStatement, name::Name, precautionarystatement::PrecautionaryStatement,
+    product::Product, producttype::ProductType, signalword::SignalWord, symbol::Symbol, unit::Unit,
+};
 use chimitheque_defines::SYMBOL_RE;
 use jsonpath_rust::JsonPath;
 use log::{debug, trace};
@@ -144,7 +149,7 @@ pub struct PubchemProduct {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub synonyms: Option<Vec<String>>,
 
-    /// URLs of the GHS pictograms.
+    /// GHS pictogram codes, e.g. `GHS01`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub symbols: Option<Vec<String>>,
 
@@ -409,6 +414,106 @@ impl PubchemProduct {
         trace!("product parsed successfully: {product:#?}");
 
         Ok(product)
+    }
+
+    /// Converts this `PubChem` product into a chemical [`Product`] to save.
+    ///
+    /// Names, CAS and EC numbers and the empirical formula are new entries
+    /// (without ids): saving reuses existing ones. Symbols, hazard and
+    /// precautionary statements, the signal word (the first one) and the
+    /// molecular weight unit are set by label only: their ids must be resolved
+    /// from the database before saving. Synonyms and the boiling point are not
+    /// imported. Call `Product::sanitize_and_validate` on the result.
+    ///
+    /// # Errors
+    ///
+    /// Returns `ValidationError::InvalidFormat` if the molecular weight is not
+    /// a number.
+    pub fn to_product(&self) -> Result<Product, ValidationError> {
+        let product_molecular_weight = self
+            .molecular_weight
+            .as_deref()
+            .map(|weight| {
+                weight
+                    .trim()
+                    .parse::<f64>()
+                    .map_err(|_| ValidationError::InvalidFormat {
+                        field: "product_molecular_weight",
+                        expected: "a number",
+                    })
+            })
+            .transpose()?;
+
+        Ok(Product {
+            product_type: ProductType::Chem,
+            name: Name {
+                name_label: self.name.clone().unwrap_or_default(),
+                ..Default::default()
+            },
+            cas_number: self.cas.as_ref().map(|cas| CasNumber {
+                cas_number_label: cas.clone(),
+                ..Default::default()
+            }),
+            ce_number: self.ec.as_ref().map(|ec| CeNumber {
+                ce_number_label: ec.clone(),
+                ..Default::default()
+            }),
+            empirical_formula: self
+                .molecular_formula
+                .as_ref()
+                .map(|formula| EmpiricalFormula {
+                    empirical_formula_label: formula.clone(),
+                    ..Default::default()
+                }),
+            product_inchi: self.inchi.clone(),
+            product_inchikey: self.inchi_key.clone(),
+            product_canonical_smiles: self.canonical_smiles.clone(),
+            product_molecular_weight,
+            unit_molecular_weight: self.molecular_weight_unit.as_ref().map(|unit| Unit {
+                unit_label: unit.clone(),
+                ..Default::default()
+            }),
+            product_twod_formula: self
+                .twodpicture
+                .as_ref()
+                .map(|picture| format!("data:image/png;base64,{picture}")),
+            signal_word: self
+                .signal
+                .as_ref()
+                .and_then(|signals| signals.first())
+                .map(|signal| SignalWord {
+                    signal_word_label: signal.clone(),
+                    ..Default::default()
+                }),
+            symbols: self.symbols.as_ref().map(|symbols| {
+                symbols
+                    .iter()
+                    .map(|symbol| Symbol {
+                        symbol_label: symbol.clone(),
+                        ..Default::default()
+                    })
+                    .collect()
+            }),
+            hazard_statements: self.hs.as_ref().map(|references| {
+                references
+                    .iter()
+                    .map(|reference| HazardStatement {
+                        hazard_statement_reference: reference.clone(),
+                        ..Default::default()
+                    })
+                    .collect()
+            }),
+            precautionary_statements: self.ps.as_ref().map(|references| {
+                references
+                    .iter()
+                    .map(|reference| PrecautionaryStatement {
+                        precautionary_statement_reference: reference.clone(),
+                        ..Default::default()
+                    })
+                    .collect()
+            }),
+            ..Default::default()
+        })
     }
 }
 

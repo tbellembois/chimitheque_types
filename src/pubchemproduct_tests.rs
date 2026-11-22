@@ -8,6 +8,7 @@ mod tests {
     )]
 
     use crate::error::PubchemParseError;
+    use crate::producttype::ProductType;
     use crate::pubchemproduct::{PubchemProduct, query_string, query_strings};
     use serde_json::json;
     use std::error::Error as _;
@@ -311,5 +312,125 @@ mod tests {
 
             assert!(product.iupac_name.is_some());
         }
+    }
+
+    const FIXTURES: [&str; 6] = [
+        include_str!("testdata/pubchem_pug_view_1.4-butanediol.json"),
+        include_str!("testdata/pubchem_pug_view_acetaminophen.json"),
+        include_str!("testdata/pubchem_pug_view_acetic_acid.json"),
+        include_str!("testdata/pubchem_pug_view_aspirin.json"),
+        include_str!("testdata/pubchem_pug_view_carbonate.json"),
+        include_str!("testdata/pubchem_pug_view_vanadium_pentoxide.json"),
+    ];
+
+    #[test]
+    fn test_to_product_from_fixtures_passes_validation() {
+        for fixture in FIXTURES {
+            let pubchem_product = PubchemProduct::from_pubchem_json(fixture).unwrap();
+            let mut product = pubchem_product.to_product().unwrap();
+            let name = pubchem_product.name.clone().unwrap_or_default();
+
+            product
+                .sanitize_and_validate()
+                .unwrap_or_else(|error| panic!("{name}: {error}"));
+
+            assert_eq!(product.product_type, ProductType::Chem, "{name}");
+            assert_eq!(product.name.name_label, name.to_uppercase(), "{name}");
+            assert!(product.synonyms.is_none(), "{name}");
+        }
+    }
+
+    #[test]
+    fn test_to_product_maps_fields() {
+        let pubchem_product = PubchemProduct {
+            name: Some("ethanol".to_string()),
+            cas: Some("64-17-5".to_string()),
+            ec: Some("200-578-6".to_string()),
+            molecular_formula: Some("OC2H6".to_string()),
+            inchi: Some("InChI=1S/C2H6O/c1-2-3/h3H,2H2,1H3".to_string()),
+            inchi_key: Some("LFQSCWFLJHTTHZ-UHFFFAOYSA-N".to_string()),
+            canonical_smiles: Some("CCO".to_string()),
+            molecular_weight: Some(" 46.07 ".to_string()),
+            molecular_weight_unit: Some("g/mol".to_string()),
+            signal: Some(vec!["Danger".to_string(), "Warning".to_string()]),
+            symbols: Some(vec!["GHS02".to_string(), "GHS07".to_string()]),
+            hs: Some(vec!["H225".to_string()]),
+            ps: Some(vec!["P210".to_string(), "P233".to_string()]),
+            twodpicture: Some("iVBORw0KGgo=".to_string()),
+            synonyms: Some(vec!["ethyl alcohol".to_string()]),
+            ..Default::default()
+        };
+
+        let mut product = pubchem_product.to_product().unwrap();
+
+        assert_eq!(
+            product.cas_number.as_ref().unwrap().cas_number_label,
+            "64-17-5"
+        );
+        assert_eq!(
+            product.ce_number.as_ref().unwrap().ce_number_label,
+            "200-578-6"
+        );
+        assert_eq!(product.product_molecular_weight, Some(46.07));
+        assert_eq!(
+            product.unit_molecular_weight.as_ref().unwrap().unit_label,
+            "g/mol"
+        );
+        assert_eq!(
+            product.signal_word.as_ref().unwrap().signal_word_label,
+            "Danger"
+        );
+        let symbols: Vec<&str> = product
+            .symbols
+            .as_ref()
+            .unwrap()
+            .iter()
+            .map(|symbol| symbol.symbol_label.as_str())
+            .collect();
+        assert_eq!(symbols, ["GHS02", "GHS07"]);
+        assert_eq!(
+            product.hazard_statements.as_ref().unwrap()[0].hazard_statement_reference,
+            "H225"
+        );
+        assert_eq!(product.precautionary_statements.as_ref().unwrap().len(), 2);
+        assert_eq!(
+            product.product_twod_formula.as_deref(),
+            Some("data:image/png;base64,iVBORw0KGgo=")
+        );
+        // Synonyms are not imported, and ids are left to be resolved.
+        assert!(product.synonyms.is_none());
+        assert!(
+            product
+                .unit_molecular_weight
+                .as_ref()
+                .unwrap()
+                .unit_id
+                .is_none()
+        );
+
+        // Validation cleans the new entries, e.g. sorts the formula.
+        product.sanitize_and_validate().unwrap();
+        assert_eq!(product.name.name_label, "ETHANOL");
+        assert_eq!(
+            product.empirical_formula.unwrap().empirical_formula_label,
+            "C2H6O"
+        );
+    }
+
+    #[test]
+    fn test_to_product_rejects_invalid_molecular_weight() {
+        let pubchem_product = PubchemProduct {
+            name: Some("ethanol".to_string()),
+            molecular_weight: Some("about 46".to_string()),
+            ..Default::default()
+        };
+        let error = pubchem_product.to_product().unwrap_err();
+        assert!(matches!(
+            error,
+            crate::error::ValidationError::InvalidFormat {
+                field: "product_molecular_weight",
+                ..
+            }
+        ));
     }
 }
