@@ -19,61 +19,78 @@ mod tests {
     }
 
     #[test]
-    fn test_fixture_safety_codes() {
-        let fixtures = [
+    fn test_pubchem_file_fields() {
+        // Expected values checked against the raw JSON files.
+        let files = [
             (
-                "butanediol",
-                include_str!("testdata/pubchem_pug_view_1.4-butanediol.json"),
-                "H302 H336",
-                "P261 P264 P270 P271 P301+P317 P304+P340 P319 P330 P403+P233 P405 P501",
+                include_str!("testdata/pubchem_files/pubchem_pug_view_Acetic Acid.json"),
+                "H226 H303 H312 H314 H318 H334 H370 H371",
+                "P210 P233 P240 P241 P242 P243 P260 P264 P264+P265 P270 P271 P280 P284 \
+                 P301+P317 P301+P330+P331 P302+P352 P302+P361+P354 P303+P361+P353 \
+                 P304+P340 P305+P354+P338 P308+P316 P316 P317 P321 P342+P316 P362+P364 \
+                 P363 P370+P378 P403 P403+P235 P405 P501",
+                "Danger",
+                "GHS02 GHS05 GHS07 GHS08",
             ),
             (
-                "acetaminophen",
-                include_str!("testdata/pubchem_pug_view_acetaminophen.json"),
-                "H302 H315 H319 H335 H341 H370 H371 H372 H373 H401 H411 H412",
-                "P203 P260 P261 P264 P264+P265 P270 P271 P273 P280 P301+P317 P302+P352 \
-                 P304+P340 P305+P351+P338 P308+P316 P318 P319 P321 P330 P332+P317 \
-                 P337+P317 P362+P364 P391 P403+P233 P405 P501",
+                // Companies report both signal words.
+                include_str!("testdata/pubchem_files/pubchem_pug_view_Acetaldehyde.json"),
+                "H224 H302 H311 H315 H317 H319 H332 H335 H336 H341 H350 H351 H360 H361 \
+                 H370 H372 H402",
+                "P203 P210 P233 P240 P241 P242 P243 P260 P261 P262 P264 P264+P265 P270 \
+                 P271 P272 P273 P280 P301+P317 P302+P352 P303+P361+P353 P304+P340 \
+                 P305+P351+P338 P308+P316 P316 P317 P318 P319 P321 P330 P332+P317 \
+                 P333+P317 P337+P317 P361+P364 P362+P364 P370+P378 P403+P233 P403+P235 \
+                 P405 P501",
+                "Danger Warning",
+                "GHS02 GHS06 GHS07 GHS08",
             ),
             (
-                "acetic acid",
-                include_str!("testdata/pubchem_pug_view_acetic_acid.json"),
-                "H226 H314",
-                "P210 P233 P240 P241 P242 P243 P260 P264 P280 P301+P330+P331 \
-                 P302+P361+P354 P303+P361+P353 P304+P340 P305+P354+P338 P316 P321 P363 \
-                 P370+P378 P403+P235 P405 P501",
+                // A combined hazard statement.
+                include_str!(
+                    "testdata/pubchem_files/pubchem_pug_view_1-Chloro-2,4-Dinitrobenzene.json"
+                ),
+                "H301 H301+H331 H302 H310 H311 H315 H317 H318 H331 H335 H341 H370 H372 \
+                 H373 H400 H410",
+                "P203 P260 P261 P262 P264 P264+P265 P270 P271 P272 P273 P280 P301+P316 \
+                 P301+P317 P302+P352 P304+P340 P305+P354+P338 P308+P316 P316 P317 P318 \
+                 P319 P321 P330 P332+P317 P333+P317 P361+P364 P362+P364 P391 P403+P233 \
+                 P405 P501",
+                "Danger",
+                "GHS05 GHS06 GHS07 GHS08 GHS09",
             ),
             (
-                "aspirin",
-                include_str!("testdata/pubchem_pug_view_aspirin.json"),
-                "H302 H315 H316 H319 H334 H335 H360 H370 H371 H372 H373 H412",
-                "P203 P233 P260 P261 P264 P264+P265 P270 P271 P273 P280 P284 P301+P317 \
-                 P302+P352 P304+P340 P305+P351+P338 P308+P316 P318 P319 P321 P330 \
-                 P332+P317 P337+P317 P342+P316 P362+P364 P403 P403+P233 P405 P501",
-            ),
-            (
-                "carbonate",
-                include_str!("testdata/pubchem_pug_view_carbonate.json"),
+                // Not classified: no codes.
+                include_str!("testdata/pubchem_files/pubchem_pug_view_4-Hydroxybenzaldehyde.json"),
                 "",
                 "",
-            ),
-            (
-                "vanadium pentoxide",
-                include_str!("testdata/pubchem_pug_view_vanadium_pentoxide.json"),
-                "H300 H301 H302 H318 H319 H330 H332 H335 H340 H341 H350 H351 H361 \
-                 H361fd H362 H370 H372 H373 H401 H410 H411",
-                "P203 P260 P261 P263 P264 P264+P265 P270 P271 P273 P280 P284 P301+P316 \
-                 P301+P317 P304+P340 P305+P351+P338 P305+P354+P338 P308+P316 P316 P317 \
-                 P318 P319 P320 P321 P330 P337+P317 P391 P403+P233 P405 P501",
+                "",
+                "",
             ),
         ];
 
-        for (name, input, hazards, precautions) in fixtures {
-            let product = PubchemProduct::from_pubchem_json(input)
-                .unwrap_or_else(|error| panic!("{name}: {error}"));
-            assert_codes(product.hs, hazards, name);
-            assert_codes(product.ps, precautions, name);
+        for (input, hazards, precautions, signals, symbols) in files {
+            let product = PubchemProduct::from_pubchem_json(input).unwrap();
+            let name = product.name.clone().unwrap_or_default();
+            assert_codes(product.hs, hazards, &name);
+            assert_codes(product.ps, precautions, &name);
+            assert_codes(product.signal, signals, &name);
+            assert_codes(product.symbols, symbols, &name);
         }
+    }
+
+    #[test]
+    fn test_pubchem_file_identifiers() {
+        let product = PubchemProduct::from_pubchem_json(include_str!(
+            "testdata/pubchem_files/pubchem_pug_view_Acetic Acid.json"
+        ))
+        .unwrap();
+
+        assert_eq!(product.name.as_deref(), Some("Acetic Acid"));
+        assert_eq!(product.cas.as_deref(), Some("64-19-7"));
+        assert_eq!(product.molecular_formula.as_deref(), Some("C2H4O2"));
+        // PubChem names its canonical SMILES section "SMILES".
+        assert_eq!(product.canonical_smiles.as_deref(), Some("CC(=O)O"));
     }
 
     fn assert_codes(actual: Option<Vec<String>>, expected: &str, context: &str) {
@@ -300,44 +317,55 @@ mod tests {
         ));
     }
 
-    #[test]
-    fn test_from_pubchem() {
-        init_logger();
-
-        for entry in fs::read_dir("src/testdata/").unwrap() {
-            let entry_path = entry.unwrap().path();
-            let json_string =
-                fs::read_to_string(entry_path).expect("error while opening json file");
-            let product = PubchemProduct::from_pubchem_json(json_string.as_str()).unwrap();
-
-            assert!(product.iupac_name.is_some());
-        }
+    /// The `PubChem` files of `testdata/pubchem_files`, as (file name, JSON),
+    /// sorted by file name.
+    fn pubchem_files() -> Vec<(String, String)> {
+        let mut files: Vec<(String, String)> = fs::read_dir("src/testdata/pubchem_files")
+            .unwrap()
+            .map(|entry| {
+                let path = entry.unwrap().path();
+                let name = path.file_name().unwrap().to_string_lossy().into_owned();
+                (name, fs::read_to_string(&path).unwrap())
+            })
+            .collect();
+        files.sort();
+        assert_ne!(files.len(), 0, "no PubChem files found");
+        files
     }
 
-    const FIXTURES: [&str; 6] = [
-        include_str!("testdata/pubchem_pug_view_1.4-butanediol.json"),
-        include_str!("testdata/pubchem_pug_view_acetaminophen.json"),
-        include_str!("testdata/pubchem_pug_view_acetic_acid.json"),
-        include_str!("testdata/pubchem_pug_view_aspirin.json"),
-        include_str!("testdata/pubchem_pug_view_carbonate.json"),
-        include_str!("testdata/pubchem_pug_view_vanadium_pentoxide.json"),
-    ];
-
     #[test]
-    fn test_to_product_from_fixtures_passes_validation() {
-        for fixture in FIXTURES {
-            let pubchem_product = PubchemProduct::from_pubchem_json(fixture).unwrap();
-            let mut product = pubchem_product.to_product().unwrap();
+    fn test_pubchem_files_pass_validation() {
+        init_logger();
+
+        // Collect every failure, to report them all at once.
+        let mut failures = vec![];
+        for (file, json) in pubchem_files() {
+            let pubchem_product = match PubchemProduct::from_pubchem_json(&json) {
+                Ok(pubchem_product) => pubchem_product,
+                Err(error) => {
+                    failures.push(format!("{file}: parse: {error}"));
+                    continue;
+                }
+            };
+            let mut product = match pubchem_product.to_product() {
+                Ok(product) => product,
+                Err(error) => {
+                    failures.push(format!("{file}: to_product: {error}"));
+                    continue;
+                }
+            };
+            if let Err(error) = product.sanitize_and_validate() {
+                failures.push(format!("{file}: validation: {error}"));
+                continue;
+            }
+
             let name = pubchem_product.name.clone().unwrap_or_default();
-
-            product
-                .sanitize_and_validate()
-                .unwrap_or_else(|error| panic!("{name}: {error}"));
-
-            assert_eq!(product.product_type, ProductType::Chem, "{name}");
-            assert_eq!(product.name.name_label, name.to_uppercase(), "{name}");
-            assert!(product.synonyms.is_none(), "{name}");
+            assert_eq!(product.product_type, ProductType::Chem, "{file}");
+            assert_eq!(product.name.name_label, name.to_uppercase(), "{file}");
+            assert!(product.synonyms.is_none(), "{file}");
         }
+
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
     }
 
     #[test]
@@ -415,6 +443,22 @@ mod tests {
             product.empirical_formula.unwrap().empirical_formula_label,
             "C2H6O"
         );
+    }
+
+    #[test]
+    fn test_to_product_keeps_the_most_severe_signal_word() {
+        for (signals, expected) in [
+            (vec!["Warning", "Danger"], "Danger"),
+            (vec!["Warning"], "Warning"),
+        ] {
+            let pubchem_product = PubchemProduct {
+                name: Some("ethanol".to_string()),
+                signal: Some(signals.iter().map(ToString::to_string).collect()),
+                ..Default::default()
+            };
+            let product = pubchem_product.to_product().unwrap();
+            assert_eq!(product.signal_word.unwrap().signal_word_label, expected);
+        }
     }
 
     #[test]

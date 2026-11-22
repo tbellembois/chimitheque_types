@@ -117,7 +117,8 @@ pub struct PubchemProduct {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub inchi_key: Option<String>,
 
-    /// Canonical SMILES.
+    /// Canonical SMILES, with stereochemistry and isotopes, from the `PubChem`
+    /// "SMILES" section.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub canonical_smiles: Option<String>,
 
@@ -256,11 +257,13 @@ impl PubchemProduct {
             product.inchi_key = Some(inchi_key_str);
         }
 
-        // Canonical SMILES - safely extract if field exists
+        // SMILES: PubChem names its canonical SMILES section "SMILES" (it was
+        // "Canonical SMILES" before 2025). It includes stereochemistry and
+        // isotopes.
         if let Some(canonical_smiles_str) = query_string(
             &json_content,
             "canonical_smiles",
-            "$..Section[?(@.TOCHeading=='Canonical SMILES')].Information[0].Value.StringWithMarkup[0].String",
+            "$..Section[?(@.TOCHeading=='SMILES')].Information[0].Value.StringWithMarkup[0].String",
         )? {
             debug!("canonical_smiles: {canonical_smiles_str}");
             product.canonical_smiles = Some(canonical_smiles_str);
@@ -420,7 +423,8 @@ impl PubchemProduct {
     ///
     /// Names, CAS and EC numbers and the empirical formula are new entries
     /// (without ids): saving reuses existing ones. Symbols, hazard and
-    /// precautionary statements, the signal word (the first one) and the
+    /// precautionary statements, the signal word (`Danger` if reported, else the
+    /// first one) and the
     /// molecular weight unit are set by label only: their ids must be resolved
     /// from the database before saving. Synonyms and the boiling point are not
     /// imported. Call `Product::sanitize_and_validate` on the result.
@@ -477,10 +481,17 @@ impl PubchemProduct {
                 .twodpicture
                 .as_ref()
                 .map(|picture| format!("data:image/png;base64,{picture}")),
+            // Companies may report different signal words: keep the most
+            // severe, "Danger" before "Warning".
             signal_word: self
                 .signal
                 .as_ref()
-                .and_then(|signals| signals.first())
+                .and_then(|signals| {
+                    signals
+                        .iter()
+                        .find(|signal| signal.eq_ignore_ascii_case("danger"))
+                        .or_else(|| signals.first())
+                })
                 .map(|signal| SignalWord {
                     signal_word_label: signal.clone(),
                     ..Default::default()
