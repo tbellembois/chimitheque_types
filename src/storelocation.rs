@@ -51,7 +51,9 @@ impl fmt::Display for StoreLocation {
 impl StoreLocation {
     /// Validates and sanitizes all fields of the `StoreLocation`.
     ///
-    /// Cleans the location name and ensures it's not empty.
+    /// Cleans the location name and ensures it's not empty, and that the store
+    /// location is not its own parent. Set `store_location_id` before calling
+    /// it when updating.
     ///
     /// # Returns
     ///
@@ -70,6 +72,14 @@ impl StoreLocation {
             is_html_color,
             "a color like #RRGGBB",
         )?;
+        if let (Some(id), Some(parent)) = (self.store_location_id, &self.store_location)
+            && parent.store_location_id == Some(id)
+        {
+            return Err(ValidationError::OutOfRange {
+                field: "store_location",
+                expected: "a store location other than itself",
+            });
+        }
         Ok(())
     }
 }

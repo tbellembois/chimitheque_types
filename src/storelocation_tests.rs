@@ -112,4 +112,30 @@ mod tests {
             );
         }
     }
+
+    #[test]
+    fn test_sanitize_and_validate_parent() {
+        let parent = |id| {
+            Some(Box::new(StoreLocation {
+                store_location_id: Some(id),
+                ..Default::default()
+            }))
+        };
+        let mut value = StoreLocation {
+            store_location_id: Some(1),
+            store_location_name: "shelf".to_string(),
+            store_location: parent(2),
+            ..Default::default()
+        };
+        assert!(value.sanitize_and_validate().is_ok());
+
+        value.store_location = parent(1);
+        assert!(matches!(
+            value.sanitize_and_validate().unwrap_err(),
+            crate::error::ValidationError::OutOfRange {
+                field: "store_location",
+                ..
+            }
+        ));
+    }
 }
