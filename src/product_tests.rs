@@ -151,13 +151,15 @@ mod tests {
         let mut product = product_named("ethanol");
         product.product_molecular_weight = Some(46.07);
         product.product_temperature = Some(-20.0);
+        product.product_concentration = Some(0.0);
         product.product_number_per_carton = Some(12);
         product.product_number_per_bag = Some(1);
         product.unit_molecular_weight = Some(Unit::default());
         product.unit_temperature = Some(Unit::default());
+        product.unit_concentration = Some(Unit::default());
         product.sanitize_and_validate().unwrap();
 
-        let cases: [InvalidCase<Product>; 5] = [
+        let cases: [InvalidCase<Product>; 7] = [
             (
                 |p| p.product_molecular_weight = Some(0.0),
                 "product_molecular_weight",
@@ -169,6 +171,14 @@ mod tests {
             (
                 |p| p.product_temperature = Some(f64::INFINITY),
                 "product_temperature",
+            ),
+            (
+                |p| p.product_concentration = Some(-0.1),
+                "product_concentration",
+            ),
+            (
+                |p| p.product_concentration = Some(f64::NAN),
+                "product_concentration",
             ),
             (
                 |p| p.product_number_per_carton = Some(0),
@@ -316,6 +326,13 @@ mod tests {
         let mut product = product_named("ethanol");
         product.unit_temperature = Some(Unit::default());
         product.sanitize_and_validate().unwrap();
+
+        let mut product = product_named("ethanol");
+        product.product_concentration = Some(1.0);
+        assert_eq!(
+            product.sanitize_and_validate().unwrap_err().to_string(),
+            "unit_concentration: required when product_concentration is set"
+        );
     }
 
     /// Unit types as in the base data: °C, g/mol, mL and mg/L.
@@ -345,7 +362,19 @@ mod tests {
 
         product.unit_temperature = Some(unit_with_id(Some(14)));
         product.unit_molecular_weight = Some(unit_with_id(Some(24)));
+        product.unit_concentration = Some(unit_with_id(Some(21)));
         product.validate_unit_types(base_unit_type).unwrap();
+
+        // mL (a quantity unit) as concentration unit.
+        product.unit_concentration = Some(unit_with_id(Some(2)));
+        assert_eq!(
+            product
+                .validate_unit_types(base_unit_type)
+                .unwrap_err()
+                .to_string(),
+            "unit_concentration: must be a concentration unit"
+        );
+        product.unit_concentration = None;
 
         // mL (a quantity unit) as temperature unit.
         product.unit_temperature = Some(unit_with_id(Some(2)));

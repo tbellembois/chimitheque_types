@@ -5,8 +5,8 @@ use std::fmt;
 
 use crate::unittype::UnitType;
 use crate::validation::{
-    check_finite, check_format, check_positive, check_positive_count, check_unit_type,
-    clean_optional_text, require_if, trim_optional_text,
+    check_finite, check_format, check_non_negative, check_positive, check_positive_count,
+    check_unit_type, clean_optional_text, require_if, trim_optional_text,
 };
 use crate::{
     casnumber::CasNumber, category::Category, cenumber::CeNumber, classofcompound::ClassOfCompound,
@@ -57,6 +57,8 @@ pub struct Product {
     pub product_molecular_weight: Option<f64>,
     /// Temperature specification.
     pub product_temperature: Option<f64>,
+    /// Concentration.
+    pub product_concentration: Option<f64>,
     /// Product specification sheet reference.
     pub product_sheet: Option<String>,
     /// Number of products per carton.
@@ -90,6 +92,8 @@ pub struct Product {
     pub unit_temperature: Option<Unit>,
     /// Unit for molecular weight measurement.
     pub unit_molecular_weight: Option<Unit>,
+    /// Unit for the concentration.
+    pub unit_concentration: Option<Unit>,
 
     /// Classes of compounds this product belongs to.
     pub classes_of_compound: Option<Vec<ClassOfCompound>>,
@@ -150,8 +154,8 @@ impl Product {
     ///
     /// Optional text fields are cleaned; an empty value becomes `None`. The
     /// `InChI`, `InChIKey` and SMILES must be valid. The molecular weight must be greater
-    /// than 0, the temperature a finite number, each with its unit, and the
-    /// numbers per carton and per bag greater than 0.
+    /// than 0, the temperature a finite number, the concentration 0 or more, each
+    /// with its unit, and the numbers per carton and per bag greater than 0.
     ///
     /// # Returns
     ///
@@ -202,6 +206,13 @@ impl Product {
             self.unit_temperature.is_some(),
             "unit_temperature",
             "when product_temperature is set",
+        )?;
+        check_non_negative(self.product_concentration, "product_concentration")?;
+        require_if(
+            self.product_concentration.is_some(),
+            self.unit_concentration.is_some(),
+            "unit_concentration",
+            "when product_concentration is set",
         )?;
         check_positive_count(self.product_number_per_carton, "product_number_per_carton")?;
         check_positive_count(self.product_number_per_bag, "product_number_per_bag")?;
@@ -281,8 +292,9 @@ impl Product {
         Ok(())
     }
 
-    /// Checks that `unit_temperature` is a temperature unit and
-    /// `unit_molecular_weight` a molecular weight unit.
+    /// Checks that `unit_temperature` is a temperature unit,
+    /// `unit_molecular_weight` a molecular weight unit and `unit_concentration` a
+    /// concentration unit.
     ///
     /// The unit type is looked up from the unit id with `unit_type_of`, not
     /// read from the request: a client may send only the unit id, in which case
@@ -307,6 +319,12 @@ impl Product {
             self.unit_molecular_weight.as_ref(),
             "unit_molecular_weight",
             UnitType::MolecularWeight,
+            &unit_type_of,
+        )?;
+        check_unit_type(
+            self.unit_concentration.as_ref(),
+            "unit_concentration",
+            UnitType::Concentration,
             &unit_type_of,
         )
     }
