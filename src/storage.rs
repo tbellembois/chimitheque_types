@@ -30,7 +30,7 @@ pub struct Storage {
     pub storage_entry_date: Option<DateTime<Utc>>,
     /// When the product was removed from storage.
     pub storage_exit_date: Option<DateTime<Utc>>,
-    /// When the storage location became available.
+    /// When the product container was opened.
     pub storage_opening_date: Option<DateTime<Utc>>,
     /// Expiration date of the stored product.
     pub storage_expiration_date: Option<DateTime<Utc>>,
@@ -59,7 +59,7 @@ pub struct Storage {
     /// Number of cartons in storage.
     pub storage_number_of_carton: Option<u64>,
 
-    /// Person associated with the storage (owner/manager).
+    /// Person who last saved the storage, set from the request headers.
     #[serde(default)]
     pub person: Person,
     /// Product being stored.
@@ -73,12 +73,12 @@ pub struct Storage {
     /// Unit of measure for concentration.
     pub unit_concentration: Option<Unit>,
 
-    /// Nested storage information (for hierarchical storage).
+    /// For a history row, the storage it is an earlier version of.
     pub storage: Option<Box<Storage>>,
     /// Borrowing information if the product is borrowed.
     pub borrowing: Option<Borrowing>,
 
-    /// History count of storage operations.
+    /// Number of history rows of the storage.
     #[serde(default)]
     pub storage_hc: u64,
 }

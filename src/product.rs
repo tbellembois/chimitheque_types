@@ -64,7 +64,7 @@ pub struct Product {
     /// Number of products per bag.
     pub product_number_per_bag: Option<i64>,
 
-    /// Associated person (owner/manager).
+    /// Person who last saved the product, set from the request headers.
     #[serde(default)]
     pub person: Person,
     /// Product name information.
@@ -117,7 +117,8 @@ pub struct Product {
     pub product_tsc: Option<u64>,
     /// Concatenated CMR (Carcinogenic, Mutagenic, Reproductive toxic) hazard statements.
     pub product_hs_cmr: Option<String>,
-    /// Store location code.
+    /// Barcodes of the product's storages the logged-in user can see, without
+    /// their `.N` suffix, each listed once and followed by a space.
     pub product_sl: Option<String>,
     /// Availability of the product in different entities.
     pub product_availability: Option<Vec<Entity>>,
