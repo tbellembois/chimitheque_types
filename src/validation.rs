@@ -1,43 +1,11 @@
 //! Helpers shared by the `sanitize_and_validate` methods.
 
+use chimitheque_defines::{
+    CMR_CODES, HAZARD_REFERENCE_RE, HTML_COLOR_RE, PRECAUTIONARY_REFERENCE_RE,
+};
 use chimitheque_utils::string::{Transform, clean};
-use regex::Regex;
-use std::sync::LazyLock;
 
 use crate::{error::ValidationError, unit::Unit, unittype::UnitType};
-
-// GHS references: a code, or codes combined with "+". Hazard codes may carry
-// letter suffixes (H360Fd) and an EU prefix (EUH014); one precautionary
-// combination ends with an optional bracketed part (P301+P330+P331[+P310]).
-#[allow(
-    clippy::expect_used,
-    reason = "the regex is a constant covered by validation tests"
-)]
-static HAZARD_REFERENCE_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"^(?:EU)?H[0-9]{3}[A-Za-z]{0,2}(?:\+(?:EU)?H[0-9]{3}[A-Za-z]{0,2})*$")
-        .expect("valid hazard reference regex")
-});
-
-#[allow(
-    clippy::expect_used,
-    reason = "the regex is a constant covered by validation tests"
-)]
-static PRECAUTIONARY_REFERENCE_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"^P[0-9]{3}(?:\+P[0-9]{3})*(?:\[\+P[0-9]{3}\])?$")
-        .expect("valid precautionary reference regex")
-});
-
-#[allow(
-    clippy::expect_used,
-    reason = "the regex is a constant covered by validation tests"
-)]
-static HTML_COLOR_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^#[0-9A-Fa-f]{6}$").expect("valid color regex"));
-
-/// CMR (carcinogenic, mutagenic, reprotoxic) classification codes.
-const CMR_CODES: [&str; 10] = [
-    "C1A", "C1B", "C2", "M1A", "M1B", "M2", "R1A", "R1B", "R2", "LACT",
-];
 
 /// Cleans a required text field and rejects it if empty.
 pub(crate) fn require_text(

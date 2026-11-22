@@ -4,34 +4,12 @@ use crate::{
     hazardstatement::HazardStatement, name::Name, precautionarystatement::PrecautionaryStatement,
     product::Product, producttype::ProductType, signalword::SignalWord, symbol::Symbol, unit::Unit,
 };
-use chimitheque_defines::SYMBOL_RE;
+use chimitheque_defines::{PUBCHEM_HAZARD_CODE_RE, PUBCHEM_PRECAUTIONARY_CODE_RE, SYMBOL_RE};
 use jsonpath_rust::JsonPath;
 use log::{debug, trace};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::sync::LazyLock;
-
-// PubChem embeds codes in prose, unlike the shared tab-separated reference-table regexes.
-#[allow(
-    clippy::expect_used,
-    reason = "the regex is a constant covered by extraction tests"
-)]
-static PUBCHEM_HAZARD_CODE_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(
-        r"(?-u)\b(?:EU)?H[0-9]{3}[A-Za-z]{0,2}(?:[ \t]*\+[ \t]*(?:EU)?H[0-9]{3}[A-Za-z]{0,2})*\b",
-    )
-    .expect("valid PubChem hazard code regex")
-});
-
-#[allow(
-    clippy::expect_used,
-    reason = "the regex is a constant covered by extraction tests"
-)]
-static PUBCHEM_PRECAUTIONARY_CODE_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?-u)\bP[0-9]{3}(?:[ \t]*\+[ \t]*P[0-9]{3})*\b")
-        .expect("valid PubChem precautionary code regex")
-});
 
 fn extract_safety_codes(values: &[String], pattern: &Regex) -> Vec<String> {
     let mut codes: Vec<String> = values
@@ -391,7 +369,7 @@ impl PubchemProduct {
             "hs",
             "$..Information[?(@.Name=='GHS Hazard Statements')]..StringWithMarkup..String",
         )? {
-            product.hs = Some(extract_safety_codes(&hs_str_vec, &PUBCHEM_HAZARD_CODE_RE));
+            product.hs = Some(extract_safety_codes(&hs_str_vec, PUBCHEM_HAZARD_CODE_RE));
             debug!(
                 "hs: found {} hazard statements",
                 product.hs.as_ref().map_or(0, std::vec::Vec::len)
@@ -406,7 +384,7 @@ impl PubchemProduct {
         )? {
             product.ps = Some(extract_safety_codes(
                 &ps_str_vec,
-                &PUBCHEM_PRECAUTIONARY_CODE_RE,
+                PUBCHEM_PRECAUTIONARY_CODE_RE,
             ));
             debug!(
                 "ps: found {} precautionary statements",
