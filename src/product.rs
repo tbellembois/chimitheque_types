@@ -166,7 +166,7 @@ impl Product {
         clean_optional_text(&mut self.product_inchikey);
         clean_optional_text(&mut self.product_canonical_smiles);
         clean_optional_text(&mut self.product_specificity);
-        // Free text, links and pictures: only trimmed, line breaks are kept.
+        // Free text, links and pictures: line breaks are kept.
         clean_optional_text(&mut self.product_msds);
         clean_optional_text(&mut self.product_sheet);
         clean_optional_text(&mut self.product_twod_formula);

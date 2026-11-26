@@ -1,8 +1,7 @@
 use crate::searchable::impl_searchable;
-use crate::validation::{
-    check_format, clean_optional_text, is_cmr_classification, is_hazard_reference,
-};
+use crate::validation::{check_format, clean_optional_text, is_cmr_classification};
 use crate::{error::ValidationError, validation::require_text};
+use chimitheque_defines::HAZARD_REFERENCE_RE;
 use chimitheque_utils::string::Transform;
 use serde::{Deserialize, Serialize};
 use std::fmt;
@@ -57,6 +56,11 @@ impl HazardStatement {
         )?;
         Ok(())
     }
+}
+
+/// Returns true for a GHS hazard statement reference, e.g. `H350` or `H300+H310`.
+fn is_hazard_reference(reference: &str) -> bool {
+    HAZARD_REFERENCE_RE.is_match(reference)
 }
 
 impl_searchable!(HazardStatement, table: "hazard_statement", id: hazard_statement_id, text: hazard_statement_reference);

@@ -1,6 +1,7 @@
 use crate::searchable::impl_searchable;
-use crate::validation::{check_format, is_precautionary_reference};
+use crate::validation::check_format;
 use crate::{error::ValidationError, validation::require_text};
+use chimitheque_defines::PRECAUTIONARY_REFERENCE_RE;
 use chimitheque_utils::string::Transform;
 use serde::{Deserialize, Serialize};
 use std::fmt;
@@ -44,6 +45,12 @@ impl PrecautionaryStatement {
         )?;
         Ok(())
     }
+}
+
+/// Returns true for a GHS precautionary statement reference, e.g. `P280` or
+/// `P301+P317`.
+fn is_precautionary_reference(reference: &str) -> bool {
+    PRECAUTIONARY_REFERENCE_RE.is_match(reference)
 }
 
 impl_searchable!(PrecautionaryStatement, table: "precautionary_statement", id: precautionary_statement_id, text: precautionary_statement_reference);

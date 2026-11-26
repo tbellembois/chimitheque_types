@@ -64,7 +64,7 @@ mod tests {
             ..Default::default()
         };
         storage.sanitize_and_validate().unwrap();
-        assert_eq!(storage.storage_comment.as_deref(), Some("line 1\n line 2"));
+        assert_eq!(storage.storage_comment.as_deref(), Some("line 1\nline 2"));
         assert_eq!(storage.storage_reference.as_deref(), Some("A 12"));
         assert_eq!(storage.storage_batch_number, None);
     }

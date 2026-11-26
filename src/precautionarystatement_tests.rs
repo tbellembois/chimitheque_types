@@ -211,4 +211,10 @@ mod tests {
             );
         }
     }
+
+    #[test]
+    fn test_is_precautionary_reference() {
+        assert!(is_precautionary_reference("P301+P330+P331[+P310]"));
+        assert!(!is_precautionary_reference("P301+"));
+    }
 }

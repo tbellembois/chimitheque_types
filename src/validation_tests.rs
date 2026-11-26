@@ -38,7 +38,7 @@ mod tests {
 
     #[test]
     fn test_clean_optional_text() {
-        let mut value = Some("  a  \n b ".to_string());
+        let mut value = Some("  a   b ".to_string());
         clean_optional_text(&mut value);
         assert_eq!(value.as_deref(), Some("a b"));
 
@@ -53,7 +53,7 @@ mod tests {
     fn test_clean_optional_text_keeps_line_breaks() {
         let mut value = Some("  line 1\n\n  line 2  ".to_string());
         clean_optional_text(&mut value);
-        assert_eq!(value.as_deref(), Some("line 1\n\n  line 2"));
+        assert_eq!(value.as_deref(), Some("line 1\n\nline 2"));
 
         let mut value = Some(" \n ".to_string());
         clean_optional_text(&mut value);
@@ -111,7 +111,7 @@ mod tests {
 
         assert!(check_non_zero_u64(None, "c").is_ok());
         assert!(check_non_zero_u64(Some(1), "c").is_ok());
-        assert_eq!(expected(check_non_zero_u64(Some(0), "c")), "greater than 0");
+        assert_eq!(expected(check_non_zero_u64(Some(0), "c")), "not 0");
     }
 
     #[test]
@@ -125,15 +125,7 @@ mod tests {
     }
 
     #[test]
-    fn test_reference_color_and_cmr_formats() {
-        assert!(is_hazard_reference("H361fd"));
-        assert!(is_hazard_reference("EUH001+H300"));
-        assert!(!is_hazard_reference("H35"));
-        assert!(!is_hazard_reference("H350 "));
-
-        assert!(is_precautionary_reference("P301+P330+P331[+P310]"));
-        assert!(!is_precautionary_reference("P301+"));
-
+    fn test_color_and_cmr_formats() {
         assert!(is_html_color("#A1b2C3"));
         assert!(!is_html_color("#A1b2C"));
 

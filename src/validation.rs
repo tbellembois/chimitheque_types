@@ -1,8 +1,6 @@
 //! Helpers shared by the `sanitize_and_validate` methods.
 
-use chimitheque_defines::{
-    CMR_CODES, HAZARD_REFERENCE_RE, HTML_COLOR_RE, PRECAUTIONARY_REFERENCE_RE,
-};
+use chimitheque_defines::{CMR_CODES, HTML_COLOR_RE};
 use chimitheque_utils::string::{Transform, clean};
 
 use crate::{error::ValidationError, unit::Unit, unittype::UnitType};
@@ -20,8 +18,8 @@ pub(crate) fn require_text(
     Ok(())
 }
 
-/// Cleans an optional single-line text field (trims and collapses inner
-/// whitespace). An empty value becomes `None`.
+/// Cleans an optional text field (trims each line and collapses its inner
+/// whitespace, keeping the line breaks). An empty value becomes `None`.
 pub(crate) fn clean_optional_text(value: &mut Option<String>) {
     if let Some(text) = value.as_mut() {
         *text = clean(text, Transform::None);
@@ -114,17 +112,6 @@ pub(crate) fn check_format(
         Some(text) if !is_valid(text) => Err(ValidationError::InvalidFormat { field, expected }),
         _ => Ok(()),
     }
-}
-
-/// Returns true for a GHS hazard statement reference, e.g. `H350` or `H300+H310`.
-pub(crate) fn is_hazard_reference(reference: &str) -> bool {
-    HAZARD_REFERENCE_RE.is_match(reference)
-}
-
-/// Returns true for a GHS precautionary statement reference, e.g. `P280` or
-/// `P301+P317`.
-pub(crate) fn is_precautionary_reference(reference: &str) -> bool {
-    PRECAUTIONARY_REFERENCE_RE.is_match(reference)
 }
 
 /// Returns true for an HTML color like `#ff0000`.

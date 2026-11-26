@@ -206,4 +206,12 @@ mod tests {
             }
         ));
     }
+
+    #[test]
+    fn test_is_hazard_reference() {
+        assert!(is_hazard_reference("H361fd"));
+        assert!(is_hazard_reference("EUH001+H300"));
+        assert!(!is_hazard_reference("H35"));
+        assert!(!is_hazard_reference("H350 "));
+    }
 }

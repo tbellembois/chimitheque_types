@@ -141,7 +141,7 @@ mod tests {
         // Free text keeps its line breaks.
         assert_eq!(
             product.product_remark.as_deref(),
-            Some("first line\n  second line")
+            Some("first line\nsecond line")
         );
         assert_eq!(product.product_msds, None);
     }
