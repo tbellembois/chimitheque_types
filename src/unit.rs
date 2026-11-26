@@ -1,5 +1,5 @@
 use crate::unittype::UnitType;
-use crate::validation::check_positive;
+use crate::validation::check_positive_f64;
 use crate::{error::ValidationError, validation::require_text};
 use chimitheque_utils::string::Transform;
 use serde::{Deserialize, Serialize};
@@ -33,7 +33,7 @@ impl Unit {
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
         // Unit labels are case-sensitive (mL, µM), so only whitespace is cleaned.
         require_text(&mut self.unit_label, "unit_label", Transform::None)?;
-        check_positive(Some(self.unit_multiplier), "unit_multiplier")?;
+        check_positive_f64(Some(self.unit_multiplier), "unit_multiplier")?;
         Ok(())
     }
 }

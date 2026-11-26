@@ -50,67 +50,73 @@ mod tests {
     }
 
     #[test]
-    fn test_trim_optional_text_keeps_line_breaks() {
+    fn test_clean_optional_text_keeps_line_breaks() {
         let mut value = Some("  line 1\n\n  line 2  ".to_string());
-        trim_optional_text(&mut value);
+        clean_optional_text(&mut value);
         assert_eq!(value.as_deref(), Some("line 1\n\n  line 2"));
 
         let mut value = Some(" \n ".to_string());
-        trim_optional_text(&mut value);
+        clean_optional_text(&mut value);
         assert_eq!(value, None);
     }
 
     #[test]
     fn test_number_checks() {
         for value in [None, Some(0.0), Some(-1.5), Some(2.0)] {
-            assert!(check_finite(value, "f").is_ok());
+            assert!(check_finite_f64(value, "f").is_ok());
         }
         for value in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
-            assert_eq!(expected(check_finite(Some(value), "f")), "a finite number");
             assert_eq!(
-                expected(check_positive(Some(value), "f")),
+                expected(check_finite_f64(Some(value), "f")),
                 "a finite number"
             );
             assert_eq!(
-                expected(check_non_negative(Some(value), "f")),
+                expected(check_positive_f64(Some(value), "f")),
+                "a finite number"
+            );
+            assert_eq!(
+                expected(check_non_negative_f64(Some(value), "f")),
                 "a finite number"
             );
         }
 
-        assert!(check_positive(None, "f").is_ok());
-        assert!(check_positive(Some(0.01), "f").is_ok());
-        assert_eq!(expected(check_positive(Some(0.0), "f")), "greater than 0");
-        assert_eq!(expected(check_positive(Some(-1.0), "f")), "greater than 0");
+        assert!(check_positive_f64(None, "f").is_ok());
+        assert!(check_positive_f64(Some(0.01), "f").is_ok());
+        assert_eq!(
+            expected(check_positive_f64(Some(0.0), "f")),
+            "greater than 0"
+        );
+        assert_eq!(
+            expected(check_positive_f64(Some(-1.0), "f")),
+            "greater than 0"
+        );
 
-        assert!(check_non_negative(None, "f").is_ok());
-        assert!(check_non_negative(Some(0.0), "f").is_ok());
-        assert_eq!(expected(check_non_negative(Some(-0.1), "f")), "0 or more");
+        assert!(check_non_negative_f64(None, "f").is_ok());
+        assert!(check_non_negative_f64(Some(0.0), "f").is_ok());
+        assert_eq!(
+            expected(check_non_negative_f64(Some(-0.1), "f")),
+            "0 or more"
+        );
     }
 
     #[test]
     fn test_count_checks() {
-        assert!(check_positive_count(None, "c").is_ok());
-        assert!(check_positive_count(Some(1), "c").is_ok());
+        assert!(check_positive_i64(None, "c").is_ok());
+        assert!(check_positive_i64(Some(1), "c").is_ok());
+        assert_eq!(expected(check_positive_i64(Some(0), "c")), "greater than 0");
         assert_eq!(
-            expected(check_positive_count(Some(0), "c")),
-            "greater than 0"
-        );
-        assert_eq!(
-            expected(check_positive_count(Some(-3), "c")),
+            expected(check_positive_i64(Some(-3), "c")),
             "greater than 0"
         );
 
-        assert!(check_non_zero_count(None, "c").is_ok());
-        assert!(check_non_zero_count(Some(1), "c").is_ok());
-        assert_eq!(
-            expected(check_non_zero_count(Some(0), "c")),
-            "greater than 0"
-        );
+        assert!(check_non_zero_u64(None, "c").is_ok());
+        assert!(check_non_zero_u64(Some(1), "c").is_ok());
+        assert_eq!(expected(check_non_zero_u64(Some(0), "c")), "greater than 0");
     }
 
     #[test]
     fn test_out_of_range_message() {
-        let error = check_positive(Some(0.0), "product_molecular_weight").unwrap_err();
+        let error = check_positive_f64(Some(0.0), "product_molecular_weight").unwrap_err();
         assert_eq!(error.field(), "product_molecular_weight");
         assert_eq!(
             error.to_string(),

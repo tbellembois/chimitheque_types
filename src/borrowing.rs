@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::person::Person;
-use crate::{error::ValidationError, validation::trim_optional_text};
+use crate::{error::ValidationError, validation::clean_optional_text};
 
 /// A storage lent to a person (the borrower).
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
@@ -26,7 +26,7 @@ impl Borrowing {
     ///
     /// Never fails today; returns a `Result` like the other types.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
-        trim_optional_text(&mut self.borrowing_comment);
+        clean_optional_text(&mut self.borrowing_comment);
         Ok(())
     }
 }

@@ -19,7 +19,7 @@ pub struct CasNumber {
     pub cas_number_id: Option<u64>,
     /// CAS number, e.g. `7732-18-5`.
     pub cas_number_label: String,
-    /// CMR classification codes, e.g. `C1A M2`, if the substance is CMR.
+    /// Space-separated CMR codes (C1A, C1B, C2, M1A, M1B, M2, R1A, R1B, R2, LACT), if the substance is CMR.
     pub cas_number_cmr: Option<String>,
 }
 

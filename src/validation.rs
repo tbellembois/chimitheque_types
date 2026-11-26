@@ -26,29 +26,16 @@ pub(crate) fn clean_optional_text(value: &mut Option<String>) {
     if let Some(text) = value.as_mut() {
         *text = clean(text, Transform::None);
     }
-    none_if_empty(value);
-}
-
-/// Trims an optional free-text field, keeping inner whitespace and line
-/// breaks. An empty value becomes `None`.
-pub(crate) fn trim_optional_text(value: &mut Option<String>) {
-    if let Some(text) = value.as_mut() {
-        let trimmed = text.trim();
-        if trimmed.len() != text.len() {
-            *text = trimmed.to_string();
-        }
-    }
-    none_if_empty(value);
-}
-
-fn none_if_empty(value: &mut Option<String>) {
     if value.as_deref().is_some_and(str::is_empty) {
         *value = None;
     }
 }
 
 /// Rejects a set number that is not finite (NaN or infinite).
-pub(crate) fn check_finite(value: Option<f64>, field: &'static str) -> Result<(), ValidationError> {
+pub(crate) fn check_finite_f64(
+    value: Option<f64>,
+    field: &'static str,
+) -> Result<(), ValidationError> {
     match value {
         Some(number) if !number.is_finite() => Err(ValidationError::OutOfRange {
             field,
@@ -59,11 +46,11 @@ pub(crate) fn check_finite(value: Option<f64>, field: &'static str) -> Result<()
 }
 
 /// Rejects a set number that is not finite or not greater than 0.
-pub(crate) fn check_positive(
+pub(crate) fn check_positive_f64(
     value: Option<f64>,
     field: &'static str,
 ) -> Result<(), ValidationError> {
-    check_finite(value, field)?;
+    check_finite_f64(value, field)?;
     match value {
         Some(number) if number <= 0.0 => Err(ValidationError::OutOfRange {
             field,
@@ -74,11 +61,11 @@ pub(crate) fn check_positive(
 }
 
 /// Rejects a set number that is not finite or is negative.
-pub(crate) fn check_non_negative(
+pub(crate) fn check_non_negative_f64(
     value: Option<f64>,
     field: &'static str,
 ) -> Result<(), ValidationError> {
-    check_finite(value, field)?;
+    check_finite_f64(value, field)?;
     match value {
         Some(number) if number < 0.0 => Err(ValidationError::OutOfRange {
             field,
@@ -89,7 +76,7 @@ pub(crate) fn check_non_negative(
 }
 
 /// Rejects a set count that is not greater than 0.
-pub(crate) fn check_positive_count(
+pub(crate) fn check_positive_i64(
     value: Option<i64>,
     field: &'static str,
 ) -> Result<(), ValidationError> {
@@ -103,14 +90,14 @@ pub(crate) fn check_positive_count(
 }
 
 /// Rejects a set unsigned count equal to 0.
-pub(crate) fn check_non_zero_count(
+pub(crate) fn check_non_zero_u64(
     value: Option<u64>,
     field: &'static str,
 ) -> Result<(), ValidationError> {
     match value {
         Some(0) => Err(ValidationError::OutOfRange {
             field,
-            expected: "greater than 0",
+            expected: "not 0",
         }),
         _ => Ok(()),
     }

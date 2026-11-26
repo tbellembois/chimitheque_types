@@ -8,8 +8,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::unittype::UnitType;
 use crate::validation::{
-    check_non_negative, check_non_zero_count, check_unit_type, clean_optional_text, require_if,
-    trim_optional_text,
+    check_non_negative_f64, check_non_zero_u64, check_unit_type, clean_optional_text, require_if,
 };
 
 use crate::{
@@ -119,15 +118,15 @@ impl Storage {
     ///
     /// `Ok(())` if validation succeeds, or an error if validation fails.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
-        trim_optional_text(&mut self.storage_comment);
+        clean_optional_text(&mut self.storage_comment);
         clean_optional_text(&mut self.storage_reference);
         clean_optional_text(&mut self.storage_batch_number);
         clean_optional_text(&mut self.storage_barecode);
 
-        check_non_negative(self.storage_quantity, "storage_quantity")?;
-        check_non_negative(self.storage_concentration, "storage_concentration")?;
-        check_non_zero_count(self.storage_number_of_bag, "storage_number_of_bag")?;
-        check_non_zero_count(self.storage_number_of_carton, "storage_number_of_carton")?;
+        check_non_negative_f64(self.storage_quantity, "storage_quantity")?;
+        check_non_negative_f64(self.storage_concentration, "storage_concentration")?;
+        check_non_zero_u64(self.storage_number_of_bag, "storage_number_of_bag")?;
+        check_non_zero_u64(self.storage_number_of_carton, "storage_number_of_carton")?;
         require_if(
             self.storage_quantity.is_some(),
             self.unit_quantity.is_some(),

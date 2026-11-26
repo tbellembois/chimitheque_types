@@ -5,8 +5,8 @@ use std::fmt;
 
 use crate::unittype::UnitType;
 use crate::validation::{
-    check_finite, check_format, check_non_negative, check_positive, check_positive_count,
-    check_unit_type, clean_optional_text, require_if, trim_optional_text,
+    check_finite_f64, check_format, check_non_negative_f64, check_positive_f64, check_positive_i64,
+    check_unit_type, clean_optional_text, require_if,
 };
 use crate::{
     casnumber::CasNumber, category::Category, cenumber::CeNumber, classofcompound::ClassOfCompound,
@@ -167,12 +167,12 @@ impl Product {
         clean_optional_text(&mut self.product_canonical_smiles);
         clean_optional_text(&mut self.product_specificity);
         // Free text, links and pictures: only trimmed, line breaks are kept.
-        trim_optional_text(&mut self.product_msds);
-        trim_optional_text(&mut self.product_sheet);
-        trim_optional_text(&mut self.product_twod_formula);
-        trim_optional_text(&mut self.product_threed_formula);
-        trim_optional_text(&mut self.product_disposal_comment);
-        trim_optional_text(&mut self.product_remark);
+        clean_optional_text(&mut self.product_msds);
+        clean_optional_text(&mut self.product_sheet);
+        clean_optional_text(&mut self.product_twod_formula);
+        clean_optional_text(&mut self.product_threed_formula);
+        clean_optional_text(&mut self.product_disposal_comment);
+        clean_optional_text(&mut self.product_remark);
 
         check_format(
             self.product_inchi.as_deref(),
@@ -193,8 +193,8 @@ impl Product {
             "a valid SMILES",
         )?;
 
-        check_positive(self.product_molecular_weight, "product_molecular_weight")?;
-        check_finite(self.product_temperature, "product_temperature")?;
+        check_positive_f64(self.product_molecular_weight, "product_molecular_weight")?;
+        check_finite_f64(self.product_temperature, "product_temperature")?;
         require_if(
             self.product_molecular_weight.is_some(),
             self.unit_molecular_weight.is_some(),
@@ -207,15 +207,15 @@ impl Product {
             "unit_temperature",
             "when product_temperature is set",
         )?;
-        check_non_negative(self.product_concentration, "product_concentration")?;
+        check_non_negative_f64(self.product_concentration, "product_concentration")?;
         require_if(
             self.product_concentration.is_some(),
             self.unit_concentration.is_some(),
             "unit_concentration",
             "when product_concentration is set",
         )?;
-        check_positive_count(self.product_number_per_carton, "product_number_per_carton")?;
-        check_positive_count(self.product_number_per_bag, "product_number_per_bag")?;
+        check_positive_i64(self.product_number_per_carton, "product_number_per_carton")?;
+        check_positive_i64(self.product_number_per_bag, "product_number_per_bag")?;
 
         if let Some(ref mut cas_number) = self.cas_number
             && cas_number.cas_number_id.is_none()
