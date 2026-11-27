@@ -395,6 +395,52 @@ mod tests {
     }
 
     #[test]
+    fn test_requestfilter_try_from_id_at_end_of_url() {
+        let id = |url: &str| RequestFilter::try_from(url).unwrap().id;
+
+        // An id at the end of the path is captured.
+        assert_eq!(id("http://localhost/products/12"), Some(12));
+        assert_eq!(id("http://localhost/12"), Some(12));
+
+        // No id when the path does not end with a number.
+        for url in [
+            "http://localhost/products",
+            "http://localhost/products/",
+            "http://localhost/products/12/",
+            "http://localhost/products/12a",
+            "http://localhost/products/1.5",
+        ] {
+            assert_eq!(id(url), None, "{url}");
+        }
+
+        // A query or a fragment after the path does not hide the id.
+        assert_eq!(id("http://localhost/products/12?search=x"), Some(12));
+        assert_eq!(id("http://localhost/products/12#top"), Some(12));
+
+        // The id query parameter is used, and overrides an id in the path.
+        assert_eq!(id("http://localhost/products?id=5"), Some(5));
+        assert_eq!(id("http://localhost/products/12?id=5"), Some(5));
+
+        // An id too big for a u64 is rejected, as in the id query parameter.
+        for url in [
+            "http://localhost/products/99999999999999999999",
+            "http://localhost/products?id=99999999999999999999",
+        ] {
+            let error = RequestFilter::try_from(url).unwrap_err();
+            assert!(
+                matches!(
+                    error,
+                    RequestFilterError::InvalidParameter {
+                        parameter: "id",
+                        ..
+                    }
+                ),
+                "{url}: {error:?}"
+            );
+        }
+    }
+
+    #[test]
     fn test_requestfilter_try_from_valid() {
         let input = "http://localhost?search=test&limit=10";
         let filter = RequestFilter::try_from(input).unwrap();

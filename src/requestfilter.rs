@@ -308,17 +308,15 @@ impl TryFrom<&str> for RequestFilter {
             Err(e) => return Err(RequestFilterError::InvalidUrl(e)),
         };
 
-        // Trying to capture an id at the end of the URL.
+        // Trying to capture an id at the end of the URL path, so a query or a
+        // fragment after it does not hide it. An id too big for a u64 is
+        // rejected like an invalid ?id= value.
         // Can be overwritten by the ?id= URL parameter (see below).
-        if END_OF_URL_CAPTURE_RE.is_match(url.as_str())
-            && let Some(cap) = END_OF_URL_CAPTURE_RE.captures(url.as_str())
+        if let Some(id_match) = END_OF_URL_CAPTURE_RE
+            .captures(url.path())
+            .and_then(|captures| captures.name("id"))
         {
-            // Safe access - capture exists due to regex match, but handle parse error
-            if let Some(id_match) = cap.name("id")
-                && let Ok(id_parsed) = id_match.as_str().parse::<u64>()
-            {
-                request_filter.id = Some(id_parsed);
-            }
+            request_filter.id = Some(parse_param("id", id_match.as_str())?);
         }
 
         // Get the query parameters.
