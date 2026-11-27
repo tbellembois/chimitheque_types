@@ -1,6 +1,6 @@
 use chimitheque_utils::{
     casnumber::is_cas_number,
-    string::{Transform, clean, clean_optional_text},
+    string::{Transform, clean_optional_text, clean_required_text},
 };
 use serde::{Deserialize, Serialize};
 use std::fmt;
@@ -33,12 +33,10 @@ impl CasNumber {
     /// `ValidationError::InvalidFormat`.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
         // The label is required.
-        self.cas_number_label = clean(&self.cas_number_label, Transform::None);
-        if self.cas_number_label.is_empty() {
-            return Err(ValidationError::Empty {
+        self.cas_number_label = clean_required_text(&self.cas_number_label, Transform::None)
+            .ok_or(ValidationError::Empty {
                 field: "cas_number_label",
-            });
-        }
+            })?;
         // The CMR classification is optional but must contain known CMR codes.
         clean_optional_text(&mut self.cas_number_cmr);
         if let Some(cmr) = self.cas_number_cmr.as_deref()

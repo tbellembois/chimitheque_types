@@ -140,17 +140,11 @@ mod tests {
         );
         assert!(error.source().is_some());
 
-        // An empty empirical formula is reported by the formula parser.
-        let error = EmpiricalFormula::default()
-            .sanitize_and_validate()
-            .unwrap_err();
-        assert!(matches!(
-            error,
-            ValidationError::InvalidFormula {
-                field: "empirical_formula_label",
-                source: ToEmpiricalFormulaError::EmptyFormula,
-            }
-        ));
+        // An empty empirical formula is rejected before being parsed.
+        assert_empty(
+            EmpiricalFormula::default().sanitize_and_validate(),
+            "empirical_formula_label",
+        );
 
         let mut linear_formula = LinearFormula {
             linear_formula_label: "CH3Qq".to_string(),

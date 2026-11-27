@@ -1,6 +1,6 @@
 use chimitheque_utils::{
     formula::to_empirical_formula,
-    string::{Transform, clean},
+    string::{Transform, clean_required_text},
 };
 use serde::{Deserialize, Serialize};
 use std::fmt;
@@ -29,12 +29,12 @@ impl LinearFormula {
     /// Returns `ValidationError::Empty` or `ValidationError::InvalidFormula`.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
         // The label is required.
-        let cleaned_empirical_formula = clean(&self.linear_formula_label, Transform::None);
-        if cleaned_empirical_formula.is_empty() {
-            return Err(ValidationError::Empty {
-                field: "linear_formula_label",
-            });
-        }
+        let cleaned_empirical_formula =
+            clean_required_text(&self.linear_formula_label, Transform::None).ok_or(
+                ValidationError::Empty {
+                    field: "linear_formula_label",
+                },
+            )?;
 
         // The label must be a valid formula. It is kept as entered: the
         // empirical formula is only computed to validate it.

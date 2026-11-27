@@ -61,7 +61,9 @@ mod tests {
                 empirical_formula_label: empty.to_string(),
                 ..Default::default()
             };
-            assert_validation_error(value.sanitize_and_validate(), "empirical_formula_label");
+            let error =
+                assert_validation_error(value.sanitize_and_validate(), "empirical_formula_label");
+            assert!(matches!(error, ValidationError::Empty { .. }), "{error:?}");
         }
         // Formulas without any atom are parsed into an empty formula.
         for no_atom in ["()", ".", "2", "x"] {

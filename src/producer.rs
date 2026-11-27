@@ -1,4 +1,4 @@
-use chimitheque_utils::string::{Transform, clean};
+use chimitheque_utils::string::{Transform, clean_required_text};
 use serde::{Deserialize, Serialize};
 
 use crate::error::ValidationError;
@@ -24,12 +24,11 @@ impl Producer {
     /// Returns `ValidationError::Empty` if the cleaned label is empty.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
         // The label is required.
-        self.producer_label = clean(&self.producer_label, Transform::None);
-        if self.producer_label.is_empty() {
-            return Err(ValidationError::Empty {
+        self.producer_label = clean_required_text(&self.producer_label, Transform::None).ok_or(
+            ValidationError::Empty {
                 field: "producer_label",
-            });
-        }
+            },
+        )?;
         Ok(())
     }
 }

@@ -4,7 +4,7 @@
 
 use std::fmt;
 
-use chimitheque_utils::string::{Transform, clean, clean_optional_text};
+use chimitheque_utils::string::{Transform, clean_optional_text, clean_required_text};
 use serde::{Deserialize, Serialize};
 
 use crate::{error::ValidationError, person::Person};
@@ -53,12 +53,11 @@ impl Entity {
     /// cleaned name is empty.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
         // The name is required.
-        self.entity_name = clean(&self.entity_name, Transform::None);
-        if self.entity_name.is_empty() {
-            return Err(ValidationError::Empty {
+        self.entity_name = clean_required_text(&self.entity_name, Transform::None).ok_or(
+            ValidationError::Empty {
                 field: "entity_name",
-            });
-        }
+            },
+        )?;
 
         // The description is optional; an empty one becomes `None`.
         clean_optional_text(&mut self.entity_description);

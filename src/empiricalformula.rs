@@ -1,6 +1,6 @@
 use chimitheque_utils::{
     formula::to_empirical_formula,
-    string::{Transform, clean},
+    string::{Transform, clean_required_text},
 };
 use serde::{Deserialize, Serialize};
 use std::fmt;
@@ -26,18 +26,23 @@ impl EmpiricalFormula {
     ///
     /// # Errors
     ///
-    /// Returns `ValidationError::InvalidFormula` if the formula can not be parsed,
-    /// or `ValidationError::Empty`.
+    /// Returns `ValidationError::Empty` if the formula is empty or has no atom,
+    /// or `ValidationError::InvalidFormula` if it can not be parsed.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
-        // The label must be a valid formula; it is stored as its sorted empirical formula.
-        let sorted_and_cleaned_empirical_formula =
-            to_empirical_formula(&clean(&self.empirical_formula_label, Transform::None)).map_err(
-                |source| ValidationError::InvalidFormula {
+        // The label is required.
+        let cleaned_empirical_formula =
+            clean_required_text(&self.empirical_formula_label, Transform::None).ok_or(
+                ValidationError::Empty {
                     field: "empirical_formula_label",
-                    source,
                 },
             )?;
-        // The formula is required.
+        // The label must be a valid formula; it is stored as its sorted empirical formula.
+        let sorted_and_cleaned_empirical_formula = to_empirical_formula(&cleaned_empirical_formula)
+            .map_err(|source| ValidationError::InvalidFormula {
+                field: "empirical_formula_label",
+                source,
+            })?;
+        // A formula without any atom, e.g. `()` or `x`, gives an empty formula.
         if sorted_and_cleaned_empirical_formula.is_empty() {
             return Err(ValidationError::Empty {
                 field: "empirical_formula_label",

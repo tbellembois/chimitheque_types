@@ -7,7 +7,7 @@ use std::fmt;
 use crate::entity::Entity;
 use crate::error::ValidationError;
 use chimitheque_defines::HTML_COLOR_RE;
-use chimitheque_utils::string::{Transform, clean, clean_optional_text};
+use chimitheque_utils::string::{Transform, clean_optional_text, clean_required_text};
 use serde::{Deserialize, Serialize};
 
 /// Main `StoreLocation` structure representing a storage location.
@@ -60,12 +60,10 @@ impl StoreLocation {
     /// `Ok(())` if validation succeeds, or an error if validation fails.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
         // The name is required.
-        self.store_location_name = clean(&self.store_location_name, Transform::None);
-        if self.store_location_name.is_empty() {
-            return Err(ValidationError::Empty {
+        self.store_location_name = clean_required_text(&self.store_location_name, Transform::None)
+            .ok_or(ValidationError::Empty {
                 field: "store_location_name",
-            });
-        }
+            })?;
         // The color is optional but must be an HTML color.
         clean_optional_text(&mut self.store_location_color);
         if let Some(color) = self.store_location_color.as_deref()

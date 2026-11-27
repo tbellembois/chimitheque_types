@@ -1,4 +1,4 @@
-use chimitheque_utils::string::{Transform, clean};
+use chimitheque_utils::string::{Transform, clean_required_text};
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
@@ -25,12 +25,11 @@ impl Name {
     /// Returns `ValidationError::Empty` if the cleaned name is empty.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
         // The label is required and stored in uppercase.
-        self.name_label = clean(&self.name_label, Transform::Uppercase);
-        if self.name_label.is_empty() {
-            return Err(ValidationError::Empty {
+        self.name_label = clean_required_text(&self.name_label, Transform::Uppercase).ok_or(
+            ValidationError::Empty {
                 field: "name_label",
-            });
-        }
+            },
+        )?;
         Ok(())
     }
 }
