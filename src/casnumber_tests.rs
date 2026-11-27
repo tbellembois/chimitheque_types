@@ -8,210 +8,99 @@ mod tests {
     )]
 
     use crate::casnumber::*;
-    use chimitheque_traits::searchable::Searchable;
+    use crate::error::ValidationError;
+    use crate::test_helpers::{
+        assert_searchable, assert_serde_rejects_missing, assert_serde_round_trip,
+        assert_validation_error,
+    };
+    use serde_json::json;
+
+    fn sample() -> serde_json::Value {
+        json!({"match_exact_search": true, "cas_number_id": 1, "cas_number_label": "7732-18-5", "cas_number_cmr": "C1A M2"})
+    }
+
+    // Serialization and deserialization.
 
     #[test]
-    fn test_cas_number_searchable() {
-        let cas_number = CasNumber {
-            match_exact_search: true,
-            cas_number_id: Some(1),
-            cas_number_label: "test".to_string(),
-            cas_number_cmr: None,
-        };
-
-        let mut created_cas_number = cas_number.create();
-        assert!(!created_cas_number.match_exact_search);
-        assert_eq!(created_cas_number.cas_number_id, None);
-        assert_eq!(created_cas_number.cas_number_label, String::new());
-
-        created_cas_number.set_exact_search(true);
-        assert!(created_cas_number.get_exact_search());
-
-        assert_eq!(created_cas_number.get_table_name(), "cas_number");
-        assert_eq!(created_cas_number.get_id_field_name(), "cas_number_id");
-        assert_eq!(created_cas_number.get_text_field_name(), "cas_number_label");
-
-        created_cas_number.set_id_field(2);
-        assert_eq!(created_cas_number.get_id(), Some(2));
-
-        created_cas_number.set_text_field("test2");
-        assert_eq!(created_cas_number.get_text(), "test2");
+    fn test_serde() {
+        assert_serde_round_trip::<CasNumber>(&sample());
     }
 
     #[test]
-    fn test_sanitize_and_validate_cas_number() {
-        let mut cas_number = CasNumber {
-            match_exact_search: false,
-            cas_number_id: Some(1),
-            cas_number_label: "  7732-18-5  ".to_string(),
-            cas_number_cmr: None,
-        };
-        assert!(cas_number.sanitize_and_validate().is_ok());
-        assert_eq!(cas_number.cas_number_label, "7732-18-5");
-
-        let mut cas_number = CasNumber {
-            match_exact_search: false,
-            cas_number_id: Some(2),
-            cas_number_label: "  97-65-4  ".to_string(),
-            cas_number_cmr: None,
-        };
-        assert!(cas_number.sanitize_and_validate().is_ok());
-        assert_eq!(cas_number.cas_number_label, "97-65-4");
-
-        let mut cas_number = CasNumber {
-            match_exact_search: false,
-            cas_number_id: Some(3),
-            cas_number_label: "7732-18-5".to_string(),
-            cas_number_cmr: None,
-        };
-        assert!(cas_number.sanitize_and_validate().is_ok());
-        assert_eq!(cas_number.cas_number_label, "7732-18-5");
-    }
-
-    #[test]
-    fn test_sanitize_and_validate_invalid_cas_number() {
-        let mut cas_number = CasNumber {
-            match_exact_search: false,
-            cas_number_id: Some(4),
-            cas_number_label: "12345".to_string(),
-            cas_number_cmr: None,
-        };
-        assert!(cas_number.sanitize_and_validate().is_err());
-
-        let mut cas_number = CasNumber {
-            match_exact_search: false,
-            cas_number_id: Some(5),
-            cas_number_label: "abcdef".to_string(),
-            cas_number_cmr: None,
-        };
-        assert!(cas_number.sanitize_and_validate().is_err());
-    }
-
-    #[test]
-    fn test_sanitize_and_validate_empty_cas_number() {
-        let mut cas_number = CasNumber {
-            match_exact_search: false,
-            cas_number_id: Some(6),
-            cas_number_label: String::default(),
-            cas_number_cmr: None,
-        };
-        assert!(cas_number.sanitize_and_validate().is_err());
-    }
-
-    #[test]
-    fn test_create() {
-        let cas_number = CasNumber {
-            match_exact_search: true,
-            cas_number_id: Some(1),
-            cas_number_label: "test".to_string(),
-            cas_number_cmr: Some("cmr".to_string()),
-        };
-        let created = cas_number.create();
-        assert!(!created.match_exact_search);
-        assert_eq!(created.cas_number_id, None);
-        assert_eq!(created.cas_number_label, String::new());
-        assert_eq!(created.cas_number_cmr, None);
-    }
-
-    #[test]
-    fn test_set_and_get_exact_search() {
-        let mut cas_number = CasNumber::default();
-        cas_number.set_exact_search(true);
-        assert!(cas_number.get_exact_search());
-        cas_number.set_exact_search(false);
-        assert!(!cas_number.get_exact_search());
-    }
-
-    #[test]
-    fn test_get_table_name() {
-        let cas_number = CasNumber::default();
-        assert_eq!(cas_number.get_table_name(), "cas_number");
-    }
-
-    #[test]
-    fn test_get_id_field_name() {
-        let cas_number = CasNumber::default();
-        assert_eq!(cas_number.get_id_field_name(), "cas_number_id");
-    }
-
-    #[test]
-    fn test_set_and_get_id() {
-        let mut cas_number = CasNumber::default();
-        cas_number.set_id_field(42);
-        assert_eq!(cas_number.get_id(), Some(42));
-        cas_number.set_id_field(0);
-        assert_eq!(cas_number.get_id(), Some(0));
-    }
-
-    #[test]
-    fn test_set_and_get_text() {
-        let mut cas_number = CasNumber::default();
-        cas_number.set_text_field("123-45-6789");
-        assert_eq!(cas_number.get_text(), "123-45-6789");
-        cas_number.set_text_field("");
-        assert_eq!(cas_number.get_text(), "");
-    }
-
-    #[test]
-    fn test_match_exact_search_serde_defaults() -> Result<(), serde_json::Error> {
-        let mut payload = serde_json::json!({"cas_number_label": "7732-18-5"});
-        let value: CasNumber = serde_json::from_value(payload.clone())?;
+    fn test_serde_defaults() {
+        let value: CasNumber =
+            serde_json::from_value(json!({"cas_number_label": "7732-18-5"})).unwrap();
         assert!(!value.match_exact_search);
-        assert_eq!(
-            serde_json::to_value(&value)?.get("match_exact_search"),
-            Some(&serde_json::json!(false))
-        );
-
-        for expected in [true, false] {
-            payload["match_exact_search"] = serde_json::json!(expected);
-            let value: CasNumber = serde_json::from_value(payload.clone())?;
-            assert_eq!(value.match_exact_search, expected);
-            assert_eq!(
-                serde_json::to_value(&value)?.get("match_exact_search"),
-                Some(&serde_json::json!(expected))
-            );
-        }
-
-        let mut missing_required = payload.clone();
-        if let Some(object) = missing_required.as_object_mut() {
-            object.remove("cas_number_label");
-        }
-        assert!(serde_json::from_value::<CasNumber>(missing_required).is_err());
-        Ok(())
+        assert_eq!(value.cas_number_id, None);
+        assert_eq!(value.cas_number_cmr, None);
     }
 
     #[test]
-    fn test_sanitize_and_validate_cmr() {
+    fn test_serde_rejects_missing_required_fields() {
+        assert_serde_rejects_missing::<CasNumber>(&sample(), &["cas_number_label"]);
+    }
+
+    // sanitize_and_validate.
+
+    #[test]
+    fn test_sanitize_and_validate() {
         let mut value = CasNumber {
-            cas_number_label: "7732-18-5".to_string(),
-            cas_number_cmr: Some("  C1A   M2 ".to_string()),
+            cas_number_label: "  7732-18-5  ".to_string(),
+            cas_number_cmr: Some("  C1A   lact ".to_string()),
             ..Default::default()
         };
         value.sanitize_and_validate().unwrap();
-        assert_eq!(value.cas_number_cmr.as_deref(), Some("C1A M2"));
+        assert_eq!(value.cas_number_label, "7732-18-5");
+        assert_eq!(value.cas_number_cmr.as_deref(), Some("C1A lact"));
 
-        value.cas_number_cmr = Some(" ".to_string());
+        // An empty CMR classification becomes None.
+        value.cas_number_cmr = Some("  ".to_string());
         value.sanitize_and_validate().unwrap();
         assert_eq!(value.cas_number_cmr, None);
     }
 
     #[test]
-    fn test_sanitize_and_validate_cmr_format() {
-        let mut value = CasNumber {
-            cas_number_label: "7732-18-5".to_string(),
-            cas_number_cmr: Some("C1a lact".to_string()),
-            ..Default::default()
-        };
-        value.sanitize_and_validate().unwrap();
+    fn test_sanitize_and_validate_errors() {
+        for invalid in ["", " "] {
+            let mut value = CasNumber {
+                cas_number_label: invalid.to_string(),
+                ..Default::default()
+            };
+            let error = assert_validation_error(value.sanitize_and_validate(), "cas_number_label");
+            assert!(
+                matches!(error, ValidationError::Empty { .. }),
+                "{invalid}: {error:?}"
+            );
+        }
+        for invalid in ["12345", "abcdef", "7732-18-4"] {
+            let mut value = CasNumber {
+                cas_number_label: invalid.to_string(),
+                ..Default::default()
+            };
+            let error = assert_validation_error(value.sanitize_and_validate(), "cas_number_label");
+            assert!(
+                matches!(error, ValidationError::InvalidCasNumber(_)),
+                "{invalid}: {error:?}"
+            );
+        }
+        for invalid in ["C1A unknown", "C3"] {
+            let mut value = CasNumber {
+                cas_number_label: "7732-18-5".to_string(),
+                cas_number_cmr: Some(invalid.to_string()),
+                ..Default::default()
+            };
+            let error = assert_validation_error(value.sanitize_and_validate(), "cas_number_cmr");
+            assert!(
+                matches!(error, ValidationError::InvalidFormat { .. }),
+                "{invalid}: {error:?}"
+            );
+        }
+    }
 
-        value.cas_number_cmr = Some("C1A unknown".to_string());
-        let error = value.sanitize_and_validate().unwrap_err();
-        assert!(matches!(
-            error,
-            crate::error::ValidationError::InvalidFormat {
-                field: "cas_number_cmr",
-                ..
-            }
-        ));
+    // Searchable.
+
+    #[test]
+    fn test_searchable() {
+        assert_searchable::<CasNumber>("cas_number", "cas_number_id", "cas_number_label");
     }
 }

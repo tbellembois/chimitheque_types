@@ -84,6 +84,8 @@ pub mod supplierref;
 pub mod symbol;
 /// Free product tags.
 pub mod tag;
+#[cfg(test)]
+mod test_helpers;
 /// Measurement units.
 pub mod unit;
 /// What a unit measures.

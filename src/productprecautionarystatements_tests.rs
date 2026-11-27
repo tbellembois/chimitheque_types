@@ -8,31 +8,30 @@ mod tests {
     )]
 
     use crate::productprecautionarystatements::Productprecautionarystatements;
-
-    /// Deserializes `json` into `T` and serializes it back unchanged.
-    fn assert_round_trip<T: serde::Serialize + serde::de::DeserializeOwned>(
-        json: &serde_json::Value,
-    ) {
-        let value: T = serde_json::from_value(json.clone()).unwrap();
-        assert_eq!(&serde_json::to_value(&value).unwrap(), json);
-    }
+    use crate::test_helpers::{assert_serde_rejects_missing, assert_serde_round_trip};
+    use serde_json::json;
 
     fn sample() -> serde_json::Value {
-        serde_json::json!({"productprecautionarystatements_product_id": 1, "productprecautionarystatements_precautionary_statement_id": 2, "productprecautionarystatements_precautionary_statement_label": "Wear protective gloves", "productprecautionarystatements_precautionary_statement_reference": "P280"})
+        json!({"productprecautionarystatements_product_id": 1, "productprecautionarystatements_precautionary_statement_id": 2, "productprecautionarystatements_precautionary_statement_label": "Wear protective gloves", "productprecautionarystatements_precautionary_statement_reference": "P280"})
+    }
+
+    // Serialization and deserialization.
+
+    #[test]
+    fn test_serde() {
+        assert_serde_round_trip::<Productprecautionarystatements>(&sample());
     }
 
     #[test]
-    fn test_serde_round_trip() {
-        assert_round_trip::<Productprecautionarystatements>(&sample());
-    }
-
-    #[test]
-    fn test_serde_rejects_missing_productprecautionarystatements_precautionary_statement_reference()
-    {
-        let mut json = sample();
-        json.as_object_mut()
-            .unwrap()
-            .remove("productprecautionarystatements_precautionary_statement_reference");
-        assert!(serde_json::from_value::<Productprecautionarystatements>(json).is_err());
+    fn test_serde_rejects_missing_required_fields() {
+        assert_serde_rejects_missing::<Productprecautionarystatements>(
+            &sample(),
+            &[
+                "productprecautionarystatements_product_id",
+                "productprecautionarystatements_precautionary_statement_id",
+                "productprecautionarystatements_precautionary_statement_label",
+                "productprecautionarystatements_precautionary_statement_reference",
+            ],
+        );
     }
 }

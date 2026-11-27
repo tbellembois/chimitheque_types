@@ -7,95 +7,70 @@ mod tests {
         clippy::too_many_lines
     )]
 
+    use std::str::FromStr;
+
     use crate::unittype::*;
+    use serde_json::json;
+
+    /// Each unit type with its canonical and legacy names.
+    const TYPES: [(UnitType, &str, &str); 4] = [
+        (UnitType::Quantity, "quantity", "Quantity"),
+        (UnitType::Concentration, "concentration", "Concentration"),
+        (UnitType::Temperature, "temperature", "Temperature"),
+        (
+            UnitType::MolecularWeight,
+            "molecular_weight",
+            "MolecularWeight",
+        ),
+    ];
+
+    // Serialization and deserialization.
 
     #[test]
-    fn test_serde_matches_string_representation() {
-        for (unit_type, canonical, legacy) in [
-            (UnitType::Quantity, "quantity", "Quantity"),
-            (UnitType::Concentration, "concentration", "Concentration"),
-            (UnitType::Temperature, "temperature", "Temperature"),
-            (
-                UnitType::MolecularWeight,
-                "molecular_weight",
-                "MolecularWeight",
-            ),
-        ] {
-            assert_eq!(unit_type.to_string(), canonical);
-            assert_eq!(UnitType::from_str(canonical).unwrap(), unit_type);
-            assert_eq!(
-                serde_json::to_value(unit_type).unwrap(),
-                serde_json::json!(canonical)
-            );
-
+    fn test_serde() {
+        for (unit_type, canonical, legacy) in TYPES {
+            assert_eq!(serde_json::to_value(unit_type).unwrap(), json!(canonical));
+            // The legacy PascalCase names are accepted too.
             for input in [canonical, legacy] {
-                let parsed: UnitType = serde_json::from_value(serde_json::json!(input)).unwrap();
-                assert_eq!(parsed, unit_type);
                 assert_eq!(
-                    serde_json::to_value(parsed).unwrap(),
-                    serde_json::json!(canonical)
+                    serde_json::from_value::<UnitType>(json!(input)).unwrap(),
+                    unit_type
                 );
             }
         }
     }
 
     #[test]
-    fn test_serde_rejects_unknown_unit_type() {
-        assert!(serde_json::from_str::<UnitType>("\"invalid\"").is_err());
+    fn test_serde_rejects_invalid() {
+        for input in ["", "invalid", "QUANTITY", "molecularWeight"] {
+            assert!(
+                serde_json::from_value::<UnitType>(json!(input)).is_err(),
+                "{input}"
+            );
+        }
+    }
+
+    // Other functions.
+
+    #[test]
+    fn test_default() {
+        assert_eq!(UnitType::default(), UnitType::Quantity);
     }
 
     #[test]
-    fn test_display_quantity() {
-        let unit_type = UnitType::Quantity;
-        assert_eq!(unit_type.to_string(), "quantity");
+    fn test_display_and_from_str() {
+        for (unit_type, canonical, _) in TYPES {
+            assert_eq!(unit_type.to_string(), canonical);
+            assert_eq!(UnitType::from_str(canonical).unwrap(), unit_type);
+        }
     }
 
     #[test]
-    fn test_display_concentration() {
-        let unit_type = UnitType::Concentration;
-        assert_eq!(unit_type.to_string(), "concentration");
-    }
-
-    #[test]
-    fn test_display_temperature() {
-        let unit_type = UnitType::Temperature;
-        assert_eq!(unit_type.to_string(), "temperature");
-    }
-
-    #[test]
-    fn test_display_molecular_weight() {
-        let unit_type = UnitType::MolecularWeight;
-        assert_eq!(unit_type.to_string(), "molecular_weight");
-    }
-
-    #[test]
-    fn test_from_str_quantity() {
-        let unit_type = UnitType::from_str("quantity").unwrap();
-        assert_eq!(unit_type, UnitType::Quantity);
-    }
-
-    #[test]
-    fn test_from_str_concentration() {
-        let unit_type = UnitType::from_str("concentration").unwrap();
-        assert_eq!(unit_type, UnitType::Concentration);
-    }
-
-    #[test]
-    fn test_from_str_temperature() {
-        let unit_type = UnitType::from_str("temperature").unwrap();
-        assert_eq!(unit_type, UnitType::Temperature);
-    }
-
-    #[test]
-    fn test_from_str_molecular_weight() {
-        let unit_type = UnitType::from_str("molecular_weight").unwrap();
-        assert_eq!(unit_type, UnitType::MolecularWeight);
-    }
-
-    #[test]
-    fn test_from_str_invalid() {
-        let unit_type = UnitType::from_str("invalid");
-        assert!(unit_type.is_err());
+    fn test_from_str_rejects_invalid() {
+        // Unlike deserialization, the legacy names are rejected.
+        for input in ["", "invalid", "Quantity", "MolecularWeight"] {
+            assert!(UnitType::from_str(input).is_err(), "{input}");
+        }
     }
 
     #[test]

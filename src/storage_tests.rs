@@ -7,6 +7,7 @@ mod tests {
         clippy::too_many_lines
     )]
 
+    use crate::test_helpers::{assert_serde_rejects_missing, assert_value_round_trip};
     use crate::{error::ValidationError, storage::*, supplier::Supplier, unit::Unit};
 
     /// Makes a storage invalid, and the field expected in the error.
@@ -22,6 +23,86 @@ mod tests {
             ..Default::default()
         }
     }
+
+    // Serialization and deserialization.
+
+    fn date(text: &str) -> chrono::DateTime<chrono::Utc> {
+        text.parse().unwrap()
+    }
+
+    fn serde_sample() -> Storage {
+        Storage {
+            storage_id: Some(1),
+            storage_creation_date: date("2026-01-02T03:04:05Z"),
+            storage_modification_date: date("2026-01-03T03:04:05Z"),
+            storage_entry_date: Some(date("2026-01-02T00:00:00Z")),
+            storage_comment: Some("line 1\nline 2".to_string()),
+            storage_quantity: Some(2.5),
+            unit_quantity: Some(Unit {
+                unit_id: Some(2),
+                unit_label: "L".to_string(),
+                unit_multiplier: 1.0,
+                ..Default::default()
+            }),
+            storage_to_destroy: true,
+            storage_number_of_bag: Some(3),
+            supplier: Some(Supplier {
+                supplier_id: Some(4),
+                supplier_label: "Acme".to_string(),
+                ..Default::default()
+            }),
+            storage_hc: 5,
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn test_serde() {
+        let json = assert_value_round_trip(&serde_sample());
+        assert_eq!(json["storage_creation_date"], "2026-01-02T03:04:05Z");
+        assert_eq!(json["storage_entry_date"], "2026-01-02T00:00:00Z");
+        assert_eq!(json["storage_comment"], "line 1\nline 2");
+        assert_eq!(json["storage_quantity"], 2.5);
+        assert_eq!(json["unit_quantity"]["unit_label"], "L");
+        assert_eq!(json["storage_to_destroy"], true);
+        assert_eq!(json["supplier"]["supplier_label"], "Acme");
+        assert_eq!(json["storage_hc"], 5);
+    }
+
+    #[test]
+    fn test_serde_defaults() {
+        let value: Storage = serde_json::from_value(serde_json::json!({
+            "storage_creation_date": "2026-01-02T03:04:05Z",
+            "storage_modification_date": "2026-01-02T03:04:05Z",
+            "product": {"product_type": "chem", "name": {"name_label": "ETHANOL"}},
+            "store_location": {"store_location_name": "shelf", "store_location_can_store": true}
+        }))
+        .unwrap();
+        assert_eq!(value.storage_id, None);
+        assert_eq!(value.storage_entry_date, None);
+        assert!(!value.storage_to_destroy);
+        assert!(!value.storage_archive);
+        assert_eq!(value.person.person_id, None);
+        assert_eq!(value.storage_hc, 0);
+        assert!(value.supplier.is_none());
+        assert!(value.borrowing.is_none());
+    }
+
+    #[test]
+    fn test_serde_rejects_missing_required_fields() {
+        let json = assert_value_round_trip(&serde_sample());
+        assert_serde_rejects_missing::<Storage>(
+            &json,
+            &[
+                "storage_creation_date",
+                "storage_modification_date",
+                "product",
+                "store_location",
+            ],
+        );
+    }
+
+    // sanitize_and_validate.
 
     #[test]
     fn test_sanitize_and_validate_without_supplier() {
@@ -228,6 +309,8 @@ mod tests {
             ..Default::default()
         }
     }
+
+    // Other functions.
 
     #[test]
     fn test_validate_unit_types() {

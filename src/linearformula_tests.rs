@@ -7,154 +7,87 @@ mod tests {
         clippy::too_many_lines
     )]
 
+    use crate::error::ValidationError;
     use crate::linearformula::*;
-    use chimitheque_traits::searchable::Searchable;
+    use crate::test_helpers::{
+        assert_searchable, assert_serde_rejects_missing, assert_serde_round_trip,
+        assert_validation_error,
+    };
+    use serde_json::json;
+
+    fn sample() -> serde_json::Value {
+        json!({"match_exact_search": true, "linear_formula_id": 1, "linear_formula_label": "CH3CH2OH"})
+    }
+
+    // Serialization and deserialization.
 
     #[test]
-    fn test_linear_formula_searchable() {
-        let linear_formula = LinearFormula {
-            match_exact_search: true,
-            linear_formula_id: Some(1),
-            linear_formula_label: "test".to_string(),
-        };
-
-        let mut created_linear_formula = linear_formula.create();
-        assert!(!created_linear_formula.match_exact_search);
-        assert_eq!(created_linear_formula.linear_formula_id, None);
-        assert_eq!(created_linear_formula.linear_formula_label, String::new());
-
-        created_linear_formula.set_exact_search(true);
-        assert!(created_linear_formula.get_exact_search());
-
-        assert_eq!(created_linear_formula.get_table_name(), "linear_formula");
-        assert_eq!(
-            created_linear_formula.get_id_field_name(),
-            "linear_formula_id"
-        );
-        assert_eq!(
-            created_linear_formula.get_text_field_name(),
-            "linear_formula_label"
-        );
-
-        created_linear_formula.set_id_field(2);
-        assert_eq!(created_linear_formula.get_id(), Some(2));
-
-        created_linear_formula.set_text_field("test2");
-        assert_eq!(created_linear_formula.get_text(), "test2");
+    fn test_serde() {
+        assert_serde_round_trip::<LinearFormula>(&sample());
     }
 
     #[test]
-    fn test_create_defaults() {
-        let linear_formula = LinearFormula::default();
-        let created = linear_formula.create();
-        assert!(!created.match_exact_search);
-        assert_eq!(created.linear_formula_id, None);
-        assert_eq!(created.linear_formula_label, String::new());
-    }
-
-    #[test]
-    fn test_set_and_get_exact_search() {
-        let mut linear_formula = LinearFormula::default();
-        linear_formula.set_exact_search(true);
-        assert!(linear_formula.get_exact_search());
-        linear_formula.set_exact_search(false);
-        assert!(!linear_formula.get_exact_search());
-    }
-
-    #[test]
-    fn test_get_table_name() {
-        let linear_formula = LinearFormula::default();
-        assert_eq!(linear_formula.get_table_name(), "linear_formula");
-    }
-
-    #[test]
-    fn test_get_id_field_name() {
-        let linear_formula = LinearFormula::default();
-        assert_eq!(linear_formula.get_id_field_name(), "linear_formula_id");
-    }
-
-    #[test]
-    fn test_set_and_get_id() {
-        let mut linear_formula = LinearFormula::default();
-        linear_formula.set_id_field(42);
-        assert_eq!(linear_formula.get_id(), Some(42));
-        linear_formula.set_id_field(0);
-        assert_eq!(linear_formula.get_id(), Some(0));
-    }
-
-    #[test]
-    fn test_set_and_get_text() {
-        let mut linear_formula = LinearFormula::default();
-        linear_formula.set_text_field("C6H12O6");
-        assert_eq!(linear_formula.get_text(), "C6H12O6");
-        linear_formula.set_text_field("");
-        assert_eq!(linear_formula.get_text(), "");
-    }
-
-    #[test]
-    fn test_sanitize_and_validate_linear_formula() {
-        let mut linear_formula = LinearFormula {
-            match_exact_search: false,
-            linear_formula_id: Some(1),
-            linear_formula_label: "H2O  ".to_string(),
-        };
-        assert!(linear_formula.sanitize_and_validate().is_ok());
-        assert_eq!(linear_formula.linear_formula_label, "H2O");
-
-        let mut linear_formula = LinearFormula {
-            match_exact_search: false,
-            linear_formula_id: Some(2),
-            linear_formula_label: "C6H12O6".to_string(),
-        };
-        assert!(linear_formula.sanitize_and_validate().is_ok());
-        assert_eq!(linear_formula.linear_formula_label, "C6H12O6");
-    }
-
-    #[test]
-    fn test_sanitize_and_validate_invalid_linear_formula() {
-        let mut linear_formula = LinearFormula {
-            match_exact_search: false,
-            linear_formula_id: Some(4),
-            linear_formula_label: "X123X".to_string(),
-        };
-        assert!(linear_formula.sanitize_and_validate().is_err());
-    }
-
-    #[test]
-    fn test_sanitize_and_validate_empty_linear_formula() {
-        let mut linear_formula = LinearFormula {
-            match_exact_search: false,
-            linear_formula_id: Some(5),
-            linear_formula_label: String::default(),
-        };
-        assert!(linear_formula.sanitize_and_validate().is_err());
-    }
-
-    #[test]
-    fn test_match_exact_search_serde_defaults() -> Result<(), serde_json::Error> {
-        let mut payload = serde_json::json!({"linear_formula_label": "H2O"});
-        let value: LinearFormula = serde_json::from_value(payload.clone())?;
+    fn test_serde_defaults() {
+        let value: LinearFormula =
+            serde_json::from_value(json!({"linear_formula_label": "CH3CH2OH"})).unwrap();
         assert!(!value.match_exact_search);
-        assert_eq!(
-            serde_json::to_value(&value)?.get("match_exact_search"),
-            Some(&serde_json::json!(false))
-        );
+        assert_eq!(value.linear_formula_id, None);
+    }
 
-        for expected in [true, false] {
-            payload["match_exact_search"] = serde_json::json!(expected);
-            let value: LinearFormula = serde_json::from_value(payload.clone())?;
-            assert_eq!(value.match_exact_search, expected);
-            assert_eq!(
-                serde_json::to_value(&value)?.get("match_exact_search"),
-                Some(&serde_json::json!(expected))
+    #[test]
+    fn test_serde_rejects_missing_required_fields() {
+        assert_serde_rejects_missing::<LinearFormula>(&sample(), &["linear_formula_label"]);
+    }
+
+    // sanitize_and_validate.
+
+    #[test]
+    fn test_sanitize_and_validate() {
+        // The label is cleaned but kept as entered.
+        let mut value = LinearFormula {
+            linear_formula_label: "  CH3CH2OH ".to_string(),
+            ..Default::default()
+        };
+        value.sanitize_and_validate().unwrap();
+        assert_eq!(value.linear_formula_label, "CH3CH2OH");
+    }
+
+    #[test]
+    fn test_sanitize_and_validate_errors() {
+        for invalid in ["", " "] {
+            let mut value = LinearFormula {
+                linear_formula_label: invalid.to_string(),
+                ..Default::default()
+            };
+            let error =
+                assert_validation_error(value.sanitize_and_validate(), "linear_formula_label");
+            assert!(
+                matches!(error, ValidationError::Empty { .. }),
+                "{invalid}: {error:?}"
             );
         }
-
-        let mut missing_required = payload.clone();
-        if let Some(object) = missing_required.as_object_mut() {
-            object.remove("linear_formula_label");
+        for invalid in ["X123X", "(CH3"] {
+            let mut value = LinearFormula {
+                linear_formula_label: invalid.to_string(),
+                ..Default::default()
+            };
+            let error =
+                assert_validation_error(value.sanitize_and_validate(), "linear_formula_label");
+            assert!(
+                matches!(error, ValidationError::InvalidFormula { .. }),
+                "{invalid}: {error:?}"
+            );
         }
-        assert!(serde_json::from_value::<LinearFormula>(missing_required).is_err());
-        Ok(())
+    }
+
+    // Searchable.
+
+    #[test]
+    fn test_searchable() {
+        assert_searchable::<LinearFormula>(
+            "linear_formula",
+            "linear_formula_id",
+            "linear_formula_label",
+        );
     }
 }

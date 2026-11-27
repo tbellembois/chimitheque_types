@@ -10,6 +10,7 @@ mod tests {
     use crate::error::PubchemParseError;
     use crate::producttype::ProductType;
     use crate::pubchemproduct::{PubchemProduct, query_string, query_strings};
+    use crate::test_helpers::assert_value_round_trip;
     use serde_json::json;
     use std::error::Error as _;
     use std::fs::{self};
@@ -17,6 +18,30 @@ mod tests {
     fn init_logger() {
         let _ = env_logger::builder().is_test(true).try_init();
     }
+
+    // Serialization and deserialization.
+
+    #[test]
+    fn test_serde() {
+        let product = PubchemProduct::from_pubchem_json(include_str!(
+            "testdata/pubchem_files/pubchem_pug_view_Acetic Acid.json"
+        ))
+        .unwrap();
+        let json = assert_value_round_trip(&product);
+        assert_eq!(json["name"], "Acetic Acid");
+        assert_eq!(json["cas"], "64-19-7");
+    }
+
+    #[test]
+    fn test_serde_optional_fields() {
+        // Missing fields are deserialized as None and not serialized.
+        let product: PubchemProduct = serde_json::from_value(json!({})).unwrap();
+        assert!(product.name.is_none());
+        assert!(product.synonyms.is_none());
+        assert_eq!(serde_json::to_value(&product).unwrap(), json!({}));
+    }
+
+    // Other functions.
 
     #[test]
     fn test_pubchem_file_fields() {

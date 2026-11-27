@@ -8,30 +8,29 @@ mod tests {
     )]
 
     use crate::productsynonyms::Productsynonyms;
-
-    /// Deserializes `json` into `T` and serializes it back unchanged.
-    fn assert_round_trip<T: serde::Serialize + serde::de::DeserializeOwned>(
-        json: &serde_json::Value,
-    ) {
-        let value: T = serde_json::from_value(json.clone()).unwrap();
-        assert_eq!(&serde_json::to_value(&value).unwrap(), json);
-    }
+    use crate::test_helpers::{assert_serde_rejects_missing, assert_serde_round_trip};
+    use serde_json::json;
 
     fn sample() -> serde_json::Value {
-        serde_json::json!({"productsynonyms_product_id": 1, "productsynonyms_name_id": 2, "productsynonyms_name_label": "ETHYL ALCOHOL"})
+        json!({"productsynonyms_product_id": 1, "productsynonyms_name_id": 2, "productsynonyms_name_label": "ETHYL ALCOHOL"})
+    }
+
+    // Serialization and deserialization.
+
+    #[test]
+    fn test_serde() {
+        assert_serde_round_trip::<Productsynonyms>(&sample());
     }
 
     #[test]
-    fn test_serde_round_trip() {
-        assert_round_trip::<Productsynonyms>(&sample());
-    }
-
-    #[test]
-    fn test_serde_rejects_missing_productsynonyms_name_id() {
-        let mut json = sample();
-        json.as_object_mut()
-            .unwrap()
-            .remove("productsynonyms_name_id");
-        assert!(serde_json::from_value::<Productsynonyms>(json).is_err());
+    fn test_serde_rejects_missing_required_fields() {
+        assert_serde_rejects_missing::<Productsynonyms>(
+            &sample(),
+            &[
+                "productsynonyms_product_id",
+                "productsynonyms_name_id",
+                "productsynonyms_name_label",
+            ],
+        );
     }
 }

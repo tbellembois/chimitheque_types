@@ -7,31 +7,42 @@ mod tests {
         clippy::too_many_lines
     )]
 
-    use crate::pubchem::Autocomplete;
+    use crate::pubchem::{Autocomplete, AutocompleteTerm};
+    use crate::test_helpers::{assert_serde_rejects_missing, assert_serde_round_trip};
+    use serde_json::json;
 
-    #[test]
-    fn test_serde_round_trip() {
-        let json = serde_json::json!({
+    fn sample() -> serde_json::Value {
+        json!({
             "total": 2,
             "dictionary_terms": {"compound": ["ethanol", "ethanolamine"]}
-        });
-        let autocomplete: Autocomplete = serde_json::from_value(json.clone()).unwrap();
-        assert_eq!(autocomplete.total, 2);
+        })
+    }
+
+    // Serialization and deserialization.
+
+    #[test]
+    fn test_serde() {
+        let value = assert_serde_round_trip::<Autocomplete>(&sample());
+        assert_eq!(value.total, 2);
         assert_eq!(
-            autocomplete.dictionary_terms.as_ref().unwrap().compound,
+            value.dictionary_terms.unwrap().compound,
             ["ethanol", "ethanolamine"]
         );
-        assert_eq!(serde_json::to_value(&autocomplete).unwrap(), json);
     }
 
     #[test]
-    fn test_serde_omits_missing_terms() {
-        let autocomplete: Autocomplete =
-            serde_json::from_value(serde_json::json!({"total": 0})).unwrap();
-        assert!(autocomplete.dictionary_terms.is_none());
-        assert_eq!(
-            serde_json::to_value(&autocomplete).unwrap(),
-            serde_json::json!({"total": 0})
+    fn test_serde_optional_fields() {
+        // Missing dictionary terms are deserialized as None and not serialized.
+        let value = assert_serde_round_trip::<Autocomplete>(&json!({"total": 0}));
+        assert!(value.dictionary_terms.is_none());
+    }
+
+    #[test]
+    fn test_serde_rejects_missing_required_fields() {
+        assert_serde_rejects_missing::<Autocomplete>(&sample(), &["total"]);
+        assert_serde_rejects_missing::<AutocompleteTerm>(
+            &json!({"compound": ["ethanol"]}),
+            &["compound"],
         );
     }
 }

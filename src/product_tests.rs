@@ -7,10 +7,11 @@ mod tests {
         clippy::too_many_lines
     )]
 
+    use crate::test_helpers::{assert_serde_rejects_missing, assert_value_round_trip};
     use crate::{
-        classofcompound::ClassOfCompound, error::ValidationError, name::Name, producer::Producer,
-        producerref::ProducerRef, product::*, supplier::Supplier, supplierref::SupplierRef,
-        unit::Unit,
+        casnumber::CasNumber, classofcompound::ClassOfCompound, error::ValidationError, name::Name,
+        producer::Producer, producerref::ProducerRef, product::*, producttype::ProductType,
+        supplier::Supplier, supplierref::SupplierRef, tag::Tag, unit::Unit,
     };
 
     /// Makes a value invalid, and the field expected in the error.
@@ -47,6 +48,78 @@ mod tests {
             "{error:?}"
         );
     }
+
+    // Serialization and deserialization.
+
+    fn serde_sample() -> Product {
+        Product {
+            product_id: Some(1),
+            product_type: ProductType::Bio,
+            product_restricted: true,
+            product_remark: Some("first line\nsecond line".to_string()),
+            product_molecular_weight: Some(46.07),
+            unit_molecular_weight: Some(Unit {
+                unit_id: Some(3),
+                unit_label: "g/mol".to_string(),
+                unit_multiplier: 1.0,
+                ..Default::default()
+            }),
+            name: Name {
+                name_id: Some(2),
+                name_label: "ETHANOL".to_string(),
+                ..Default::default()
+            },
+            cas_number: Some(CasNumber {
+                cas_number_id: Some(4),
+                cas_number_label: "64-17-5".to_string(),
+                ..Default::default()
+            }),
+            synonyms: Some(vec![new_synonym("ETHYL ALCOHOL")]),
+            tags: Some(vec![Tag {
+                tag_id: Some(5),
+                tag_label: "solvent".to_string(),
+                ..Default::default()
+            }]),
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn test_serde() {
+        let json = assert_value_round_trip(&serde_sample());
+        assert_eq!(json["product_type"], "bio");
+        assert_eq!(json["product_restricted"], true);
+        assert_eq!(json["product_remark"], "first line\nsecond line");
+        assert_eq!(json["unit_molecular_weight"]["unit_label"], "g/mol");
+        assert_eq!(json["name"]["name_label"], "ETHANOL");
+        assert_eq!(json["cas_number"]["cas_number_label"], "64-17-5");
+        assert_eq!(json["synonyms"][0]["name_label"], "ETHYL ALCOHOL");
+        assert_eq!(json["tags"][0]["tag_label"], "solvent");
+    }
+
+    #[test]
+    fn test_serde_defaults() {
+        let value: Product = serde_json::from_value(serde_json::json!({
+            "product_type": "chem",
+            "name": {"name_label": "ETHANOL"}
+        }))
+        .unwrap();
+        assert_eq!(value.product_id, None);
+        assert!(!value.product_restricted);
+        assert!(!value.product_radioactive);
+        assert!(!value.product_has_bookmark);
+        assert_eq!(value.person.person_id, None);
+        assert!(value.cas_number.is_none());
+        assert!(value.synonyms.is_none());
+    }
+
+    #[test]
+    fn test_serde_rejects_missing_required_fields() {
+        let json = assert_value_round_trip(&serde_sample());
+        assert_serde_rejects_missing::<Product>(&json, &["product_type", "name"]);
+    }
+
+    // sanitize_and_validate.
 
     #[test]
     fn test_sanitize_and_validate_cleans_new_synonyms() {
@@ -354,6 +427,8 @@ mod tests {
             ..Default::default()
         }
     }
+
+    // Other functions.
 
     #[test]
     fn test_validate_unit_types() {

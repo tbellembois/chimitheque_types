@@ -8,30 +8,29 @@ mod tests {
     )]
 
     use crate::productclassesofcompounds::Productclassesofcompounds;
-
-    /// Deserializes `json` into `T` and serializes it back unchanged.
-    fn assert_round_trip<T: serde::Serialize + serde::de::DeserializeOwned>(
-        json: &serde_json::Value,
-    ) {
-        let value: T = serde_json::from_value(json.clone()).unwrap();
-        assert_eq!(&serde_json::to_value(&value).unwrap(), json);
-    }
+    use crate::test_helpers::{assert_serde_rejects_missing, assert_serde_round_trip};
+    use serde_json::json;
 
     fn sample() -> serde_json::Value {
-        serde_json::json!({"productclassesofcompounds_product_id": 1, "productclassesofcompounds_class_of_compound_id": 2, "productclassesofcompounds_class_of_compound_label": "alcohol"})
+        json!({"productclassesofcompounds_product_id": 1, "productclassesofcompounds_class_of_compound_id": 2, "productclassesofcompounds_class_of_compound_label": "alcohol"})
+    }
+
+    // Serialization and deserialization.
+
+    #[test]
+    fn test_serde() {
+        assert_serde_round_trip::<Productclassesofcompounds>(&sample());
     }
 
     #[test]
-    fn test_serde_round_trip() {
-        assert_round_trip::<Productclassesofcompounds>(&sample());
-    }
-
-    #[test]
-    fn test_serde_rejects_missing_productclassesofcompounds_product_id() {
-        let mut json = sample();
-        json.as_object_mut()
-            .unwrap()
-            .remove("productclassesofcompounds_product_id");
-        assert!(serde_json::from_value::<Productclassesofcompounds>(json).is_err());
+    fn test_serde_rejects_missing_required_fields() {
+        assert_serde_rejects_missing::<Productclassesofcompounds>(
+            &sample(),
+            &[
+                "productclassesofcompounds_product_id",
+                "productclassesofcompounds_class_of_compound_id",
+                "productclassesofcompounds_class_of_compound_label",
+            ],
+        );
     }
 }

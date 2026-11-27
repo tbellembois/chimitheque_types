@@ -8,162 +8,83 @@ mod tests {
     )]
 
     use crate::empiricalformula::*;
-    use chimitheque_traits::searchable::Searchable;
+    use crate::error::ValidationError;
+    use crate::test_helpers::{
+        assert_searchable, assert_serde_rejects_missing, assert_serde_round_trip,
+        assert_validation_error,
+    };
+    use serde_json::json;
+
+    fn sample() -> serde_json::Value {
+        json!({"match_exact_search": true, "empirical_formula_id": 1, "empirical_formula_label": "C2H6O"})
+    }
+
+    // Serialization and deserialization.
 
     #[test]
-    fn test_empirical_formula_searchable() {
-        let empirical_formula = EmpiricalFormula {
-            match_exact_search: true,
-            empirical_formula_id: Some(1),
-            empirical_formula_label: "test".to_string(),
-        };
-
-        let mut created_empirical_formula = empirical_formula.create();
-        assert!(!created_empirical_formula.match_exact_search);
-        assert_eq!(created_empirical_formula.empirical_formula_id, None);
-        assert_eq!(
-            created_empirical_formula.empirical_formula_label,
-            String::new()
-        );
-
-        created_empirical_formula.set_exact_search(true);
-        assert!(created_empirical_formula.get_exact_search());
-
-        assert_eq!(
-            created_empirical_formula.get_table_name(),
-            "empirical_formula"
-        );
-        assert_eq!(
-            created_empirical_formula.get_id_field_name(),
-            "empirical_formula_id"
-        );
-        assert_eq!(
-            created_empirical_formula.get_text_field_name(),
-            "empirical_formula_label"
-        );
-
-        created_empirical_formula.set_id_field(2);
-        assert_eq!(created_empirical_formula.get_id(), Some(2));
-
-        created_empirical_formula.set_text_field("test2");
-        assert_eq!(created_empirical_formula.get_text(), "test2");
+    fn test_serde() {
+        assert_serde_round_trip::<EmpiricalFormula>(&sample());
     }
 
     #[test]
-    fn test_sanitize_and_validate_empirical_formula() {
-        let mut empirical_formula = EmpiricalFormula {
-            match_exact_search: false,
-            empirical_formula_id: Some(1),
-            empirical_formula_label: "H2O  ".to_string(),
-        };
-        assert!(empirical_formula.sanitize_and_validate().is_ok());
-        assert_eq!(empirical_formula.empirical_formula_label, "H2O");
-
-        let mut empirical_formula = EmpiricalFormula {
-            match_exact_search: false,
-            empirical_formula_id: Some(2),
-            empirical_formula_label: "C6H12O6".to_string(),
-        };
-        assert!(empirical_formula.sanitize_and_validate().is_ok());
-        assert_eq!(empirical_formula.empirical_formula_label, "C6H12O6");
-    }
-
-    #[test]
-    fn test_sanitize_and_validate_invalid_empirical_formula() {
-        let mut empirical_formula = EmpiricalFormula {
-            match_exact_search: false,
-            empirical_formula_id: Some(4),
-            empirical_formula_label: "X123X".to_string(),
-        };
-        assert!(empirical_formula.sanitize_and_validate().is_err());
-    }
-
-    #[test]
-    fn test_sanitize_and_validate_empty_empirical_formula() {
-        let mut empirical_formula = EmpiricalFormula {
-            match_exact_search: false,
-            empirical_formula_id: Some(5),
-            empirical_formula_label: String::default(),
-        };
-        assert!(empirical_formula.sanitize_and_validate().is_err());
-    }
-
-    #[test]
-    fn test_create_defaults() {
-        let empirical_formula = EmpiricalFormula::default();
-        let created = empirical_formula.create();
-        assert!(!created.match_exact_search);
-        assert_eq!(created.empirical_formula_id, None);
-        assert_eq!(created.empirical_formula_label, String::new());
-    }
-
-    #[test]
-    fn test_set_and_get_exact_search() {
-        let mut empirical_formula = EmpiricalFormula::default();
-        empirical_formula.set_exact_search(true);
-        assert!(empirical_formula.get_exact_search());
-        empirical_formula.set_exact_search(false);
-        assert!(!empirical_formula.get_exact_search());
-    }
-
-    #[test]
-    fn test_get_table_name() {
-        let empirical_formula = EmpiricalFormula::default();
-        assert_eq!(empirical_formula.get_table_name(), "empirical_formula");
-    }
-
-    #[test]
-    fn test_get_id_field_name() {
-        let empirical_formula = EmpiricalFormula::default();
-        assert_eq!(
-            empirical_formula.get_id_field_name(),
-            "empirical_formula_id"
-        );
-    }
-
-    #[test]
-    fn test_set_and_get_id() {
-        let mut empirical_formula = EmpiricalFormula::default();
-        empirical_formula.set_id_field(42);
-        assert_eq!(empirical_formula.get_id(), Some(42));
-        empirical_formula.set_id_field(0);
-        assert_eq!(empirical_formula.get_id(), Some(0));
-    }
-
-    #[test]
-    fn test_set_and_get_text() {
-        let mut empirical_formula = EmpiricalFormula::default();
-        empirical_formula.set_text_field("C6H12O6");
-        assert_eq!(empirical_formula.get_text(), "C6H12O6");
-        empirical_formula.set_text_field("");
-        assert_eq!(empirical_formula.get_text(), "");
-    }
-
-    #[test]
-    fn test_match_exact_search_serde_defaults() -> Result<(), serde_json::Error> {
-        let mut payload = serde_json::json!({"empirical_formula_label": "H2O"});
-        let value: EmpiricalFormula = serde_json::from_value(payload.clone())?;
+    fn test_serde_defaults() {
+        let value: EmpiricalFormula =
+            serde_json::from_value(json!({"empirical_formula_label": "C2H6O"})).unwrap();
         assert!(!value.match_exact_search);
-        assert_eq!(
-            serde_json::to_value(&value)?.get("match_exact_search"),
-            Some(&serde_json::json!(false))
-        );
+        assert_eq!(value.empirical_formula_id, None);
+    }
 
-        for expected in [true, false] {
-            payload["match_exact_search"] = serde_json::json!(expected);
-            let value: EmpiricalFormula = serde_json::from_value(payload.clone())?;
-            assert_eq!(value.match_exact_search, expected);
-            assert_eq!(
-                serde_json::to_value(&value)?.get("match_exact_search"),
-                Some(&serde_json::json!(expected))
+    #[test]
+    fn test_serde_rejects_missing_required_fields() {
+        assert_serde_rejects_missing::<EmpiricalFormula>(&sample(), &["empirical_formula_label"]);
+    }
+
+    // sanitize_and_validate.
+
+    #[test]
+    fn test_sanitize_and_validate() {
+        // The label is cleaned and stored as its sorted empirical formula.
+        for (label, expected) in [("  H2O ", "H2O"), ("CH3CH2OH", "C2H6O")] {
+            let mut value = EmpiricalFormula {
+                empirical_formula_label: label.to_string(),
+                ..Default::default()
+            };
+            value.sanitize_and_validate().unwrap();
+            assert_eq!(value.empirical_formula_label, expected);
+        }
+    }
+
+    #[test]
+    fn test_sanitize_and_validate_errors() {
+        for empty in ["", " "] {
+            let mut value = EmpiricalFormula {
+                empirical_formula_label: empty.to_string(),
+                ..Default::default()
+            };
+            assert_validation_error(value.sanitize_and_validate(), "empirical_formula_label");
+        }
+        for invalid in ["X123X", "(CH3"] {
+            let mut value = EmpiricalFormula {
+                empirical_formula_label: invalid.to_string(),
+                ..Default::default()
+            };
+            let error =
+                assert_validation_error(value.sanitize_and_validate(), "empirical_formula_label");
+            assert!(
+                matches!(error, ValidationError::InvalidFormula { .. }),
+                "{invalid}: {error:?}"
             );
         }
+    }
 
-        let mut missing_required = payload.clone();
-        if let Some(object) = missing_required.as_object_mut() {
-            object.remove("empirical_formula_label");
-        }
-        assert!(serde_json::from_value::<EmpiricalFormula>(missing_required).is_err());
-        Ok(())
+    // Searchable.
+
+    #[test]
+    fn test_searchable() {
+        assert_searchable::<EmpiricalFormula>(
+            "empirical_formula",
+            "empirical_formula_id",
+            "empirical_formula_label",
+        );
     }
 }

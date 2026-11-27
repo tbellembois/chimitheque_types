@@ -7,152 +7,66 @@ mod tests {
         clippy::too_many_lines
     )]
 
+    use crate::error::ValidationError;
     use crate::producer::*;
-    use chimitheque_traits::searchable::Searchable;
+    use crate::test_helpers::{
+        assert_searchable, assert_serde_rejects_missing, assert_serde_round_trip,
+        assert_validation_error,
+    };
+    use serde_json::json;
+
+    fn sample() -> serde_json::Value {
+        json!({"match_exact_search": true, "producer_id": 1, "producer_label": "Acme Corp"})
+    }
+
+    // Serialization and deserialization.
 
     #[test]
-    fn test_producer_searchable() {
-        let producer = Producer {
-            match_exact_search: true,
-            producer_id: Some(1),
-            producer_label: "test".to_string(),
-        };
-
-        let mut created_producer = producer.create();
-        assert!(!created_producer.match_exact_search);
-        assert_eq!(created_producer.producer_id, None);
-        assert_eq!(created_producer.producer_label, String::new());
-
-        created_producer.set_exact_search(true);
-        assert!(created_producer.get_exact_search());
-
-        assert_eq!(created_producer.get_table_name(), "producer");
-        assert_eq!(created_producer.get_id_field_name(), "producer_id");
-        assert_eq!(created_producer.get_text_field_name(), "producer_label");
-
-        created_producer.set_id_field(2);
-        assert_eq!(created_producer.get_id(), Some(2));
-
-        created_producer.set_text_field("test2");
-        assert_eq!(created_producer.get_text(), "test2");
+    fn test_serde() {
+        assert_serde_round_trip::<Producer>(&sample());
     }
 
     #[test]
-    fn test_create_defaults() {
-        let producer = Producer::default();
-        let created = producer.create();
-        assert!(!created.match_exact_search);
-        assert_eq!(created.producer_id, None);
-        assert_eq!(created.producer_label, String::new());
-    }
-
-    #[test]
-    fn test_set_and_get_exact_search() {
-        let mut producer = Producer::default();
-        producer.set_exact_search(true);
-        assert!(producer.get_exact_search());
-        producer.set_exact_search(false);
-        assert!(!producer.get_exact_search());
-    }
-
-    #[test]
-    fn test_get_table_name() {
-        let producer = Producer::default();
-        assert_eq!(producer.get_table_name(), "producer");
-    }
-
-    #[test]
-    fn test_get_id_field_name() {
-        let producer = Producer::default();
-        assert_eq!(producer.get_id_field_name(), "producer_id");
-    }
-
-    #[test]
-    fn test_set_and_get_id() {
-        let mut producer = Producer::default();
-        producer.set_id_field(42);
-        assert_eq!(producer.get_id(), Some(42));
-        producer.set_id_field(0);
-        assert_eq!(producer.get_id(), Some(0));
-    }
-
-    #[test]
-    fn test_set_and_get_text() {
-        let mut producer = Producer::default();
-        producer.set_text_field("Acme Corp");
-        assert_eq!(producer.get_text(), "Acme Corp");
-        producer.set_text_field("");
-        assert_eq!(producer.get_text(), "");
-    }
-
-    #[test]
-    fn test_sanitize_and_validate_leading_trailing_spaces() {
-        let mut producer = Producer {
-            match_exact_search: false,
-            producer_id: Some(1),
-            producer_label: "  hello world  ".to_string(),
-        };
-        assert!(producer.sanitize_and_validate().is_ok());
-        assert_eq!(producer.producer_label, "hello world");
-    }
-
-    #[test]
-    fn test_sanitize_and_validate_multiple_spaces() {
-        let mut producer = Producer {
-            match_exact_search: false,
-            producer_id: Some(1),
-            producer_label: "  hello    world  ".to_string(),
-        };
-        assert!(producer.sanitize_and_validate().is_ok());
-        assert_eq!(producer.producer_label, "hello world");
-    }
-
-    #[test]
-    fn test_sanitize_and_validate_empty_label() {
-        let mut producer = Producer {
-            match_exact_search: false,
-            producer_id: Some(1),
-            producer_label: String::default(),
-        };
-        assert!(producer.sanitize_and_validate().is_err());
-    }
-
-    #[test]
-    fn test_sanitize_and_validate_no_spaces() {
-        let mut producer = Producer {
-            match_exact_search: false,
-            producer_id: Some(1),
-            producer_label: "hello world".to_string(),
-        };
-        assert!(producer.sanitize_and_validate().is_ok());
-        assert_eq!(producer.producer_label, "hello world");
-    }
-
-    #[test]
-    fn test_match_exact_search_serde_defaults() -> Result<(), serde_json::Error> {
-        let mut payload = serde_json::json!({"producer_label": "Producer"});
-        let value: Producer = serde_json::from_value(payload.clone())?;
+    fn test_serde_defaults() {
+        let value: Producer =
+            serde_json::from_value(json!({"producer_label": "Acme Corp"})).unwrap();
         assert!(!value.match_exact_search);
-        assert_eq!(
-            serde_json::to_value(&value)?.get("match_exact_search"),
-            Some(&serde_json::json!(false))
-        );
+        assert_eq!(value.producer_id, None);
+    }
 
-        for expected in [true, false] {
-            payload["match_exact_search"] = serde_json::json!(expected);
-            let value: Producer = serde_json::from_value(payload.clone())?;
-            assert_eq!(value.match_exact_search, expected);
-            assert_eq!(
-                serde_json::to_value(&value)?.get("match_exact_search"),
-                Some(&serde_json::json!(expected))
-            );
-        }
+    #[test]
+    fn test_serde_rejects_missing_required_fields() {
+        assert_serde_rejects_missing::<Producer>(&sample(), &["producer_label"]);
+    }
 
-        let mut missing_required = payload.clone();
-        if let Some(object) = missing_required.as_object_mut() {
-            object.remove("producer_label");
+    // sanitize_and_validate.
+
+    #[test]
+    fn test_sanitize_and_validate() {
+        let mut value = Producer {
+            producer_label: "  Acme   Corp ".to_string(),
+            ..Default::default()
+        };
+        value.sanitize_and_validate().unwrap();
+        assert_eq!(value.producer_label, "Acme Corp");
+    }
+
+    #[test]
+    fn test_sanitize_and_validate_errors() {
+        for empty in ["", "  \n\t "] {
+            let mut value = Producer {
+                producer_label: empty.to_string(),
+                ..Default::default()
+            };
+            let error = assert_validation_error(value.sanitize_and_validate(), "producer_label");
+            assert!(matches!(error, ValidationError::Empty { .. }), "{error:?}");
         }
-        assert!(serde_json::from_value::<Producer>(missing_required).is_err());
-        Ok(())
+    }
+
+    // Searchable.
+
+    #[test]
+    fn test_searchable() {
+        assert_searchable::<Producer>("producer", "producer_id", "producer_label");
     }
 }

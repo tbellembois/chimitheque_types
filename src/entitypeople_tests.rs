@@ -8,30 +8,30 @@ mod tests {
     )]
 
     use crate::entitypeople::Entitypeople;
-
-    /// Deserializes `json` into `T` and serializes it back unchanged.
-    fn assert_round_trip<T: serde::Serialize + serde::de::DeserializeOwned>(
-        json: &serde_json::Value,
-    ) {
-        let value: T = serde_json::from_value(json.clone()).unwrap();
-        assert_eq!(&serde_json::to_value(&value).unwrap(), json);
-    }
+    use crate::test_helpers::{assert_serde_rejects_missing, assert_serde_round_trip};
+    use serde_json::json;
 
     fn sample() -> serde_json::Value {
-        serde_json::json!({"entitypeople_entity_id": 1, "entitypeople_person_id": 2, "entitypeople_person_email": "manager@example.com", "entitypeople_entity_name": "lab"})
+        json!({"entitypeople_entity_id": 1, "entitypeople_person_id": 2, "entitypeople_person_email": "manager@example.com", "entitypeople_entity_name": "lab"})
+    }
+
+    // Serialization and deserialization.
+
+    #[test]
+    fn test_serde() {
+        assert_serde_round_trip::<Entitypeople>(&sample());
     }
 
     #[test]
-    fn test_serde_round_trip() {
-        assert_round_trip::<Entitypeople>(&sample());
-    }
-
-    #[test]
-    fn test_serde_rejects_missing_entitypeople_entity_id() {
-        let mut json = sample();
-        json.as_object_mut()
-            .unwrap()
-            .remove("entitypeople_entity_id");
-        assert!(serde_json::from_value::<Entitypeople>(json).is_err());
+    fn test_serde_rejects_missing_required_fields() {
+        assert_serde_rejects_missing::<Entitypeople>(
+            &sample(),
+            &[
+                "entitypeople_entity_id",
+                "entitypeople_person_id",
+                "entitypeople_person_email",
+                "entitypeople_entity_name",
+            ],
+        );
     }
 }

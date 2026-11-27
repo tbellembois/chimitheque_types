@@ -7,37 +7,44 @@ mod tests {
         clippy::too_many_lines
     )]
 
+    use crate::test_helpers::{assert_serde_rejects_missing, assert_serde_round_trip};
     use crate::versioninfo::VersionInfo;
-
-    /// Deserializes `json` into `T` and serializes it back unchanged.
-    fn assert_round_trip<T: serde::Serialize + serde::de::DeserializeOwned>(
-        json: &serde_json::Value,
-    ) {
-        let value: T = serde_json::from_value(json.clone()).unwrap();
-        assert_eq!(&serde_json::to_value(&value).unwrap(), json);
-    }
+    use serde_json::json;
 
     fn sample() -> serde_json::Value {
-        serde_json::json!({"version": "1.2.3", "build_time": "2026-11-21T10:00:00Z", "git_commit": "v1.2.3-4-gabcdef", "git_commit_hash": "abcdef0123456789", "target": "x86_64-unknown-linux-gnu", "rustc": "1.88.0"})
+        json!({"version": "1.2.3", "build_time": "2026-11-21T10:00:00Z", "git_commit": "v1.2.3-4-gabcdef", "git_commit_hash": "abcdef0123456789", "target": "x86_64-unknown-linux-gnu", "rustc": "1.88.0"})
+    }
+
+    // Serialization and deserialization.
+
+    #[test]
+    fn test_serde() {
+        assert_serde_round_trip::<VersionInfo>(&sample());
     }
 
     #[test]
-    fn test_serde_round_trip() {
-        assert_round_trip::<VersionInfo>(&sample());
-    }
-
-    #[test]
-    fn test_serde_rejects_missing_version() {
+    fn test_serde_optional_fields() {
+        // Missing optional fields are deserialized as None, and serialized as null.
         let mut json = sample();
-        json.as_object_mut().unwrap().remove("version");
-        assert!(serde_json::from_value::<VersionInfo>(json).is_err());
+        for field in ["git_commit", "git_commit_hash"] {
+            json.as_object_mut().unwrap().remove(field);
+        }
+        let value: VersionInfo = serde_json::from_value(json).unwrap();
+        assert_eq!(value.git_commit, None);
+        assert_eq!(value.git_commit_hash, None);
+
+        let mut json = sample();
+        for field in ["git_commit", "git_commit_hash"] {
+            json[field] = serde_json::Value::Null;
+        }
+        assert_serde_round_trip::<VersionInfo>(&json);
     }
 
     #[test]
-    fn test_serde_git_fields_are_optional() {
-        let mut json = sample();
-        json["git_commit"] = serde_json::Value::Null;
-        json["git_commit_hash"] = serde_json::Value::Null;
-        assert_round_trip::<VersionInfo>(&json);
+    fn test_serde_rejects_missing_required_fields() {
+        assert_serde_rejects_missing::<VersionInfo>(
+            &sample(),
+            &["version", "build_time", "target", "rustc"],
+        );
     }
 }

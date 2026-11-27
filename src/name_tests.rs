@@ -1,81 +1,71 @@
-use super::*;
-use chimitheque_traits::searchable::Searchable;
+#[cfg(test)]
+mod tests {
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::too_many_lines
+    )]
 
-#[test]
-fn test_sanitize_and_validate_valid() {
-    let mut name = Name {
-        name_label: "  test  ".to_string(),
-        ..Default::default()
+    use crate::error::ValidationError;
+    use crate::name::*;
+    use crate::test_helpers::{
+        assert_searchable, assert_serde_rejects_missing, assert_serde_round_trip,
+        assert_validation_error,
     };
-    assert!(name.sanitize_and_validate().is_ok());
-    assert_eq!(name.name_label, "TEST");
-}
+    use serde_json::json;
 
-#[test]
-fn test_sanitize_and_validate_empty() {
-    let mut name = Name {
-        name_label: String::new(),
-        ..Default::default()
-    };
-    assert!(name.sanitize_and_validate().is_err());
-}
-
-#[test]
-fn test_searchable_trait() {
-    let mut name = Name {
-        name_label: "Test".to_string(),
-        ..Default::default()
-    };
-
-    // Test set/get exact search
-    name.set_exact_search(true);
-    assert!(name.get_exact_search());
-
-    // Test table name
-    assert_eq!(name.get_table_name(), "name");
-
-    // Test ID field name
-    assert_eq!(name.get_id_field_name(), "name_id");
-
-    // Test set/get ID
-    name.set_id_field(42);
-    assert_eq!(name.get_id(), Some(42));
-
-    // Test set/get text field
-    name.set_text_field("New Test");
-    assert_eq!(name.get_text(), "New Test");
-
-    // Test create method
-    let new_name = name.create();
-    assert_eq!(new_name.name_label, "");
-    assert_eq!(new_name.name_id, None);
-    assert!(!new_name.match_exact_search);
-}
-
-#[test]
-fn test_match_exact_search_serde_defaults() -> Result<(), serde_json::Error> {
-    let mut payload = serde_json::json!({"name_label": "Water"});
-    let value: Name = serde_json::from_value(payload.clone())?;
-    assert!(!value.match_exact_search);
-    assert_eq!(
-        serde_json::to_value(&value)?.get("match_exact_search"),
-        Some(&serde_json::json!(false))
-    );
-
-    for expected in [true, false] {
-        payload["match_exact_search"] = serde_json::json!(expected);
-        let value: Name = serde_json::from_value(payload.clone())?;
-        assert_eq!(value.match_exact_search, expected);
-        assert_eq!(
-            serde_json::to_value(&value)?.get("match_exact_search"),
-            Some(&serde_json::json!(expected))
-        );
+    fn sample() -> serde_json::Value {
+        json!({"match_exact_search": true, "name_id": 1, "name_label": "ETHYL ALCOHOL"})
     }
 
-    let mut missing_required = payload.clone();
-    if let Some(object) = missing_required.as_object_mut() {
-        object.remove("name_label");
+    // Serialization and deserialization.
+
+    #[test]
+    fn test_serde() {
+        assert_serde_round_trip::<Name>(&sample());
     }
-    assert!(serde_json::from_value::<Name>(missing_required).is_err());
-    Ok(())
+
+    #[test]
+    fn test_serde_defaults() {
+        let value: Name = serde_json::from_value(json!({"name_label": "ETHYL ALCOHOL"})).unwrap();
+        assert!(!value.match_exact_search);
+        assert_eq!(value.name_id, None);
+    }
+
+    #[test]
+    fn test_serde_rejects_missing_required_fields() {
+        assert_serde_rejects_missing::<Name>(&sample(), &["name_label"]);
+    }
+
+    // sanitize_and_validate.
+
+    #[test]
+    fn test_sanitize_and_validate() {
+        let mut value = Name {
+            name_label: "  ethyl   alcohol ".to_string(),
+            ..Default::default()
+        };
+        value.sanitize_and_validate().unwrap();
+        assert_eq!(value.name_label, "ETHYL ALCOHOL");
+    }
+
+    #[test]
+    fn test_sanitize_and_validate_errors() {
+        for empty in ["", "  \n\t "] {
+            let mut value = Name {
+                name_label: empty.to_string(),
+                ..Default::default()
+            };
+            let error = assert_validation_error(value.sanitize_and_validate(), "name_label");
+            assert!(matches!(error, ValidationError::Empty { .. }), "{error:?}");
+        }
+    }
+
+    // Searchable.
+
+    #[test]
+    fn test_searchable() {
+        assert_searchable::<Name>("name", "name_id", "name_label");
+    }
 }

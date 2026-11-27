@@ -9,10 +9,36 @@ mod tests {
 
     use crate::requestfilter::*;
     use crate::sortorder::SortOrder;
+    use crate::test_helpers::assert_value_round_trip;
     use std::fmt::Write as _;
 
+    // Serialization and deserialization.
+
     #[test]
-    fn test_requestfilter_serde_defaults_match_default() {
+    fn test_serde() {
+        let filter = RequestFilter {
+            search: Some("ethanol".to_string()),
+            id: Some(1),
+            order_by: Some("name".to_string()),
+            order: SortOrder::Desc,
+            offset: Some(10),
+            limit: Some(20),
+            bookmark: true,
+            hazard_statements: Some(vec![2, 3]),
+            storage_archive: Some(false),
+            ..Default::default()
+        };
+        let json = assert_value_round_trip(&filter);
+        assert_eq!(json["search"], "ethanol");
+        assert_eq!(json["order"], "desc");
+        assert_eq!(json["limit"], 20);
+        assert_eq!(json["bookmark"], true);
+        assert_eq!(json["hazard_statements"], serde_json::json!([2, 3]));
+        assert_eq!(json["storage_archive"], false);
+    }
+
+    #[test]
+    fn test_serde_defaults() {
         let filter: RequestFilter = serde_json::from_str("{}").unwrap();
         assert_eq!(filter.order, SortOrder::Asc);
         assert_eq!(
@@ -22,7 +48,7 @@ mod tests {
     }
 
     #[test]
-    fn test_requestfilter_serde_order() {
+    fn test_serde_order() {
         for (input, expected) in [
             ("asc", SortOrder::Asc),
             ("desc", SortOrder::Desc),
@@ -39,7 +65,7 @@ mod tests {
     }
 
     #[test]
-    fn test_requestfilter_serde_rejects_invalid_order() {
+    fn test_serde_rejects_invalid_order() {
         for order in ["", "up", "ascending"] {
             let payload = serde_json::json!({"order": order});
             assert!(
@@ -49,8 +75,10 @@ mod tests {
         }
     }
 
+    // Other functions.
+
     #[test]
-    fn test_requestfilter_try_from_order() {
+    fn test_try_from_order() {
         for (value, expected) in [
             ("asc", SortOrder::Asc),
             ("desc", SortOrder::Desc),
@@ -65,7 +93,7 @@ mod tests {
     }
 
     #[test]
-    fn test_requestfilter_try_from_rejects_invalid_order() {
+    fn test_try_from_rejects_invalid_order() {
         for value in ["", "up", "ascending"] {
             let request = format!("http://localhost?order={value}");
             assert_eq!(
@@ -78,13 +106,13 @@ mod tests {
     }
 
     #[test]
-    fn test_requestfilter_display() {
+    fn test_display() {
         let filter = RequestFilter::default();
         assert_eq!(filter.to_string(), "?order=asc");
     }
 
     #[test]
-    fn test_requestfilter_display_all_fields() {
+    fn test_display_all_fields() {
         let filter = RequestFilter {
             search: Some("test".to_string()),
             id: Some(1),
@@ -143,7 +171,7 @@ mod tests {
     }
 
     #[test]
-    fn test_requestfilter_decoded_parameter_names() {
+    fn test_decoded_parameter_names() {
         // Escaping every name exercises owned Cow keys for every supported field.
         let parameters = [
             ("search", "acetone%20%26%20ethanol"),
@@ -209,7 +237,7 @@ mod tests {
     }
 
     #[test]
-    fn test_requestfilter_decoded_parameter_names_preserve_validation() {
+    fn test_decoded_parameter_names_preserve_validation() {
         // Decoded names must not bypass numeric, boolean, or ID-list validation.
         for (plain_query, encoded_query) in [
             ("id=invalid", "%69d=invalid"),
@@ -231,7 +259,7 @@ mod tests {
     }
 
     #[test]
-    fn test_requestfilter_mixed_parameter_name_encodings() {
+    fn test_mixed_parameter_name_encodings() {
         // Preserve last-value-wins semantics when plain and escaped keys are mixed.
         for (query, expected) in [
             ("search=first&se%61rch=second", "second"),
@@ -247,7 +275,7 @@ mod tests {
     }
 
     #[test]
-    fn test_requestfilter_display_encodes_special_characters() {
+    fn test_display_encodes_special_characters() {
         let filter = RequestFilter {
             search: Some("acetone & ethanol+#50%".to_string()),
             person_email: Some("chemist+lab@example.com".to_string()),
@@ -261,7 +289,7 @@ mod tests {
     }
 
     #[test]
-    fn test_requestfilter_text_fields_round_trip() {
+    fn test_text_fields_round_trip() {
         for value in [
             "",
             "acetone&limit=1",
@@ -306,7 +334,7 @@ mod tests {
     ];
 
     #[test]
-    fn test_requestfilter_rejects_overflowing_id_lists() {
+    fn test_rejects_overflowing_id_lists() {
         for parameter in ID_LIST_PARAMETERS {
             for value in [
                 "18446744073709551616",
@@ -330,7 +358,7 @@ mod tests {
     }
 
     #[test]
-    fn test_requestfilter_parses_id_lists_without_losing_values() {
+    fn test_parses_id_lists_without_losing_values() {
         for parameter in ID_LIST_PARAMETERS {
             for (value, expected) in [
                 ("18446744073709551615", vec![u64::MAX]),
@@ -351,7 +379,7 @@ mod tests {
     }
 
     #[test]
-    fn test_requestfilter_error_variants() {
+    fn test_error_variants() {
         use crate::error::RequestFilterError;
         use std::error::Error as _;
 
@@ -383,7 +411,7 @@ mod tests {
     }
 
     #[test]
-    fn test_requestfilter_rejects_malformed_id_lists() {
+    fn test_rejects_malformed_id_lists() {
         for parameter in ID_LIST_PARAMETERS {
             for value in ["", ",1", "1,,2", "1;2", "1,a,2", "-1", "1,%202"] {
                 let request = format!("http://localhost?{parameter}={value}");
@@ -395,7 +423,7 @@ mod tests {
     }
 
     #[test]
-    fn test_requestfilter_try_from_id_at_end_of_url() {
+    fn test_try_from_id_at_end_of_url() {
         let id = |url: &str| RequestFilter::try_from(url).unwrap().id;
 
         // An id at the end of the path is captured.
@@ -441,7 +469,7 @@ mod tests {
     }
 
     #[test]
-    fn test_requestfilter_try_from_valid() {
+    fn test_try_from_valid() {
         let input = "http://localhost?search=test&limit=10";
         let filter = RequestFilter::try_from(input).unwrap();
         assert_eq!(filter.search, Some("test".to_string()));
@@ -449,14 +477,14 @@ mod tests {
     }
 
     #[test]
-    fn test_requestfilter_try_from_invalid() {
+    fn test_try_from_invalid() {
         let input = "http://localhost?invalid_string";
         let result = RequestFilter::try_from(input);
         assert!(result.is_ok());
     }
 
     #[test]
-    fn test_requestfilter_default_values() {
+    fn test_default_values() {
         let default_filter = RequestFilter::default();
         assert_eq!(default_filter.search, None);
         assert_eq!(default_filter.id, None);

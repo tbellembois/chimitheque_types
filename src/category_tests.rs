@@ -8,149 +8,65 @@ mod tests {
     )]
 
     use crate::category::*;
-    use chimitheque_traits::searchable::Searchable;
+    use crate::error::ValidationError;
+    use crate::test_helpers::{
+        assert_searchable, assert_serde_rejects_missing, assert_serde_round_trip,
+        assert_validation_error,
+    };
+    use serde_json::json;
+
+    fn sample() -> serde_json::Value {
+        json!({"match_exact_search": true, "category_id": 1, "category_label": "organic acids"})
+    }
+
+    // Serialization and deserialization.
 
     #[test]
-    fn test_category_searchable() {
-        let category = Category {
-            match_exact_search: true,
-            category_id: Some(1),
-            category_label: "test".to_string(),
-        };
-
-        let mut created_category = category.create();
-        assert!(!created_category.match_exact_search);
-        assert_eq!(created_category.category_id, None);
-        assert_eq!(created_category.category_label, String::new());
-
-        created_category.set_exact_search(true);
-        assert!(created_category.get_exact_search());
-
-        assert_eq!(created_category.get_table_name(), "category");
-        assert_eq!(created_category.get_id_field_name(), "category_id");
-        assert_eq!(created_category.get_text_field_name(), "category_label");
-
-        created_category.set_id_field(2);
-        assert_eq!(created_category.get_id(), Some(2));
-
-        created_category.set_text_field("test2");
-        assert_eq!(created_category.get_text(), "test2");
+    fn test_serde() {
+        assert_serde_round_trip::<Category>(&sample());
     }
 
     #[test]
-    fn test_create() {
-        let category = Category {
-            match_exact_search: true,
-            category_id: Some(1),
-            category_label: "test".to_string(),
-        };
-        let created = category.create();
-        assert!(!created.match_exact_search);
-        assert_eq!(created.category_id, None);
-        assert_eq!(created.category_label, String::new());
-    }
-
-    #[test]
-    fn test_set_and_get_exact_search() {
-        let mut category = Category::default();
-        category.set_exact_search(true);
-        assert!(category.get_exact_search());
-        category.set_exact_search(false);
-        assert!(!category.get_exact_search());
-    }
-
-    #[test]
-    fn test_get_table_name() {
-        let category = Category::default();
-        assert_eq!(category.get_table_name(), "category");
-    }
-
-    #[test]
-    fn test_get_id_field_name() {
-        let category = Category::default();
-        assert_eq!(category.get_id_field_name(), "category_id");
-    }
-
-    #[test]
-    fn test_set_and_get_id() {
-        let mut category = Category::default();
-        category.set_id_field(42);
-        assert_eq!(category.get_id(), Some(42));
-        category.set_id_field(0);
-        assert_eq!(category.get_id(), Some(0));
-    }
-
-    #[test]
-    fn test_set_and_get_text() {
-        let mut category = Category::default();
-        category.set_text_field("Development");
-        assert_eq!(category.get_text(), "Development");
-        category.set_text_field("");
-        assert_eq!(category.get_text(), "");
-    }
-
-    #[test]
-    fn test_sanitize_and_validate_category() {
-        let mut category = Category {
-            match_exact_search: false,
-            category_id: Some(1),
-            category_label: "  Development  ".to_string(),
-        };
-        assert!(category.sanitize_and_validate().is_ok());
-        assert_eq!(category.category_label, "Development");
-
-        let mut category = Category {
-            match_exact_search: false,
-            category_id: Some(2),
-            category_label: "  Chemistry  ".to_string(),
-        };
-        assert!(category.sanitize_and_validate().is_ok());
-        assert_eq!(category.category_label, "Chemistry");
-
-        let mut category = Category {
-            match_exact_search: false,
-            category_id: Some(3),
-            category_label: "   A  B   ".to_string(),
-        };
-        assert!(category.sanitize_and_validate().is_ok());
-        assert_eq!(category.category_label, "A B");
-    }
-
-    #[test]
-    fn test_sanitize_and_validate_empty_category() {
-        let mut category = Category {
-            match_exact_search: false,
-            category_id: Some(6),
-            category_label: String::default(),
-        };
-        assert!(category.sanitize_and_validate().is_err());
-    }
-
-    #[test]
-    fn test_match_exact_search_serde_defaults() -> Result<(), serde_json::Error> {
-        let mut payload = serde_json::json!({"category_label": "Chemistry"});
-        let value: Category = serde_json::from_value(payload.clone())?;
+    fn test_serde_defaults() {
+        let value: Category =
+            serde_json::from_value(json!({"category_label": "organic acids"})).unwrap();
         assert!(!value.match_exact_search);
-        assert_eq!(
-            serde_json::to_value(&value)?.get("match_exact_search"),
-            Some(&serde_json::json!(false))
-        );
+        assert_eq!(value.category_id, None);
+    }
 
-        for expected in [true, false] {
-            payload["match_exact_search"] = serde_json::json!(expected);
-            let value: Category = serde_json::from_value(payload.clone())?;
-            assert_eq!(value.match_exact_search, expected);
-            assert_eq!(
-                serde_json::to_value(&value)?.get("match_exact_search"),
-                Some(&serde_json::json!(expected))
-            );
-        }
+    #[test]
+    fn test_serde_rejects_missing_required_fields() {
+        assert_serde_rejects_missing::<Category>(&sample(), &["category_label"]);
+    }
 
-        let mut missing_required = payload.clone();
-        if let Some(object) = missing_required.as_object_mut() {
-            object.remove("category_label");
+    // sanitize_and_validate.
+
+    #[test]
+    fn test_sanitize_and_validate() {
+        let mut value = Category {
+            category_label: "  organic   acids ".to_string(),
+            ..Default::default()
+        };
+        value.sanitize_and_validate().unwrap();
+        assert_eq!(value.category_label, "organic acids");
+    }
+
+    #[test]
+    fn test_sanitize_and_validate_errors() {
+        for empty in ["", "  \n\t "] {
+            let mut value = Category {
+                category_label: empty.to_string(),
+                ..Default::default()
+            };
+            let error = assert_validation_error(value.sanitize_and_validate(), "category_label");
+            assert!(matches!(error, ValidationError::Empty { .. }), "{error:?}");
         }
-        assert!(serde_json::from_value::<Category>(missing_required).is_err());
-        Ok(())
+    }
+
+    // Searchable.
+
+    #[test]
+    fn test_searchable() {
+        assert_searchable::<Category>("category", "category_id", "category_label");
     }
 }

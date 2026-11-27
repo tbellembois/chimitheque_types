@@ -7,143 +7,66 @@ mod tests {
         clippy::too_many_lines
     )]
 
+    use crate::error::ValidationError;
     use crate::supplier::*;
-    use chimitheque_traits::searchable::Searchable;
+    use crate::test_helpers::{
+        assert_searchable, assert_serde_rejects_missing, assert_serde_round_trip,
+        assert_validation_error,
+    };
+    use serde_json::json;
+
+    fn sample() -> serde_json::Value {
+        json!({"match_exact_search": true, "supplier_id": 1, "supplier_label": "Acme Corp"})
+    }
+
+    // Serialization and deserialization.
 
     #[test]
-    fn test_supplier_searchable() {
-        let supplier = Supplier {
-            match_exact_search: true,
-            supplier_id: Some(1),
-            supplier_label: "test".to_string(),
-        };
-
-        let mut created_supplier = supplier.create();
-        assert!(!created_supplier.match_exact_search);
-        assert_eq!(created_supplier.supplier_id, None);
-        assert_eq!(created_supplier.supplier_label, String::new());
-
-        created_supplier.set_exact_search(true);
-        assert!(created_supplier.get_exact_search());
-
-        assert_eq!(created_supplier.get_table_name(), "supplier");
-        assert_eq!(created_supplier.get_id_field_name(), "supplier_id");
-        assert_eq!(created_supplier.get_text_field_name(), "supplier_label");
-
-        created_supplier.set_id_field(2);
-        assert_eq!(created_supplier.get_id(), Some(2));
-
-        created_supplier.set_text_field("test2");
-        assert_eq!(created_supplier.get_text(), "test2");
+    fn test_serde() {
+        assert_serde_round_trip::<Supplier>(&sample());
     }
 
     #[test]
-    fn test_set_and_get_exact_search() {
-        let mut supplier = Supplier::default();
-        supplier.set_exact_search(true);
-        assert!(supplier.get_exact_search());
-        supplier.set_exact_search(false);
-        assert!(!supplier.get_exact_search());
-    }
-
-    #[test]
-    fn test_get_table_name() {
-        let supplier = Supplier::default();
-        assert_eq!(supplier.get_table_name(), "supplier");
-    }
-
-    #[test]
-    fn test_get_id_field_name() {
-        let supplier = Supplier::default();
-        assert_eq!(supplier.get_id_field_name(), "supplier_id");
-    }
-
-    #[test]
-    fn test_set_and_get_id() {
-        let mut supplier = Supplier::default();
-        supplier.set_id_field(42);
-        assert_eq!(supplier.get_id(), Some(42));
-        supplier.set_id_field(0);
-        assert_eq!(supplier.get_id(), Some(0));
-    }
-
-    #[test]
-    fn test_set_and_get_text() {
-        let mut supplier = Supplier::default();
-        supplier.set_text_field("Acme Corp");
-        assert_eq!(supplier.get_text(), "Acme Corp");
-        supplier.set_text_field("");
-        assert_eq!(supplier.get_text(), "");
-    }
-
-    #[test]
-    fn test_sanitize_and_validate_leading_trailing_spaces() {
-        let mut supplier = Supplier {
-            match_exact_search: false,
-            supplier_id: Some(1),
-            supplier_label: "  hello world  ".to_string(),
-        };
-        assert!(supplier.sanitize_and_validate().is_ok());
-        assert_eq!(supplier.supplier_label, "hello world");
-    }
-
-    #[test]
-    fn test_sanitize_and_validate_multiple_spaces() {
-        let mut supplier = Supplier {
-            match_exact_search: false,
-            supplier_id: Some(1),
-            supplier_label: "  hello    world  ".to_string(),
-        };
-        assert!(supplier.sanitize_and_validate().is_ok());
-        assert_eq!(supplier.supplier_label, "hello world");
-    }
-
-    #[test]
-    fn test_sanitize_and_validate_empty_label() {
-        let mut supplier = Supplier {
-            match_exact_search: false,
-            supplier_id: Some(1),
-            supplier_label: String::default(),
-        };
-        assert!(supplier.sanitize_and_validate().is_err());
-    }
-
-    #[test]
-    fn test_sanitize_and_validate_no_spaces() {
-        let mut supplier = Supplier {
-            match_exact_search: false,
-            supplier_id: Some(1),
-            supplier_label: "hello world".to_string(),
-        };
-        assert!(supplier.sanitize_and_validate().is_ok());
-        assert_eq!(supplier.supplier_label, "hello world");
-    }
-
-    #[test]
-    fn test_match_exact_search_serde_defaults() -> Result<(), serde_json::Error> {
-        let mut payload = serde_json::json!({"supplier_label": "Supplier"});
-        let value: Supplier = serde_json::from_value(payload.clone())?;
+    fn test_serde_defaults() {
+        let value: Supplier =
+            serde_json::from_value(json!({"supplier_label": "Acme Corp"})).unwrap();
         assert!(!value.match_exact_search);
-        assert_eq!(
-            serde_json::to_value(&value)?.get("match_exact_search"),
-            Some(&serde_json::json!(false))
-        );
+        assert_eq!(value.supplier_id, None);
+    }
 
-        for expected in [true, false] {
-            payload["match_exact_search"] = serde_json::json!(expected);
-            let value: Supplier = serde_json::from_value(payload.clone())?;
-            assert_eq!(value.match_exact_search, expected);
-            assert_eq!(
-                serde_json::to_value(&value)?.get("match_exact_search"),
-                Some(&serde_json::json!(expected))
-            );
-        }
+    #[test]
+    fn test_serde_rejects_missing_required_fields() {
+        assert_serde_rejects_missing::<Supplier>(&sample(), &["supplier_label"]);
+    }
 
-        let mut missing_required = payload.clone();
-        if let Some(object) = missing_required.as_object_mut() {
-            object.remove("supplier_label");
+    // sanitize_and_validate.
+
+    #[test]
+    fn test_sanitize_and_validate() {
+        let mut value = Supplier {
+            supplier_label: "  Acme   Corp ".to_string(),
+            ..Default::default()
+        };
+        value.sanitize_and_validate().unwrap();
+        assert_eq!(value.supplier_label, "Acme Corp");
+    }
+
+    #[test]
+    fn test_sanitize_and_validate_errors() {
+        for empty in ["", "  \n\t "] {
+            let mut value = Supplier {
+                supplier_label: empty.to_string(),
+                ..Default::default()
+            };
+            let error = assert_validation_error(value.sanitize_and_validate(), "supplier_label");
+            assert!(matches!(error, ValidationError::Empty { .. }), "{error:?}");
         }
-        assert!(serde_json::from_value::<Supplier>(missing_required).is_err());
-        Ok(())
+    }
+
+    // Searchable.
+
+    #[test]
+    fn test_searchable() {
+        assert_searchable::<Supplier>("supplier", "supplier_id", "supplier_label");
     }
 }

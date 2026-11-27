@@ -11,40 +11,60 @@ mod tests {
 
     use crate::error::ParseError;
     use crate::producttype::ProductType;
+    use serde_json::json;
+
+    const TYPES: [(ProductType, &str); 3] = [
+        (ProductType::Chem, "chem"),
+        (ProductType::Bio, "bio"),
+        (ProductType::Cons, "cons"),
+    ];
+
+    const INVALID: [&str; 5] = ["", "Chem", "CHEM", "chemical", "consumable"];
+
+    // Serialization and deserialization.
 
     #[test]
-    fn test_default_is_chem() {
-        assert_eq!(ProductType::default(), ProductType::Chem);
-    }
-
-    #[test]
-    fn test_string_and_serde_representation() {
-        for (product_type, text) in [
-            (ProductType::Chem, "chem"),
-            (ProductType::Bio, "bio"),
-            (ProductType::Cons, "cons"),
-        ] {
-            assert_eq!(product_type.to_string(), text);
-            assert_eq!(ProductType::from_str(text).unwrap(), product_type);
+    fn test_serde() {
+        for (product_type, text) in TYPES {
+            assert_eq!(serde_json::to_value(product_type).unwrap(), json!(text));
             assert_eq!(
-                serde_json::to_value(product_type).unwrap(),
-                serde_json::json!(text)
+                serde_json::from_value::<ProductType>(json!(text)).unwrap(),
+                product_type
             );
-            let parsed: ProductType = serde_json::from_value(serde_json::json!(text)).unwrap();
-            assert_eq!(parsed, product_type);
         }
     }
 
     #[test]
-    fn test_rejects_unknown_values() {
-        for text in ["", "Chem", "CHEM", "chemical", "consumable"] {
+    fn test_serde_rejects_invalid() {
+        for text in INVALID {
+            assert!(serde_json::from_value::<ProductType>(json!(text)).is_err());
+        }
+    }
+
+    // Other functions.
+
+    #[test]
+    fn test_default() {
+        assert_eq!(ProductType::default(), ProductType::Chem);
+    }
+
+    #[test]
+    fn test_display_and_from_str() {
+        for (product_type, text) in TYPES {
+            assert_eq!(product_type.to_string(), text);
+            assert_eq!(ProductType::from_str(text).unwrap(), product_type);
+        }
+    }
+
+    #[test]
+    fn test_from_str_rejects_invalid() {
+        for text in INVALID {
             let error = ProductType::from_str(text).unwrap_err();
             assert!(
                 matches!(&error, ParseError::ParseProductTypeError(value) if value == text),
                 "{text:?}"
             );
             assert_eq!(error.to_string(), format!("wrong product type: {text}"));
-            assert!(serde_json::from_value::<ProductType>(serde_json::json!(text)).is_err());
         }
     }
 }
