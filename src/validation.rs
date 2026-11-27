@@ -3,7 +3,7 @@
 use chimitheque_defines::CMR_CODES;
 use chimitheque_utils::string::{Transform, clean};
 
-use crate::{error::ValidationError, unit::Unit, unittype::UnitType};
+use crate::error::ValidationError;
 
 /// Cleans a required text field and rejects it if empty.
 pub(crate) fn clean_required_text(
@@ -110,23 +110,6 @@ pub(crate) fn is_cmr_classification(classification: &str) -> bool {
                 .iter()
                 .any(|known| known.eq_ignore_ascii_case(code))
         })
-}
-
-/// Rejects a set unit whose type, looked up from its id with `unit_type_of`,
-/// is not `expected`. A unit without an id or with an unknown id is rejected too.
-pub(crate) fn check_unit_type(
-    unit: Option<&Unit>,
-    field: &'static str,
-    expected: UnitType,
-    unit_type_of: &impl Fn(u64) -> Option<UnitType>,
-) -> Result<(), ValidationError> {
-    let Some(unit) = unit else {
-        return Ok(());
-    };
-    match unit.unit_id.and_then(unit_type_of) {
-        Some(unit_type) if unit_type == expected => Ok(()),
-        _ => Err(ValidationError::InvalidUnit { field, expected }),
-    }
 }
 
 #[cfg(test)]

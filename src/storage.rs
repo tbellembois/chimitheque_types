@@ -7,9 +7,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 use crate::unittype::UnitType;
-use crate::validation::{
-    check_non_negative_f64, check_non_zero_u64, check_unit_type, clean_optional_text,
-};
+use crate::validation::{check_non_negative_f64, check_non_zero_u64, clean_optional_text};
 
 use crate::{
     borrowing::Borrowing, error::ValidationError, person::Person, product::Product,
@@ -189,16 +187,14 @@ impl Storage {
         &self,
         unit_type_of: impl Fn(u64) -> Option<UnitType>,
     ) -> Result<(), ValidationError> {
-        check_unit_type(
+        UnitType::Quantity.check_unit(
             self.unit_quantity.as_ref(),
             "unit_quantity",
-            UnitType::Quantity,
             &unit_type_of,
         )?;
-        check_unit_type(
+        UnitType::Concentration.check_unit(
             self.unit_concentration.as_ref(),
             "unit_concentration",
-            UnitType::Concentration,
             &unit_type_of,
         )
     }

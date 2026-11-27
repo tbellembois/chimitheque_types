@@ -6,7 +6,7 @@ use std::fmt;
 use crate::unittype::UnitType;
 use crate::validation::{
     check_finite_f64, check_non_negative_f64, check_positive_f64, check_positive_i64,
-    check_unit_type, clean_optional_text,
+    clean_optional_text,
 };
 use crate::{
     casnumber::CasNumber, category::Category, cenumber::CeNumber, classofcompound::ClassOfCompound,
@@ -319,22 +319,19 @@ impl Product {
         &self,
         unit_type_of: impl Fn(u64) -> Option<UnitType>,
     ) -> Result<(), ValidationError> {
-        check_unit_type(
+        UnitType::Temperature.check_unit(
             self.unit_temperature.as_ref(),
             "unit_temperature",
-            UnitType::Temperature,
             &unit_type_of,
         )?;
-        check_unit_type(
+        UnitType::MolecularWeight.check_unit(
             self.unit_molecular_weight.as_ref(),
             "unit_molecular_weight",
-            UnitType::MolecularWeight,
             &unit_type_of,
         )?;
-        check_unit_type(
+        UnitType::Concentration.check_unit(
             self.unit_concentration.as_ref(),
             "unit_concentration",
-            UnitType::Concentration,
             &unit_type_of,
         )
     }

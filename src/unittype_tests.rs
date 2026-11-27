@@ -97,4 +97,54 @@ mod tests {
         let unit_type = UnitType::from_str("invalid");
         assert!(unit_type.is_err());
     }
+
+    #[test]
+    fn test_check_unit() {
+        let unit_type_of = |unit_id: u64| match unit_id {
+            1 => Some(UnitType::Temperature),
+            2 => Some(UnitType::Quantity),
+            _ => None,
+        };
+        let unit_with_id = |unit_id: Option<u64>| crate::unit::Unit {
+            unit_id,
+            ..Default::default()
+        };
+
+        // No unit: nothing to check.
+        assert!(
+            UnitType::Temperature
+                .check_unit(None, "unit_temperature", &unit_type_of)
+                .is_ok()
+        );
+        assert!(
+            UnitType::Temperature
+                .check_unit(
+                    Some(&unit_with_id(Some(1))),
+                    "unit_temperature",
+                    &unit_type_of
+                )
+                .is_ok()
+        );
+
+        // Wrong type, unknown id and no id are rejected.
+        for unit_id in [Some(2), Some(9), None] {
+            let error = UnitType::Temperature
+                .check_unit(
+                    Some(&unit_with_id(unit_id)),
+                    "unit_temperature",
+                    &unit_type_of,
+                )
+                .unwrap_err();
+            assert!(
+                matches!(
+                    error,
+                    crate::error::ValidationError::InvalidUnit {
+                        field: "unit_temperature",
+                        expected: UnitType::Temperature,
+                    }
+                ),
+                "{unit_id:?}"
+            );
+        }
+    }
 }
