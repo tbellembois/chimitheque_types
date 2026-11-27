@@ -1,6 +1,6 @@
 [![Rust](https://github.com/tbellembois/chimitheque_types/actions/workflows/rust.yml/badge.svg)](https://github.com/tbellembois/chimitheque_types/actions/workflows/rust.yml) [![codecov](https://codecov.io/github/tbellembois/chimitheque_types/graph/badge.svg?token=82SDGZM7BH)](https://codecov.io/github/tbellembois/chimitheque_types)
 
-Types package for the Chimitheque application.
+Types of [Chimithèque](https://github.com/tbellembois/chimitheque_back), a management application for chemical products, biological reagents and laboratory consumables.
 
 ## JSON conventions
 
@@ -11,12 +11,59 @@ Types package for the Chimitheque application.
   string, is rejected.
 - `match_exact_search` defaults to `false` when omitted on any type that has this field.
   Explicit values are preserved, and the field remains present in serialized output.
-  Required labels and other required domain fields are unchanged.
+  Labels and the other required fields stay required.
 - `UnitType` serializes as `"quantity"`, `"concentration"`, `"temperature"`, or
   `"molecular_weight"`, matching its string formatting and parsing conventions.
   Legacy JSON spellings (`"Quantity"`, `"Concentration"`, `"Temperature"`, and
   `"MolecularWeight"`) remain accepted as input, but output always uses snake_case.
-  Consumers expecting PascalCase output must update to accept snake_case.
+
+## Request filters from URLs
+
+`RequestFilter::try_from(url)` reads a filter from a request URL:
+
+- A number at the end of the path is the id, e.g. `12` in `/storages/12?limit=1`.
+  An `?id=` parameter overrides it.
+- Each query parameter is parsed into its field. An invalid value, including an
+  id too big for a `u64`, returns a `RequestFilterError` naming the parameter.
+- `Display` writes the filter back as a query string, e.g. `?order=desc`.
+
+## Validation
+
+The types sent by clients have a `sanitize_and_validate(&mut self)` method, to
+call before saving them. It cleans their text fields: each line is trimmed and
+its whitespaces collapsed, line breaks are kept, and an empty optional field
+becomes `None`. It then returns a `ValidationError` for:
+
+- an empty required field;
+- an invalid format: CAS and CE numbers (with their check digit), formulas, GHS
+  hazard and precautionary references, CMR codes, HTML colors, `InChI`,
+  `InChIKey` and SMILES;
+- a number out of range, e.g. a negative quantity, or a quantity without its unit;
+- dates before the entry date of a storage, or a store location that is its own
+  parent.
+
+The error names the field, e.g. `tag_label: empty input`. Some fields are also
+normalized: a `Name` label is uppercased, an `EmpiricalFormula` label is stored
+in the Hill order, and an email is lowercased (see below). Nested records
+without an id are validated too; records with an id are already in the database
+and left unchanged.
+
+A request may give a unit by its id only. `Product::validate_unit_types` and
+`Storage::validate_unit_types` check, after `sanitize_and_validate`, that each
+unit has the right type (e.g. a temperature unit for `unit_temperature`), with
+a function returning the type of a unit id from the database.
+
+## Searchable types
+
+The types made of an id and a text, each stored in its own table, implement
+`chimitheque_traits::searchable::Searchable`, so the database code searches and
+creates them with the same functions. Their text field is their label, except
+for the hazard and precautionary statements, searched by their reference:
+
+`CasNumber`, `CeNumber`, `Category`, `ClassOfCompound`, `EmpiricalFormula`,
+`HazardStatement`, `LinearFormula`, `Name`, `PhysicalState`,
+`PrecautionaryStatement`, `Producer`, `SignalWord`, `Supplier`, `Symbol` and
+`Tag`.
 
 ## Account email normalization
 
@@ -46,10 +93,9 @@ Display-name inputs are rejected.
 
 ## PubChem parsing
 
-`PubchemProduct::from_pubchem_json` now returns
-`Result<PubchemProduct, chimitheque_types::error::PubchemParseError>` instead of
-silently returning an empty product on invalid JSON. Callers must propagate the
-error with `?` or handle it explicitly:
+`PubchemProduct::from_pubchem_json` returns
+`Result<PubchemProduct, chimitheque_types::error::PubchemParseError>`: invalid
+JSON is an error, never an empty product.
 
 ```rust
 use chimitheque_types::{error::PubchemParseError, pubchemproduct::PubchemProduct};
@@ -65,63 +111,10 @@ fn parse_response(body: &str) -> Result<PubchemProduct, PubchemParseError> {
 - Query failures report the product field, query, and underlying diagnostic.
 - Matched values must be strings. Nulls and other types produce a field-specific
   error rather than being discarded, including invalid entries in lists.
-- Missing optional paths remain `None`. Scalar fields still select the first
+- Missing optional paths remain `None`. Scalar fields select the first
   match, but all matched values are checked. Extraction fails as a whole rather
   than returning a partially populated product.
 
 This is a selected-field extractor, not a complete PubChem schema validator.
 Missing paths (including unsupported intermediate structures) are treated as
-absent. Existing heading and measurement-selection rules are unchanged.
-
-sample product list:
-
-- 1,4-butanediol
-- 1,4-dioxane
-- acetate d'ethyl
-- acetic acid
-- acetone
-- Aluminium oxide
-- ammonium chloride
-- celite
-- cesium carbonate
-- chloroform
-- chlorotrimethylsilane
-- cyclohexane
-- dichloromethane
-- diisopropyl ether
-- diisopropylethylamine
-- ethanol
-- formic acid
-- heptane
-- hexane
-- hydrochloric acid
-- hydrogen peroxide
-- iodine
-- lithium aluminium hydride
-- methanol
-- n-butyllithium
-- nitric acid
-- palladium acetate
-- palladium on carbon Pd/C
-- pentane
-- phosphorous pentoxide
-- potassium carbonate
-- potassium hydroxide
-- pyridine
-- silica
-- sodium bicarbonate
-- sodium borohydride
-- sodium carbonate
-- sodium hydroxide
-- sodium iodide
-- sodium sulfate
-- sulfuric acid
-- tert-butyl carbonate
-- Tetrabutylammonium fluoride solution
-- tetrahydrofuran
-- tetrakis (triphenylphosphine) palladium(0)
-- trifluoroacetic acid
-- trifluoromethanesulfonic anhydride
-- trimethylsilyl acetylene
-- Tris(dibenzylideneacetone)dipalladium(0)
-- triéthylamine
+absent.
