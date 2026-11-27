@@ -1,6 +1,6 @@
+use crate::error::ValidationError;
 use crate::supplier::Supplier;
-use crate::{error::ValidationError, validation::clean_required_text};
-use chimitheque_utils::string::Transform;
+use chimitheque_utils::string::{Transform, clean_required_text};
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
@@ -29,11 +29,10 @@ impl SupplierRef {
     /// empty.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
         // The label is required.
-        clean_required_text(
-            &mut self.supplier_ref_label,
-            "supplier_ref_label",
-            Transform::None,
-        )?;
+        self.supplier_ref_label = clean_required_text(&self.supplier_ref_label, Transform::None)
+            .ok_or(ValidationError::Empty {
+                field: "supplier_ref_label",
+            })?;
         // A new supplier (without id) is validated too; an existing one is
         // already in the database.
         if self.supplier.supplier_id.is_none() {

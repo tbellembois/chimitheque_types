@@ -4,10 +4,10 @@
 
 use std::fmt;
 
-use chimitheque_utils::string::{Transform, clean};
+use chimitheque_utils::string::{Transform, clean, clean_optional_text};
 use serde::{Deserialize, Serialize};
 
-use crate::{error::ValidationError, person::Person, validation::clean_optional_text};
+use crate::{error::ValidationError, person::Person};
 
 /// Main `Entity` structure representing an organization or group.
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]

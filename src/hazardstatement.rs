@@ -1,8 +1,8 @@
+use crate::error::ValidationError;
 use crate::searchable::impl_searchable;
-use crate::validation::{clean_optional_text, is_cmr_classification};
-use crate::{error::ValidationError, validation::clean_required_text};
+use crate::validation::is_cmr_classification;
 use chimitheque_defines::HAZARD_REFERENCE_RE;
-use chimitheque_utils::string::Transform;
+use chimitheque_utils::string::{Transform, clean_optional_text, clean_required_text};
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
@@ -32,16 +32,18 @@ impl HazardStatement {
     /// Returns `ValidationError::Empty` if the label or reference is empty.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
         // The label and the reference are required.
-        clean_required_text(
-            &mut self.hazard_statement_label,
-            "hazard_statement_label",
-            Transform::None,
-        )?;
-        clean_required_text(
-            &mut self.hazard_statement_reference,
-            "hazard_statement_reference",
-            Transform::None,
-        )?;
+        self.hazard_statement_label =
+            clean_required_text(&self.hazard_statement_label, Transform::None).ok_or(
+                ValidationError::Empty {
+                    field: "hazard_statement_label",
+                },
+            )?;
+        self.hazard_statement_reference =
+            clean_required_text(&self.hazard_statement_reference, Transform::None).ok_or(
+                ValidationError::Empty {
+                    field: "hazard_statement_reference",
+                },
+            )?;
         // The CMR classification is optional; an empty one becomes `None`.
         clean_optional_text(&mut self.hazard_statement_cmr);
         // The reference must be a GHS hazard reference.

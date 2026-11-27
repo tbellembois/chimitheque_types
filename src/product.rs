@@ -6,7 +6,6 @@ use std::fmt;
 use crate::unittype::UnitType;
 use crate::validation::{
     check_finite_f64, check_non_negative_f64, check_positive_f64, check_positive_i64,
-    clean_optional_text,
 };
 use crate::{
     casnumber::CasNumber, category::Category, cenumber::CeNumber, classofcompound::ClassOfCompound,
@@ -19,6 +18,7 @@ use crate::{
 use chimitheque_utils::{
     inchi::{is_inchi, is_inchikey},
     smiles::is_smiles,
+    string::clean_optional_text,
 };
 use serde::{Deserialize, Serialize};
 

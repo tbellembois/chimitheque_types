@@ -6,9 +6,8 @@ use std::fmt;
 
 use crate::entity::Entity;
 use crate::error::ValidationError;
-use crate::validation::clean_optional_text;
 use chimitheque_defines::HTML_COLOR_RE;
-use chimitheque_utils::string::{Transform, clean};
+use chimitheque_utils::string::{Transform, clean, clean_optional_text};
 use serde::{Deserialize, Serialize};
 
 /// Main `StoreLocation` structure representing a storage location.

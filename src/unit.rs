@@ -1,7 +1,7 @@
+use crate::error::ValidationError;
 use crate::unittype::UnitType;
 use crate::validation::check_positive_f64;
-use crate::{error::ValidationError, validation::clean_required_text};
-use chimitheque_utils::string::Transform;
+use chimitheque_utils::string::{Transform, clean_required_text};
 use serde::{Deserialize, Serialize};
 
 /// A measurement unit, e.g. `mL`, possibly converting to a reference unit of
@@ -32,7 +32,11 @@ impl Unit {
     /// `ValidationError::OutOfRange` for an invalid multiplier.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
         // Unit labels are case-sensitive (mL, µM), so only whitespace is cleaned.
-        clean_required_text(&mut self.unit_label, "unit_label", Transform::None)?;
+        self.unit_label = clean_required_text(&self.unit_label, Transform::None).ok_or(
+            ValidationError::Empty {
+                field: "unit_label",
+            },
+        )?;
         // The multiplier must be greater than 0.
         check_positive_f64(Some(self.unit_multiplier), "unit_multiplier")?;
         Ok(())

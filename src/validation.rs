@@ -1,33 +1,7 @@
 //! Helpers shared by the `sanitize_and_validate` methods.
 
-use chimitheque_defines::CMR_CODES;
-use chimitheque_utils::string::{Transform, clean};
-
 use crate::error::ValidationError;
-
-/// Cleans a required text field and rejects it if empty.
-pub(crate) fn clean_required_text(
-    value: &mut String,
-    field: &'static str,
-    transform: Transform,
-) -> Result<(), ValidationError> {
-    *value = clean(value, transform);
-    if value.is_empty() {
-        return Err(ValidationError::Empty { field });
-    }
-    Ok(())
-}
-
-/// Cleans an optional text field (trims each line and collapses its inner
-/// whitespace, keeping the line breaks). An empty value becomes `None`.
-pub(crate) fn clean_optional_text(value: &mut Option<String>) {
-    if let Some(text) = value.as_mut() {
-        *text = clean(text, Transform::None);
-    }
-    if value.as_deref().is_some_and(str::is_empty) {
-        *value = None;
-    }
-}
+use chimitheque_defines::CMR_CODES;
 
 /// Rejects a set number that is not finite (NaN or infinite).
 pub(crate) fn check_finite_f64(

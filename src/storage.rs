@@ -3,11 +3,12 @@
 
 use std::fmt;
 
+use chimitheque_utils::string::clean_optional_text;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 use crate::unittype::UnitType;
-use crate::validation::{check_non_negative_f64, check_non_zero_u64, clean_optional_text};
+use crate::validation::{check_non_negative_f64, check_non_zero_u64};
 
 use crate::{
     borrowing::Borrowing, error::ValidationError, person::Person, product::Product,

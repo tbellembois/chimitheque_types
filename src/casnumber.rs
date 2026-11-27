@@ -1,13 +1,13 @@
 use chimitheque_utils::{
     casnumber::is_cas_number,
-    string::{Transform, clean},
+    string::{Transform, clean, clean_optional_text},
 };
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
 use crate::error::ValidationError;
 use crate::searchable::impl_searchable;
-use crate::validation::{clean_optional_text, is_cmr_classification};
+use crate::validation::is_cmr_classification;
 
 /// A CAS registry number identifying a chemical substance, e.g. `7732-18-5`.
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]

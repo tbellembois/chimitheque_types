@@ -1,6 +1,6 @@
+use crate::error::ValidationError;
 use crate::searchable::impl_searchable;
-use crate::{error::ValidationError, validation::clean_required_text};
-use chimitheque_utils::string::Transform;
+use chimitheque_utils::string::{Transform, clean_required_text};
 use serde::{Deserialize, Serialize};
 
 /// A physical state, e.g. `liquid`.
@@ -23,11 +23,12 @@ impl PhysicalState {
     /// Returns `ValidationError::Empty` if the cleaned label is empty.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
         // The label is required.
-        clean_required_text(
-            &mut self.physical_state_label,
-            "physical_state_label",
-            Transform::None,
-        )?;
+        self.physical_state_label =
+            clean_required_text(&self.physical_state_label, Transform::None).ok_or(
+                ValidationError::Empty {
+                    field: "physical_state_label",
+                },
+            )?;
         Ok(())
     }
 }

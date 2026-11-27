@@ -1,6 +1,6 @@
+use crate::error::ValidationError;
 use crate::searchable::impl_searchable;
-use crate::{error::ValidationError, validation::clean_required_text};
-use chimitheque_utils::string::Transform;
+use chimitheque_utils::string::{Transform, clean_required_text};
 use serde::{Deserialize, Serialize};
 
 /// A GHS signal word, `danger` or `warning`.
@@ -23,11 +23,10 @@ impl SignalWord {
     /// Returns `ValidationError::Empty` if the cleaned label is empty.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
         // The label is required.
-        clean_required_text(
-            &mut self.signal_word_label,
-            "signal_word_label",
-            Transform::None,
-        )?;
+        self.signal_word_label = clean_required_text(&self.signal_word_label, Transform::None)
+            .ok_or(ValidationError::Empty {
+                field: "signal_word_label",
+            })?;
         Ok(())
     }
 }

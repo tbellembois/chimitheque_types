@@ -1,7 +1,8 @@
+use chimitheque_utils::string::clean_optional_text;
 use serde::{Deserialize, Serialize};
 
+use crate::error::ValidationError;
 use crate::person::Person;
-use crate::{error::ValidationError, validation::clean_optional_text};
 
 /// A storage lent to a person (the borrower).
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]

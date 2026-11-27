@@ -1,7 +1,7 @@
+use crate::error::ValidationError;
 use crate::searchable::impl_searchable;
-use crate::{error::ValidationError, validation::clean_required_text};
 use chimitheque_defines::PRECAUTIONARY_REFERENCE_RE;
-use chimitheque_utils::string::Transform;
+use chimitheque_utils::string::{Transform, clean_required_text};
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
@@ -27,16 +27,18 @@ impl PrecautionaryStatement {
     /// Returns `ValidationError::Empty` if the label or reference is empty.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
         // The label and the reference are required.
-        clean_required_text(
-            &mut self.precautionary_statement_label,
-            "precautionary_statement_label",
-            Transform::None,
-        )?;
-        clean_required_text(
-            &mut self.precautionary_statement_reference,
-            "precautionary_statement_reference",
-            Transform::None,
-        )?;
+        self.precautionary_statement_label =
+            clean_required_text(&self.precautionary_statement_label, Transform::None).ok_or(
+                ValidationError::Empty {
+                    field: "precautionary_statement_label",
+                },
+            )?;
+        self.precautionary_statement_reference =
+            clean_required_text(&self.precautionary_statement_reference, Transform::None).ok_or(
+                ValidationError::Empty {
+                    field: "precautionary_statement_reference",
+                },
+            )?;
         // The reference must be a GHS precautionary reference.
         if !is_precautionary_reference(&self.precautionary_statement_reference) {
             return Err(ValidationError::InvalidFormat {

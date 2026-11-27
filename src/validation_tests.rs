@@ -7,8 +7,6 @@ mod tests {
         clippy::too_many_lines
     )]
 
-    use chimitheque_utils::string::Transform;
-
     use crate::error::ValidationError;
     use crate::validation::*;
 
@@ -17,47 +15,6 @@ mod tests {
             ValidationError::OutOfRange { expected, .. } => expected,
             error => panic!("unexpected error {error:?}"),
         }
-    }
-
-    #[test]
-    fn test_require_text() {
-        let mut value = "  a   b ".to_string();
-        clean_required_text(&mut value, "field", Transform::None).unwrap();
-        assert_eq!(value, "a b");
-
-        let mut value = "ab".to_string();
-        clean_required_text(&mut value, "field", Transform::Uppercase).unwrap();
-        assert_eq!(value, "AB");
-
-        for empty in ["", "   ", "\n\t"] {
-            let mut value = empty.to_string();
-            let error = clean_required_text(&mut value, "field", Transform::None).unwrap_err();
-            assert!(matches!(error, ValidationError::Empty { field: "field" }));
-        }
-    }
-
-    #[test]
-    fn test_clean_optional_text() {
-        let mut value = Some("  a   b ".to_string());
-        clean_optional_text(&mut value);
-        assert_eq!(value.as_deref(), Some("a b"));
-
-        for empty in [Some(String::new()), Some("  \n ".to_string()), None] {
-            let mut value = empty;
-            clean_optional_text(&mut value);
-            assert_eq!(value, None);
-        }
-    }
-
-    #[test]
-    fn test_clean_optional_text_keeps_line_breaks() {
-        let mut value = Some("  line 1\n\n  line 2  ".to_string());
-        clean_optional_text(&mut value);
-        assert_eq!(value.as_deref(), Some("line 1\n\nline 2"));
-
-        let mut value = Some(" \n ".to_string());
-        clean_optional_text(&mut value);
-        assert_eq!(value, None);
     }
 
     #[test]
