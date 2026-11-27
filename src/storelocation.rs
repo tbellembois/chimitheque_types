@@ -6,7 +6,7 @@ use std::fmt;
 
 use crate::entity::Entity;
 use crate::error::ValidationError;
-use crate::validation::{check_format, clean_optional_text, is_html_color};
+use crate::validation::{clean_optional_text, is_html_color};
 use chimitheque_utils::string::{Transform, clean};
 use serde::{Deserialize, Serialize};
 
@@ -59,19 +59,24 @@ impl StoreLocation {
     ///
     /// `Ok(())` if validation succeeds, or an error if validation fails.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
+        // The name is required.
         self.store_location_name = clean(&self.store_location_name, Transform::None);
         if self.store_location_name.is_empty() {
             return Err(ValidationError::Empty {
                 field: "store_location_name",
             });
         }
+        // The color is optional but must be an HTML color.
         clean_optional_text(&mut self.store_location_color);
-        check_format(
-            self.store_location_color.as_deref(),
-            "store_location_color",
-            is_html_color,
-            "a color like #RRGGBB",
-        )?;
+        if let Some(color) = self.store_location_color.as_deref()
+            && !is_html_color(color)
+        {
+            return Err(ValidationError::InvalidFormat {
+                field: "store_location_color",
+                expected: "a color like #RRGGBB",
+            });
+        }
+        // A store location can not be its own parent.
         if let (Some(id), Some(parent)) = (self.store_location_id, &self.store_location)
             && parent.store_location_id == Some(id)
         {

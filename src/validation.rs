@@ -6,7 +6,7 @@ use chimitheque_utils::string::{Transform, clean};
 use crate::{error::ValidationError, unit::Unit, unittype::UnitType};
 
 /// Cleans a required text field and rejects it if empty.
-pub(crate) fn require_text(
+pub(crate) fn clean_required_text(
     value: &mut String,
     field: &'static str,
     transform: Transform,
@@ -101,19 +101,6 @@ pub(crate) fn check_non_zero_u64(
     }
 }
 
-/// Rejects a set text value for which `is_valid` returns false.
-pub(crate) fn check_format(
-    value: Option<&str>,
-    field: &'static str,
-    is_valid: impl Fn(&str) -> bool,
-    expected: &'static str,
-) -> Result<(), ValidationError> {
-    match value {
-        Some(text) if !is_valid(text) => Err(ValidationError::InvalidFormat { field, expected }),
-        _ => Ok(()),
-    }
-}
-
 /// Returns true for an HTML color like `#ff0000`.
 pub(crate) fn is_html_color(color: &str) -> bool {
     HTML_COLOR_RE.is_match(color)
@@ -128,19 +115,6 @@ pub(crate) fn is_cmr_classification(classification: &str) -> bool {
                 .iter()
                 .any(|known| known.eq_ignore_ascii_case(code))
         })
-}
-
-/// Requires `field` when the field it depends on is set.
-pub(crate) fn require_if(
-    required: bool,
-    present: bool,
-    field: &'static str,
-    reason: &'static str,
-) -> Result<(), ValidationError> {
-    if required && !present {
-        return Err(ValidationError::Required { field, reason });
-    }
-    Ok(())
 }
 
 /// Rejects a set unit whose type, looked up from its id with `unit_type_of`,

@@ -24,6 +24,7 @@ impl Tag {
     ///
     /// Returns `ValidationError::Empty` if the cleaned label is empty.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
+        // The label is required.
         self.tag_label = clean(&self.tag_label, Transform::None);
         if self.tag_label.is_empty() {
             return Err(ValidationError::Empty { field: "tag_label" });

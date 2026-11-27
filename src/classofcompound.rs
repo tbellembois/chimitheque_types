@@ -24,6 +24,7 @@ impl ClassOfCompound {
     ///
     /// Returns `ValidationError::Empty` if the cleaned label is empty.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
+        // The label is required.
         self.class_of_compound_label = clean(&self.class_of_compound_label, Transform::None);
         if self.class_of_compound_label.is_empty() {
             return Err(ValidationError::Empty {

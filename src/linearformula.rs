@@ -28,6 +28,7 @@ impl LinearFormula {
     ///
     /// Returns `ValidationError::Empty` or `ValidationError::InvalidFormula`.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
+        // The label is required.
         let cleaned_empirical_formula = clean(&self.linear_formula_label, Transform::None);
         if cleaned_empirical_formula.is_empty() {
             return Err(ValidationError::Empty {
@@ -35,6 +36,8 @@ impl LinearFormula {
             });
         }
 
+        // The label must be a valid formula. It is kept as entered: the
+        // empirical formula is only computed to validate it.
         let _ = to_empirical_formula(cleaned_empirical_formula.as_str()).map_err(|source| {
             ValidationError::InvalidFormula {
                 field: "linear_formula_label",

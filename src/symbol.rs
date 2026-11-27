@@ -1,5 +1,5 @@
 use crate::searchable::impl_searchable;
-use crate::{error::ValidationError, validation::require_text};
+use crate::{error::ValidationError, validation::clean_required_text};
 use chimitheque_utils::string::Transform;
 use serde::{Deserialize, Serialize};
 
@@ -22,7 +22,8 @@ impl Symbol {
     ///
     /// Returns `ValidationError::Empty` if the cleaned label is empty.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
-        require_text(&mut self.symbol_label, "symbol_label", Transform::None)?;
+        // The label is required.
+        clean_required_text(&mut self.symbol_label, "symbol_label", Transform::None)?;
         Ok(())
     }
 }

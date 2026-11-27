@@ -27,12 +27,14 @@ impl CeNumber {
     ///
     /// Returns `ValidationError::Empty` or `ValidationError::InvalidCeNumber`.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
+        // The label is required.
         self.ce_number_label = clean(&self.ce_number_label, Transform::None);
         if self.ce_number_label.is_empty() {
             return Err(ValidationError::Empty {
                 field: "ce_number_label",
             });
         }
+        // The label must be a valid EC number.
         is_ce_number(&self.ce_number_label).map_err(ValidationError::InvalidCeNumber)
     }
 }

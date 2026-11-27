@@ -52,6 +52,7 @@ impl Entity {
     /// `Ok(())` if validation succeeds, or `ValidationError::Empty` if the
     /// cleaned name is empty.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
+        // The name is required.
         self.entity_name = clean(&self.entity_name, Transform::None);
         if self.entity_name.is_empty() {
             return Err(ValidationError::Empty {
@@ -59,6 +60,7 @@ impl Entity {
             });
         }
 
+        // The description is optional; an empty one becomes `None`.
         clean_optional_text(&mut self.entity_description);
         Ok(())
     }

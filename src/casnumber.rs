@@ -7,7 +7,7 @@ use std::fmt;
 
 use crate::error::ValidationError;
 use crate::searchable::impl_searchable;
-use crate::validation::{check_format, clean_optional_text, is_cmr_classification};
+use crate::validation::{clean_optional_text, is_cmr_classification};
 
 /// A CAS registry number identifying a chemical substance, e.g. `7732-18-5`.
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
@@ -32,19 +32,24 @@ impl CasNumber {
     /// Returns `ValidationError::Empty`, `ValidationError::InvalidCasNumber` or
     /// `ValidationError::InvalidFormat`.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
+        // The label is required.
         self.cas_number_label = clean(&self.cas_number_label, Transform::None);
         if self.cas_number_label.is_empty() {
             return Err(ValidationError::Empty {
                 field: "cas_number_label",
             });
         }
+        // The CMR classification is optional but must contain known CMR codes.
         clean_optional_text(&mut self.cas_number_cmr);
-        check_format(
-            self.cas_number_cmr.as_deref(),
-            "cas_number_cmr",
-            is_cmr_classification,
-            "space-separated CMR codes (C1A, C1B, C2, M1A, M1B, M2, R1A, R1B, R2, LACT)",
-        )?;
+        if let Some(cmr) = self.cas_number_cmr.as_deref()
+            && !is_cmr_classification(cmr)
+        {
+            return Err(ValidationError::InvalidFormat {
+                field: "cas_number_cmr",
+                expected: "space-separated CMR codes (C1A, C1B, C2, M1A, M1B, M2, R1A, R1B, R2, LACT)",
+            });
+        }
+        // The label must be a valid CAS number.
         is_cas_number(&self.cas_number_label).map_err(ValidationError::InvalidCasNumber)
     }
 }

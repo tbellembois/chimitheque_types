@@ -24,6 +24,7 @@ impl Name {
     ///
     /// Returns `ValidationError::Empty` if the cleaned name is empty.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
+        // The label is required and stored in uppercase.
         self.name_label = clean(&self.name_label, Transform::Uppercase);
         if self.name_label.is_empty() {
             return Err(ValidationError::Empty {

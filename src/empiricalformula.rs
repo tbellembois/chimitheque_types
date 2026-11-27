@@ -29,6 +29,7 @@ impl EmpiricalFormula {
     /// Returns `ValidationError::InvalidFormula` if the formula can not be parsed,
     /// or `ValidationError::Empty`.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
+        // The label must be a valid formula; it is stored as its sorted empirical formula.
         let sorted_and_cleaned_empirical_formula =
             to_empirical_formula(&clean(&self.empirical_formula_label, Transform::None)).map_err(
                 |source| ValidationError::InvalidFormula {
@@ -36,6 +37,7 @@ impl EmpiricalFormula {
                     source,
                 },
             )?;
+        // The formula is required.
         if sorted_and_cleaned_empirical_formula.is_empty() {
             return Err(ValidationError::Empty {
                 field: "empirical_formula_label",

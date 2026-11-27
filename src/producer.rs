@@ -23,6 +23,7 @@ impl Producer {
     ///
     /// Returns `ValidationError::Empty` if the cleaned label is empty.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
+        // The label is required.
         self.producer_label = clean(&self.producer_label, Transform::None);
         if self.producer_label.is_empty() {
             return Err(ValidationError::Empty {

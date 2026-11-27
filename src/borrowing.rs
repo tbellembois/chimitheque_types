@@ -26,6 +26,7 @@ impl Borrowing {
     ///
     /// Never fails today; returns a `Result` like the other types.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
+        // The comment is optional; an empty one becomes `None`.
         clean_optional_text(&mut self.borrowing_comment);
         Ok(())
     }

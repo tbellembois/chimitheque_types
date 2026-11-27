@@ -1,5 +1,5 @@
 use crate::producer::Producer;
-use crate::{error::ValidationError, validation::require_text};
+use crate::{error::ValidationError, validation::clean_required_text};
 use chimitheque_utils::string::Transform;
 use serde::{Deserialize, Serialize};
 use std::fmt;
@@ -28,11 +28,14 @@ impl ProducerRef {
     /// Returns `ValidationError::Empty` if the label or a new producer label is
     /// empty.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
-        require_text(
+        // The label is required.
+        clean_required_text(
             &mut self.producer_ref_label,
             "producer_ref_label",
             Transform::None,
         )?;
+        // A new producer (without id) is validated too; an existing one is
+        // already in the database.
         if self.producer.producer_id.is_none() {
             self.producer.sanitize_and_validate()?;
         }

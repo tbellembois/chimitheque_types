@@ -23,6 +23,7 @@ impl Supplier {
     ///
     /// Returns `ValidationError::Empty` if the cleaned label is empty.
     pub fn sanitize_and_validate(&mut self) -> Result<(), ValidationError> {
+        // The label is required.
         self.supplier_label = clean(&self.supplier_label, Transform::None);
         if self.supplier_label.is_empty() {
             return Err(ValidationError::Empty {

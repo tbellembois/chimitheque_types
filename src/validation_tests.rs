@@ -22,16 +22,16 @@ mod tests {
     #[test]
     fn test_require_text() {
         let mut value = "  a   b ".to_string();
-        require_text(&mut value, "field", Transform::None).unwrap();
+        clean_required_text(&mut value, "field", Transform::None).unwrap();
         assert_eq!(value, "a b");
 
         let mut value = "ab".to_string();
-        require_text(&mut value, "field", Transform::Uppercase).unwrap();
+        clean_required_text(&mut value, "field", Transform::Uppercase).unwrap();
         assert_eq!(value, "AB");
 
         for empty in ["", "   ", "\n\t"] {
             let mut value = empty.to_string();
-            let error = require_text(&mut value, "field", Transform::None).unwrap_err();
+            let error = clean_required_text(&mut value, "field", Transform::None).unwrap_err();
             assert!(matches!(error, ValidationError::Empty { field: "field" }));
         }
     }
@@ -133,13 +133,5 @@ mod tests {
         assert!(is_cmr_classification("lact"));
         assert!(!is_cmr_classification(""));
         assert!(!is_cmr_classification("C1A C9"));
-    }
-
-    #[test]
-    fn test_require_if() {
-        assert!(require_if(false, false, "f", "when x is set").is_ok());
-        assert!(require_if(true, true, "f", "when x is set").is_ok());
-        let error = require_if(true, false, "f", "when x is set").unwrap_err();
-        assert_eq!(error.to_string(), "f: required when x is set");
     }
 }
