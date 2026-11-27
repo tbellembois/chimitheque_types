@@ -10,11 +10,23 @@ mod tests {
     use std::error::Error as _;
 
     use crate::{
-        casnumber::CasNumber, category::Category, cenumber::CeNumber,
-        classofcompound::ClassOfCompound, empiricalformula::EmpiricalFormula, entity::Entity,
-        error::ValidationError, linearformula::LinearFormula, name::Name, person::Person,
-        producer::Producer, product::Product, storelocation::StoreLocation, supplier::Supplier,
+        casnumber::CasNumber,
+        category::Category,
+        cenumber::CeNumber,
+        classofcompound::ClassOfCompound,
+        empiricalformula::EmpiricalFormula,
+        entity::Entity,
+        error::{ParseError, ValidationError},
+        linearformula::LinearFormula,
+        name::Name,
+        permission::{PermissionItem, PermissionName},
+        person::Person,
+        producer::Producer,
+        product::Product,
+        storelocation::StoreLocation,
+        supplier::Supplier,
         tag::Tag,
+        unittype::UnitType,
     };
     use chimitheque_utils::{
         casnumber::CasNumberError, cenumber::CeNumberError, formula::ToEmpiricalFormulaError,
@@ -182,5 +194,20 @@ mod tests {
             ..Default::default()
         };
         assert_empty(product.sanitize_and_validate(), "tag_label");
+    }
+
+    #[test]
+    fn test_parse_error_messages() {
+        let error = "x".parse::<UnitType>().unwrap_err();
+        assert!(matches!(&error, ParseError::ParseUnitTypeError(value) if value == "x"));
+        assert_eq!(error.to_string(), "wrong unit type: x");
+
+        let error = "x".parse::<PermissionName>().unwrap_err();
+        assert!(matches!(&error, ParseError::ParsePermissionNameError(value) if value == "x"));
+        assert_eq!(error.to_string(), "wrong permission name: x");
+
+        let error = "x".parse::<PermissionItem>().unwrap_err();
+        assert!(matches!(&error, ParseError::ParsePermissionItemError(value) if value == "x"));
+        assert_eq!(error.to_string(), "wrong permission item: x");
     }
 }

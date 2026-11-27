@@ -9,9 +9,10 @@ mod tests {
 
     use crate::test_helpers::{assert_serde_rejects_missing, assert_value_round_trip};
     use crate::{
-        casnumber::CasNumber, classofcompound::ClassOfCompound, error::ValidationError, name::Name,
-        producer::Producer, producerref::ProducerRef, product::*, producttype::ProductType,
-        supplier::Supplier, supplierref::SupplierRef, tag::Tag, unit::Unit,
+        casnumber::CasNumber, category::Category, classofcompound::ClassOfCompound,
+        error::ValidationError, linearformula::LinearFormula, name::Name, producer::Producer,
+        producerref::ProducerRef, product::*, producttype::ProductType, supplier::Supplier,
+        supplierref::SupplierRef, tag::Tag, unit::Unit,
     };
 
     /// Makes a value invalid, and the field expected in the error.
@@ -311,6 +312,60 @@ mod tests {
         let mut product = product_named("ethanol");
         product.producer_ref = Some(ProducerRef {
             producer_ref_id: Some(5),
+            ..Default::default()
+        });
+        product.sanitize_and_validate().unwrap();
+    }
+
+    #[test]
+    fn test_sanitize_and_validate_new_category_and_linear_formula() {
+        // A new category and a new linear formula (without id) are cleaned.
+        let mut product = product_named("ethanol");
+        product.category = Some(Category {
+            category_label: "  organic   solvents ".to_string(),
+            ..Default::default()
+        });
+        product.linear_formula = Some(LinearFormula {
+            linear_formula_label: " CH3CH2OH ".to_string(),
+            ..Default::default()
+        });
+        product.sanitize_and_validate().unwrap();
+        assert_eq!(product.category.unwrap().category_label, "organic solvents");
+        assert_eq!(
+            product.linear_formula.unwrap().linear_formula_label,
+            "CH3CH2OH"
+        );
+
+        // They are rejected when invalid.
+        let mut product = product_named("ethanol");
+        product.category = Some(Category::default());
+        assert_empty_field(&mut product, "category_label");
+
+        let mut product = product_named("ethanol");
+        product.linear_formula = Some(LinearFormula {
+            linear_formula_label: "X123X".to_string(),
+            ..Default::default()
+        });
+        let error = product.sanitize_and_validate().unwrap_err();
+        assert!(
+            matches!(
+                error,
+                ValidationError::InvalidFormula {
+                    field: "linear_formula_label",
+                    ..
+                }
+            ),
+            "{error:?}"
+        );
+
+        // Existing ones (with an id) are not validated.
+        let mut product = product_named("ethanol");
+        product.category = Some(Category {
+            category_id: Some(1),
+            ..Default::default()
+        });
+        product.linear_formula = Some(LinearFormula {
+            linear_formula_id: Some(2),
             ..Default::default()
         });
         product.sanitize_and_validate().unwrap();

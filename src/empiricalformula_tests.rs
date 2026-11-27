@@ -63,6 +63,19 @@ mod tests {
             };
             assert_validation_error(value.sanitize_and_validate(), "empirical_formula_label");
         }
+        // Formulas without any atom are parsed into an empty formula.
+        for no_atom in ["()", ".", "2", "x"] {
+            let mut value = EmpiricalFormula {
+                empirical_formula_label: no_atom.to_string(),
+                ..Default::default()
+            };
+            let error =
+                assert_validation_error(value.sanitize_and_validate(), "empirical_formula_label");
+            assert!(
+                matches!(error, ValidationError::Empty { .. }),
+                "{no_atom}: {error:?}"
+            );
+        }
         for invalid in ["X123X", "(CH3"] {
             let mut value = EmpiricalFormula {
                 empirical_formula_label: invalid.to_string(),

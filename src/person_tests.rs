@@ -149,4 +149,30 @@ mod tests {
             assert_eq!(value.person_email, input);
         }
     }
+
+    // Other functions.
+
+    #[test]
+    fn test_eq() {
+        // Two persons are equal when their id and email are equal, whatever
+        // their other fields.
+        let person = |person_id, email: &str, is_admin| Person {
+            person_id,
+            person_email: email.to_string(),
+            is_admin,
+            ..Default::default()
+        };
+        assert_eq!(
+            person(Some(1), "a@example.com", false),
+            person(Some(1), "a@example.com", true)
+        );
+        assert_ne!(
+            person(Some(1), "a@example.com", false),
+            person(Some(2), "a@example.com", false)
+        );
+        assert_ne!(
+            person(Some(1), "a@example.com", false),
+            person(Some(1), "b@example.com", false)
+        );
+    }
 }
