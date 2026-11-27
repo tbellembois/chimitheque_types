@@ -125,10 +125,7 @@ mod tests {
     }
 
     #[test]
-    fn test_color_and_cmr_formats() {
-        assert!(is_html_color("#A1b2C3"));
-        assert!(!is_html_color("#A1b2C"));
-
+    fn test_is_cmr_classification() {
         assert!(is_cmr_classification("C1A M2 R1B"));
         assert!(is_cmr_classification("lact"));
         assert!(!is_cmr_classification(""));

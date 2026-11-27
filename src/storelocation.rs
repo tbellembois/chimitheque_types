@@ -6,7 +6,8 @@ use std::fmt;
 
 use crate::entity::Entity;
 use crate::error::ValidationError;
-use crate::validation::{clean_optional_text, is_html_color};
+use crate::validation::clean_optional_text;
+use chimitheque_defines::HTML_COLOR_RE;
 use chimitheque_utils::string::{Transform, clean};
 use serde::{Deserialize, Serialize};
 
@@ -69,7 +70,7 @@ impl StoreLocation {
         // The color is optional but must be an HTML color.
         clean_optional_text(&mut self.store_location_color);
         if let Some(color) = self.store_location_color.as_deref()
-            && !is_html_color(color)
+            && !HTML_COLOR_RE.is_match(color)
         {
             return Err(ValidationError::InvalidFormat {
                 field: "store_location_color",

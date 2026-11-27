@@ -1,6 +1,6 @@
 //! Helpers shared by the `sanitize_and_validate` methods.
 
-use chimitheque_defines::{CMR_CODES, HTML_COLOR_RE};
+use chimitheque_defines::CMR_CODES;
 use chimitheque_utils::string::{Transform, clean};
 
 use crate::{error::ValidationError, unit::Unit, unittype::UnitType};
@@ -99,11 +99,6 @@ pub(crate) fn check_non_zero_u64(
         }),
         _ => Ok(()),
     }
-}
-
-/// Returns true for an HTML color like `#ff0000`.
-pub(crate) fn is_html_color(color: &str) -> bool {
-    HTML_COLOR_RE.is_match(color)
 }
 
 /// Returns true for space-separated CMR codes, e.g. `C1A M2`, ignoring case.
